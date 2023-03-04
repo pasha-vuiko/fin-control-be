@@ -1,0 +1,55 @@
+module.exports = {
+  overrides: [
+    // TypeScript
+    {
+      files: ['*.ts'],
+      parser: '@typescript-eslint/parser',
+      parserOptions: {
+        project: 'tsconfig.json',
+        tsconfigRootDir: __dirname,
+        sourceType: 'module',
+      },
+      plugins: ['@typescript-eslint/eslint-plugin'],
+      extends: [
+        'plugin:@typescript-eslint/recommended',
+        'plugin:prettier/recommended',
+        'plugin:security/recommended',
+      ],
+      env: {
+        node: true,
+        jest: true,
+      },
+      rules: {
+        '@typescript-eslint/interface-name-prefix': 'off',
+        '@typescript-eslint/explicit-function-return-type': 'warn',
+        '@typescript-eslint/explicit-module-boundary-types': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-empty-interface': 'off',
+        'max-lines-per-function': ['error', 45],
+        '@typescript-eslint/naming-convention': [
+          'warn',
+          {
+            selector: 'interface',
+            format: ['PascalCase'],
+            custom: {
+              regex: '^I[A-Z]',
+              match: true,
+            },
+          },
+        ],
+      },
+    },
+    // JavaScript
+    {
+      files: ['*.js'],
+      extends: ['plugin:prettier/recommended', 'plugin:security/recommended'],
+      env: {
+        node: true,
+        jest: true,
+        es6: true,
+      },
+    },
+  ],
+  root: true,
+  ignorePatterns: ['.eslintrc.js'],
+};
