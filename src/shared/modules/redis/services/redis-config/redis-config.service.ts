@@ -5,6 +5,7 @@ import {
   Inject,
   Injectable,
   Logger,
+  OnApplicationShutdown,
 } from '@nestjs/common';
 import { CacheStoreFactory } from '@nestjs/common/cache/interfaces/cache-manager.interface';
 
@@ -13,7 +14,7 @@ import { config } from '../../../../../app.config';
 import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
 
 @Injectable()
-export class RedisConfigService implements CacheOptionsFactory {
+export class RedisConfigService implements CacheOptionsFactory, OnApplicationShutdown {
   private static ioRedisInstance: IoredisWithDefaultTtl;
   private static logger = new Logger('RedisConfigService');
 
@@ -21,6 +22,10 @@ export class RedisConfigService implements CacheOptionsFactory {
     @Inject(REDIS_STORE)
     private redisStore: CacheStoreFactory,
   ) {}
+
+  onApplicationShutdown(signal?: string | undefined) {
+    RedisConfigService.getIoRedisInstance().disconnect();
+  }
 
   public createCacheOptions(): CacheModuleOptions {
     return {
