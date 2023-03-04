@@ -1,0 +1,25 @@
+version: '3.4'
+
+services:
+#  fin-control-be:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#      target: development
+#    env_file:
+#      - local-docker.env
+#    volumes:
+#      - .:/usr/src/app
+#      - /usr/src/app/node_modules
+#    ports:
+#      - '3001:3000'
+#      - '9229:9229'
+#    command: npm run start:dev
+#    depends_on:
+#      - redis
+#      - postgres
+
+  redis:
+    image: redis:latest
+    ports:
+      - '6379:6379'
