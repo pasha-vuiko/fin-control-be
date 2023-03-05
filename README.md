@@ -20,7 +20,21 @@ Tech Stack:
 
 ## Running the app in DEV mode
 
-Firstly run this commands:
+Download CockroachDB certificates:
+```bash
+# MacOS:
+curl --create-dirs -o $HOME/.postgresql/root.crt -O https://cockroachlabs.cloud/clusters/84467408-2eeb-4e43-9305-d29a05cf78ec/cert
+```
+```bash
+# Windows:
+mkdir -p $env:appdata\postgresql\; Invoke-WebRequest -Uri https://cockroachlabs.cloud/clusters/84467408-2eeb-4e43-9305-d29a05cf78ec/cert -OutFile $env:appdata\postgresql\root.crt
+```
+```bash
+# Linux:
+curl --create-dirs -o $HOME/.postgresql/root.crt -O https://cockroachlabs.cloud/clusters/84467408-2eeb-4e43-9305-d29a05cf78ec/cert
+```
+
+Run this commands:
 
 ```bash
 # install npm dependencies
