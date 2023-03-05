@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "./client"
 }
 
 datasource db {
@@ -10,8 +11,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model UserData {
-  id      String @id @default(uuid())
-  auth0Id String
-  email   String @unique
+model Customer {
+  id        String   @id @default(uuid())
+  auth0Id   String   @unique
+  firstName String
+  lastName  String
+  email     String   @unique
+  phone     String?  @unique
+  birthdate DateTime
+  sex       Sex
+}
+
+enum Sex {
+  MALE
+  FEMALE
 }

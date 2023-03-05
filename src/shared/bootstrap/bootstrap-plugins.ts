@@ -21,6 +21,7 @@ export async function bootstrapPlugins(app: NestFastifyApplication): Promise<voi
 function setupRequestsValidation(app: NestFastifyApplication): void {
   app.useGlobalPipes(
     new ValidationPipe({
+      whitelist: true,
       transform: true,
       forbidUnknownValues: false,
       enableDebugMessages: config.app.isDevelopment,
@@ -36,8 +37,8 @@ async function setupShutdownHooks(app: NestFastifyApplication): Promise<void> {
 
 function setupOpenApi(app: NestFastifyApplication): void {
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('Test shop API')
-    .setDescription('The shop API description')
+    .setTitle(packageJsonInfo.name)
+    .setDescription(packageJsonInfo.description)
     .setVersion(packageJsonInfo.version)
     .addBearerAuth()
     .build();

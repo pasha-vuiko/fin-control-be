@@ -9,9 +9,9 @@ import { bootstrapLogger } from '@shared/bootstrap/bootstrap-logger';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestFastifyApplication>(
-      AppModule,
-      new FastifyAdapter(config.app.fastify),
-      { bufferLogs: true },
+    AppModule,
+    new FastifyAdapter(config.app.fastify),
+    { bufferLogs: true },
   );
 
   await bootstrapPlugins(app);

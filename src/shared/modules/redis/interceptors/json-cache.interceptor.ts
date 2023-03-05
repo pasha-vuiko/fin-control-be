@@ -20,7 +20,7 @@ import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-wit
 const HTTP_ADAPTER_HOST = 'HttpAdapterHost';
 const REFLECTOR = 'Reflector';
 
-export interface HttpAdapterHost<T extends HttpServer = any> {
+export interface IHttpAdapterHost<T extends HttpServer = any> {
   httpAdapter: T;
 }
 
@@ -30,7 +30,7 @@ export class JsonCacheInterceptor implements NestInterceptor {
 
   @Optional()
   @Inject(HTTP_ADAPTER_HOST)
-  protected readonly httpAdapterHost: HttpAdapterHost;
+  protected readonly httpAdapterHost: IHttpAdapterHost;
 
   protected allowedMethods = ['GET'];
   constructor(@Inject(REFLECTOR) protected readonly reflector: any) {
