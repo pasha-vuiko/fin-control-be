@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { packageJsonInfo } from '@shared/constants/package-json-info';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -15,8 +16,10 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('should return app info', () => {
+      expect(appController.getAppVersion()).toBe(
+        `App version: ${packageJsonInfo.version}`,
+      );
     });
   });
 });

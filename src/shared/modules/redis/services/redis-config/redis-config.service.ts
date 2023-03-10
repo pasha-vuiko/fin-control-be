@@ -23,8 +23,9 @@ export class RedisConfigService implements CacheOptionsFactory, OnApplicationShu
     private redisStore: CacheStoreFactory,
   ) {}
 
-  onApplicationShutdown(signal?: string | undefined) {
+  onApplicationShutdown(): void {
     RedisConfigService.getIoRedisInstance().disconnect();
+    RedisConfigService.logger.log('Redis is disconnected');
   }
 
   public createCacheOptions(): CacheModuleOptions {
