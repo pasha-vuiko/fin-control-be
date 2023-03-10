@@ -17,10 +17,7 @@ Tech Stack:
 ### Pre-requirements
 * Install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 * Install [Node.js](https://nodejs.org/en/)
-
-## Running the app in DEV mode
-
-Download CockroachDB certificates:
+* Download CockroachDB certificates with running one of the commands:
 ```bash
 # MacOS:
 curl --create-dirs -o $HOME/.postgresql/root.crt -O https://cockroachlabs.cloud/clusters/84467408-2eeb-4e43-9305-d29a05cf78ec/cert
@@ -34,7 +31,9 @@ mkdir -p $env:appdata\postgresql\; Invoke-WebRequest -Uri https://cockroachlabs.
 curl --create-dirs -o $HOME/.postgresql/root.crt -O https://cockroachlabs.cloud/clusters/84467408-2eeb-4e43-9305-d29a05cf78ec/cert
 ```
 
-Run this commands:
+## Running the app in DEV mode
+
+Run this commands to prepare the project:
 
 ```bash
 # install npm dependencies
@@ -51,7 +50,7 @@ npm run prisma:generate
 docker compose up
 ```
 
-Then run 
+Then run (watch mode)
 
 ```bash
 # watch mode

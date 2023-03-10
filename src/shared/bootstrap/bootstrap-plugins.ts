@@ -9,13 +9,19 @@ import { AllExceptionsFilter } from '@shared/exception-filters/all-exceptions.fi
 import { packageJsonInfo } from '@shared/constants/package-json-info';
 
 export async function bootstrapPlugins(app: NestFastifyApplication): Promise<void> {
-  await app.register(authenticate);
-
-  app.useGlobalFilters(new AllExceptionsFilter());
-
+  await registerPlugins(app);
+  setupExceptionFilters(app);
   setupOpenApi(app);
   setupRequestsValidation(app);
   await setupShutdownHooks(app);
+}
+
+async function registerPlugins(app: NestFastifyApplication): Promise<void> {
+  await app.register(authenticate);
+}
+
+function setupExceptionFilters(app: NestFastifyApplication): void {
+  app.useGlobalFilters(new AllExceptionsFilter());
 }
 
 function setupRequestsValidation(app: NestFastifyApplication): void {
