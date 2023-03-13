@@ -1,6 +1,6 @@
 {
   "name": "fin-control-be",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "BE for self finances tracking application",
   "author": "",
   "private": true,
@@ -21,6 +21,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@fastify/cors": "^8.2.0",
     "@fastify/static": "^6.9.0",
     "@fastify/swagger": "^8.3.1",
     "@nestjs/common": "^9.0.0",
