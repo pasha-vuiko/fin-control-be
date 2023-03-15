@@ -11,7 +11,7 @@ import { NotRequired } from '@shared/decorators/validation/not-required.decorato
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCustomerDto
-  implements Omit<ICreateCustomerInput, 'id' | 'auth0Id' | 'email'>
+  implements Omit<ICreateCustomerInput, 'id' | 'userId' | 'email'>
 {
   @IsNotEmpty()
   @IsString()

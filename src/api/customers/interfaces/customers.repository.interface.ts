@@ -5,7 +5,9 @@ import { IUpdateCustomerInput } from '@api/customers/interfaces/update-customer-
 export interface ICustomersRepository {
   findMany(): Promise<ICustomer[]>;
 
-  findOne(id: string): Promise<ICustomer | null>;
+  findOneById(id: string): Promise<ICustomer | null>;
+
+  findOneByUserId(id: string): Promise<ICustomer | null>;
 
   create(data: ICreateCustomerInput): Promise<ICustomer>;
 

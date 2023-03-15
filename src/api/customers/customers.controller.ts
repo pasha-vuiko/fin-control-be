@@ -18,7 +18,7 @@ export class CustomersController {
 
   @Auth(Roles.ADMIN)
   @Get()
-  findAll(): Promise<CustomerEntity[]> {
+  findMany(): Promise<CustomerEntity[]> {
     return this.customerService.findMany();
   }
 
@@ -26,7 +26,7 @@ export class CustomersController {
   @Auth(Roles.ADMIN, Roles.CUSTOMER)
   @Get(':id')
   findOne(@Param('id') id: string, @User() user: IUser): Promise<CustomerEntity> {
-    return this.customerService.findOne(id, user);
+    return this.customerService.findOneById(id, user.id, user.roles);
   }
 
   @Auth(Roles.ADMIN)

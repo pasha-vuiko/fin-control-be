@@ -22,15 +22,29 @@ export class CustomersService {
     return this.customerRepository.findMany();
   }
 
-  async findOne(id: string, user: IUser): Promise<CustomerEntity> {
-    const foundCustomer = await this.customerRepository.findOne(id);
+  async findOneById(
+    id: string,
+    userId: string,
+    userRoles: Roles[],
+  ): Promise<CustomerEntity> {
+    const foundCustomer = await this.customerRepository.findOneById(id);
 
     if (!foundCustomer) {
       throw new NotFoundException('The customer was not found');
     }
 
-    if (user.roles.includes(Roles.CUSTOMER) && foundCustomer.auth0Id !== user.id) {
+    if (userRoles.includes(Roles.CUSTOMER) && foundCustomer.userId !== userId) {
       throw new ForbiddenException('Access denied');
+    }
+
+    return foundCustomer;
+  }
+
+  async findOneByUserId(userId: string): Promise<CustomerEntity> {
+    const foundCustomer = await this.customerRepository.findOneByUserId(userId);
+
+    if (!foundCustomer) {
+      throw new NotFoundException('The customer was not found');
     }
 
     return foundCustomer;
@@ -42,7 +56,7 @@ export class CustomersService {
     return this.customerRepository.create({
       ...createCustomerDto,
       birthdate: new Date(createCustomerDto.birthdate),
-      auth0Id: id,
+      userId: id,
       email,
     });
   }
@@ -52,13 +66,13 @@ export class CustomersService {
     updateCustomerDto: UpdateCustomerDto,
     user: IUser,
   ): Promise<CustomerEntity> {
-    const foundCustomer = await this.customerRepository.findOne(id);
+    const foundCustomer = await this.customerRepository.findOneById(id);
 
     if (!foundCustomer) {
       throw new NotFoundException('The customer not found');
     }
 
-    if (user.roles.includes(Roles.CUSTOMER) && foundCustomer.auth0Id !== user.id) {
+    if (user.roles.includes(Roles.CUSTOMER) && foundCustomer.userId !== user.id) {
       throw new ForbiddenException('Access denied');
     }
 

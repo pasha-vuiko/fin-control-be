@@ -5,7 +5,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class CustomerEntity implements ICustomer {
   id: string;
 
-  auth0Id: string;
+  userId: string;
 
   firstName: string;
 
