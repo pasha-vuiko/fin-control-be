@@ -81,13 +81,13 @@ export class JsonCacheInterceptor implements NestInterceptor {
     const httpAdapter = this.httpAdapterHost.httpAdapter;
     const isHttpApp = httpAdapter && !!httpAdapter.getRequestMethod;
     const cacheMetadata = this.reflector.get(CACHE_KEY_METADATA, context.getHandler());
-    const requesterClientRoles = this.reflector.get<Roles[]>(
+    const requesterClientRoles = this.reflector.get<Roles[] | undefined>(
       AUTH_ROLES_META,
       context.getHandler(),
     );
 
     // Avoiding of data leak in case if an endpoint can be used for both ADMIN and CUSTOMER roles
-    if (requesterClientRoles.includes(Roles.ADMIN)) {
+    if (requesterClientRoles?.includes(Roles.ADMIN)) {
       this.logger.debug(
         'generating empty cache key to avoid ADMIN appointed data leaks in case if an endpoint used for both ADMIN and CUSTOMER',
       );
