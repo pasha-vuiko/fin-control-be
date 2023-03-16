@@ -6,22 +6,32 @@ import { IUpdateExpenseInput } from '@api/expenses/interfaces/update-expense-inp
 import { IExpense } from '@api/expenses/interfaces/expense.interface';
 import { Expense, Prisma } from '../../../../prisma/client';
 import ExpenseCreateInput = Prisma.ExpenseCreateInput;
+import { IPagination } from '@shared/interfaces/pagination.interface';
+import { mergePaginationWithDefault } from '@shared/utils/merge-pagination-with-default';
 
 @Injectable()
 export class ExpensesRepository implements IExpensesRepository {
   constructor(private prismaService: PrismaService) {}
 
-  async findMany(): Promise<IExpense[]> {
-    const foundExpenses = await this.prismaService.expense.findMany();
+  async findMany(pagination?: IPagination): Promise<IExpense[]> {
+    const { skip, take } = mergePaginationWithDefault(pagination);
+    const foundExpenses = await this.prismaService.expense.findMany({ skip, take });
 
     return foundExpenses.map(expense => this.mapExpenseFromPrismaToExpense(expense));
   }
 
-  async findManyByCustomer(customerId: string): Promise<IExpense[]> {
+  async findManyByCustomer(
+    customerId: string,
+    pagination?: IPagination,
+  ): Promise<IExpense[]> {
+    const { skip, take } = mergePaginationWithDefault(pagination);
+
     const foundExpenses = await this.prismaService.expense.findMany({
       where: {
         customerId,
       },
+      skip,
+      take,
     });
 
     return foundExpenses.map(expense => this.mapExpenseFromPrismaToExpense(expense));

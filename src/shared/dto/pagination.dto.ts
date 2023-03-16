@@ -1,13 +1,14 @@
-import { IPrismaPagination } from '@shared/modules/prisma/interfaces/prisma-pagination.interface';
 import { NotRequired } from '@shared/decorators/validation/not-required.decorator';
-import { IsNumber } from 'class-validator';
+import { IsNumberString } from 'class-validator';
+import { IPagination } from '@shared/interfaces/pagination.interface';
+import { DEFAULT_PAGINATION } from '@shared/constants/pagination-defaults';
 
-export class PaginationDto implements IPrismaPagination {
-  @IsNumber()
+export class PaginationDto implements IPagination {
+  @IsNumberString()
   @NotRequired()
-  skip?: number;
+  skip?: number = DEFAULT_PAGINATION.skip;
 
-  @IsNumber()
+  @IsNumberString()
   @NotRequired()
-  take?: number;
+  take?: number = DEFAULT_PAGINATION.take;
 }

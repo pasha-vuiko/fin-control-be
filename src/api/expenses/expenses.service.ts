@@ -5,6 +5,7 @@ import { ExpensesRepository } from '@api/expenses/repositories/expenses.reposito
 import { IExpensesRepository } from '@api/expenses/interfaces/expenses-repository.interface';
 import { ExpenseEntity } from '@api/expenses/entities/expense.entity';
 import { CustomersService } from '@api/customers/customers.service';
+import { PaginationDto } from '@shared/dto/pagination.dto';
 
 @Injectable()
 export class ExpensesService {
@@ -13,14 +14,17 @@ export class ExpensesService {
     private customersService: CustomersService,
   ) {}
 
-  async findManyAsCustomer(userId: string): Promise<ExpenseEntity[]> {
+  async findManyAsCustomer(
+    userId: string,
+    pagination?: PaginationDto,
+  ): Promise<ExpenseEntity[]> {
     const { id } = await this.customersService.findOneByUserId(userId);
 
-    return this.expensesRepository.findManyByCustomer(id);
+    return this.expensesRepository.findManyByCustomer(id, pagination);
   }
 
-  async findManyAsAdmin(): Promise<ExpenseEntity[]> {
-    return this.expensesRepository.findMany();
+  async findManyAsAdmin(pagination?: PaginationDto): Promise<ExpenseEntity[]> {
+    return this.expensesRepository.findMany(pagination);
   }
 
   async findOneAsCustomer(id: string, userId: string): Promise<ExpenseEntity> {

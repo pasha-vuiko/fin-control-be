@@ -10,6 +10,7 @@ import { ICustomersRepository } from '@api/customers/interfaces/customers.reposi
 import { CustomersRepository } from '@api/customers/repositories/customers.repository';
 import { CustomerEntity } from '@api/customers/entities/customer.entity';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
+import { PaginationDto } from '@shared/dto/pagination.dto';
 
 @Injectable()
 export class CustomersService {
@@ -17,8 +18,8 @@ export class CustomersService {
     @Inject(CustomersRepository) private customerRepository: ICustomersRepository,
   ) {}
 
-  findMany(): Promise<CustomerEntity[]> {
-    return this.customerRepository.findMany();
+  findMany(pagination?: PaginationDto): Promise<CustomerEntity[]> {
+    return this.customerRepository.findMany(pagination);
   }
 
   async findOneByIdAsCustomer(id: string, userId: string): Promise<CustomerEntity> {

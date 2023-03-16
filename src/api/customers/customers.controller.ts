@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
@@ -9,6 +9,7 @@ import { IUser } from '@shared/modules/auth/interfaces/user.interface';
 import { CustomerEntity } from '@api/customers/entities/customer.entity';
 import { ApiTags } from '@nestjs/swagger';
 import { JsonCache } from '@shared/modules/redis/decorators/json-cache.decorator';
+import { FindCustomersDto } from '@api/customers/dto/find-customers.dto';
 
 // TODO Add method to change customers Email and Phone
 @ApiTags('Customers')
@@ -18,8 +19,8 @@ export class CustomersController {
 
   @Auth(Roles.ADMIN)
   @Get()
-  findMany(): Promise<CustomerEntity[]> {
-    return this.customerService.findMany();
+  findMany(@Query() findDto: FindCustomersDto): Promise<CustomerEntity[]> {
+    return this.customerService.findMany(findDto);
   }
 
   @JsonCache()
