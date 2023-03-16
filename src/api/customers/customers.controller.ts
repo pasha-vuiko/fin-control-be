@@ -16,24 +16,14 @@ import { JsonCache } from '@shared/modules/redis/decorators/json-cache.decorator
 export class CustomersController {
   constructor(private readonly customerService: CustomersService) {}
 
-  @Auth(Roles.ADMIN)
-  @Get()
-  findMany(): Promise<CustomerEntity[]> {
-    return this.customerService.findMany();
-  }
-
   @JsonCache()
-  @Auth(Roles.ADMIN, Roles.CUSTOMER)
+  @Auth(Roles.CUSTOMER)
   @Get(':id')
   findOne(@Param('id') id: string, @User() user: IUser): Promise<CustomerEntity> {
-    if (user.roles.includes(Roles.ADMIN)) {
-      return this.customerService.findOneByIdAsAdmin(id);
-    }
-
-    return this.customerService.findOneByIdAsCustomer(id, user.id);
+    return this.customerService.findOne(id, user.id);
   }
 
-  @Auth(Roles.ADMIN)
+  @Auth(Roles.CUSTOMER)
   @Post()
   create(
     @Body() createCustomerDto: CreateCustomerDto,
@@ -42,22 +32,19 @@ export class CustomersController {
     return this.customerService.create(createCustomerDto, user);
   }
 
-  @Auth(Roles.ADMIN, Roles.CUSTOMER)
+  @Auth(Roles.CUSTOMER)
   @Patch(':id')
   update(
     @Param('id') id: string,
     @User() user: IUser,
     @Body() updateCustomerDto: UpdateCustomerDto,
   ): Promise<CustomerEntity> {
-    if (user.roles.includes(Roles.ADMIN)) {
-      return this.customerService.updateAsAdmin(id, updateCustomerDto);
-    }
-    return this.customerService.updateAsCustomer(id, updateCustomerDto, user.id);
+    return this.customerService.update(id, updateCustomerDto, user.id);
   }
 
-  @Auth(Roles.ADMIN)
+  @Auth(Roles.CUSTOMER)
   @Delete(':id')
-  remove(@Param('id') id: string): Promise<CustomerEntity> {
-    return this.customerService.remove(id);
+  remove(@Param('id') id: string, @User() user: IUser): Promise<CustomerEntity> {
+    return this.customerService.remove(id, user.id);
   }
 }

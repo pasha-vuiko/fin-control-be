@@ -8,11 +8,13 @@ import { config } from './app.config';
 import { LogLevel } from '@shared/modules/logger/types';
 import { CustomersModule } from '@api/customers/customers.module';
 import { ExpensesModule } from '@api/expenses/expenses.module';
+import { AdminModule } from '@api/admin/admin.module';
 
 @Module({
   imports: [
     // api
     // TODO Add pagination for all APIs
+    AdminModule,
     CustomersModule,
     ExpensesModule,
     //shared

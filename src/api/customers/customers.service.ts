@@ -1,4 +1,9 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { ICustomersRepository } from '@api/customers/interfaces/customers.repository.interface';
@@ -16,20 +21,10 @@ export class CustomersService {
     return this.customerRepository.findMany();
   }
 
-  async findOneByIdAsCustomer(id: string, userId: string): Promise<CustomerEntity> {
+  async findOne(id: string, userId: string): Promise<CustomerEntity> {
     const foundCustomer = await this.customerRepository.findOneById(id);
 
     if (!foundCustomer || foundCustomer.userId !== userId) {
-      throw new NotFoundException('The customer was not found');
-    }
-
-    return foundCustomer;
-  }
-
-  async findOneByIdAsAdmin(id: string): Promise<CustomerEntity> {
-    const foundCustomer = await this.customerRepository.findOneById(id);
-
-    if (!foundCustomer) {
       throw new NotFoundException('The customer was not found');
     }
 
@@ -57,7 +52,7 @@ export class CustomersService {
     });
   }
 
-  async updateAsCustomer(
+  async update(
     id: string,
     updateCustomerDto: UpdateCustomerDto,
     userId: string,
@@ -71,20 +66,17 @@ export class CustomersService {
     return this.customerRepository.update(id, updateCustomerDto);
   }
 
-  async updateAsAdmin(
-    id: string,
-    updateCustomerDto: UpdateCustomerDto,
-  ): Promise<CustomerEntity> {
+  async remove(id: string, userId: string): Promise<CustomerEntity> {
     const foundCustomer = await this.customerRepository.findOneById(id);
 
     if (!foundCustomer) {
       throw new NotFoundException('The customer not found');
     }
 
-    return this.customerRepository.update(id, updateCustomerDto);
-  }
+    if (foundCustomer.userId !== userId) {
+      throw new ForbiddenException('The customer not found');
+    }
 
-  remove(id: string): Promise<CustomerEntity> {
     return this.customerRepository.remove(id);
   }
 }
