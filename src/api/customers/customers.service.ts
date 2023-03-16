@@ -1,4 +1,9 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { ICustomersRepository } from '@api/customers/interfaces/customers.repository.interface';
@@ -84,7 +89,21 @@ export class CustomersService {
     return this.customerRepository.update(id, updateCustomerDto);
   }
 
-  remove(id: string): Promise<CustomerEntity> {
+  async removeAsCustomer(id: string, userId: string): Promise<CustomerEntity> {
+    const foundCustomer = await this.customerRepository.findOneById(id);
+
+    if (!foundCustomer) {
+      throw new NotFoundException('The customer not found');
+    }
+
+    if (foundCustomer.userId !== userId) {
+      throw new ForbiddenException('You are not allowed to delete this customer');
+    }
+
+    return this.customerRepository.remove(id);
+  }
+
+  removeAsAdmin(id: string): Promise<CustomerEntity> {
     return this.customerRepository.remove(id);
   }
 }

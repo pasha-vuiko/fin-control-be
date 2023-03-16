@@ -58,7 +58,7 @@ export class ExpensesService {
     });
   }
 
-  async updateAsCustomer(
+  async update(
     id: string,
     updateExpenseDto: UpdateExpenseDto,
     userId: string,
@@ -80,18 +80,7 @@ export class ExpensesService {
     });
   }
 
-  async updateAsAdmin(
-    id: string,
-    updateExpenseDto: UpdateExpenseDto,
-    customerId: string,
-  ): Promise<ExpenseEntity> {
-    return this.expensesRepository.update(id, {
-      ...updateExpenseDto,
-      customerId,
-    });
-  }
-
-  async deleteAsCustomer(id: string, userId: string): Promise<ExpenseEntity> {
+  async delete(id: string, userId: string): Promise<ExpenseEntity> {
     const [customer, expense] = await Promise.all([
       this.customersService.findOneByUserId(userId),
       this.findOneAsCustomer(id, userId),
@@ -103,10 +92,6 @@ export class ExpensesService {
       throw new NotFoundException(`expense with ${id} is not found`);
     }
 
-    return this.expensesRepository.delete(id);
-  }
-
-  async deleteAsAdmin(id: string): Promise<ExpenseEntity> {
     return this.expensesRepository.delete(id);
   }
 }
