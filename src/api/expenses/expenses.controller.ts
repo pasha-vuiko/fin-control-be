@@ -34,7 +34,7 @@ export class ExpensesController {
     return this.expensesService.findOneAsCustomer(id, user.id);
   }
 
-  @Auth(Roles.CUSTOMER, Roles.ADMIN)
+  @Auth(Roles.CUSTOMER)
   @Post()
   create(
     @Body() createExpenseDto: CreateExpenseDto,
@@ -43,27 +43,19 @@ export class ExpensesController {
     return this.expensesService.create(createExpenseDto, user.id);
   }
 
-  @Auth(Roles.CUSTOMER, Roles.ADMIN)
+  @Auth(Roles.CUSTOMER)
   @Patch(':id')
   update(
     @Param('id') id: string,
     @Body() updateExpenseDto: UpdateExpenseDto,
     @User() user: IUser,
   ): Promise<ExpenseEntity> {
-    if (user.roles.includes(Roles.ADMIN)) {
-      return this.expensesService.updateAsAdmin(id, updateExpenseDto, 'mockCustomerId');
-    }
-
-    return this.expensesService.updateAsCustomer(id, updateExpenseDto, user.id);
+    return this.expensesService.update(id, updateExpenseDto, user.id);
   }
 
-  @Auth(Roles.CUSTOMER, Roles.ADMIN)
+  @Auth(Roles.CUSTOMER)
   @Delete(':id')
   remove(@Param('id') id: string, @User() user: IUser): Promise<ExpenseEntity> {
-    if (user.roles.includes(Roles.ADMIN)) {
-      return this.expensesService.deleteAsAdmin(id);
-    }
-
-    return this.expensesService.deleteAsCustomer(id, user.id);
+    return this.expensesService.delete(id, user.id);
   }
 }

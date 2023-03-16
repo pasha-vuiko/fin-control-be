@@ -33,7 +33,7 @@ export class CustomersController {
     return this.customerService.findOneByIdAsCustomer(id, user.id);
   }
 
-  @Auth(Roles.ADMIN)
+  @Auth(Roles.CUSTOMER)
   @Post()
   create(
     @Body() createCustomerDto: CreateCustomerDto,
@@ -55,9 +55,13 @@ export class CustomersController {
     return this.customerService.updateAsCustomer(id, updateCustomerDto, user.id);
   }
 
-  @Auth(Roles.ADMIN)
+  @Auth(Roles.CUSTOMER, Roles.ADMIN)
   @Delete(':id')
-  remove(@Param('id') id: string): Promise<CustomerEntity> {
-    return this.customerService.remove(id);
+  remove(@Param('id') id: string, @User() user: IUser): Promise<CustomerEntity> {
+    if (user.roles.includes(Roles.ADMIN)) {
+      return this.customerService.removeAsAdmin(id);
+    }
+
+    return this.customerService.removeAsCustomer(id, user.id);
   }
 }
