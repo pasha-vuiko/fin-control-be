@@ -12,7 +12,6 @@ import { ExpensesModule } from '@api/expenses/expenses.module';
 @Module({
   imports: [
     // api
-    // TODO Add pagination for all APIs
     CustomersModule,
     ExpensesModule,
     //shared

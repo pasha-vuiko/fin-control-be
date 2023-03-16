@@ -8,13 +8,17 @@ import { Customer, Prisma } from '../../../../prisma/client';
 import CustomerCreateInput = Prisma.CustomerCreateInput;
 import { omitObj } from '@shared/utils/omit-obj.util';
 import CustomerUpdateInput = Prisma.CustomerUpdateInput;
+import { IPagination } from '@shared/interfaces/pagination.interface';
+import { mergePaginationWithDefault } from '@shared/utils/merge-pagination-with-default';
 
 @Injectable()
 export class CustomersRepository implements ICustomersRepository {
   constructor(private prismaService: PrismaService) {}
 
-  async findMany(): Promise<ICustomer[]> {
-    const foundCustomers = await this.prismaService.customer.findMany();
+  async findMany(pagination?: IPagination): Promise<ICustomer[]> {
+    const { skip, take } = mergePaginationWithDefault(pagination);
+
+    const foundCustomers = await this.prismaService.customer.findMany({ skip, take });
 
     return foundCustomers.map(foundCustomer =>
       this.mapCustomerFromPrismaToCustomer(foundCustomer),
