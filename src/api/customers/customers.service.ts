@@ -1,16 +1,10 @@
-import {
-  ForbiddenException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { ICustomersRepository } from '@api/customers/interfaces/customers.repository.interface';
 import { CustomersRepository } from '@api/customers/repositories/customers.repository';
 import { CustomerEntity } from '@api/customers/entities/customer.entity';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
-import { Roles } from '@shared/modules/auth/enums/roles';
 
 @Injectable()
 export class CustomersService {
@@ -22,19 +16,21 @@ export class CustomersService {
     return this.customerRepository.findMany();
   }
 
-  async findOneById(
-    id: string,
-    userId: string,
-    userRoles: Roles[],
-  ): Promise<CustomerEntity> {
+  async findOneByIdAsCustomer(id: string, userId: string): Promise<CustomerEntity> {
+    const foundCustomer = await this.customerRepository.findOneById(id);
+
+    if (!foundCustomer || foundCustomer.userId !== userId) {
+      throw new NotFoundException('The customer was not found');
+    }
+
+    return foundCustomer;
+  }
+
+  async findOneByIdAsAdmin(id: string): Promise<CustomerEntity> {
     const foundCustomer = await this.customerRepository.findOneById(id);
 
     if (!foundCustomer) {
       throw new NotFoundException('The customer was not found');
-    }
-
-    if (userRoles.includes(Roles.CUSTOMER) && foundCustomer.userId !== userId) {
-      throw new ForbiddenException('Access denied');
     }
 
     return foundCustomer;
@@ -61,19 +57,28 @@ export class CustomersService {
     });
   }
 
-  async update(
+  async updateAsCustomer(
     id: string,
     updateCustomerDto: UpdateCustomerDto,
-    user: IUser,
+    userId: string,
+  ): Promise<CustomerEntity> {
+    const foundCustomer = await this.customerRepository.findOneById(id);
+
+    if (!foundCustomer || foundCustomer.userId !== userId) {
+      throw new NotFoundException('The customer not found');
+    }
+
+    return this.customerRepository.update(id, updateCustomerDto);
+  }
+
+  async updateAsAdmin(
+    id: string,
+    updateCustomerDto: UpdateCustomerDto,
   ): Promise<CustomerEntity> {
     const foundCustomer = await this.customerRepository.findOneById(id);
 
     if (!foundCustomer) {
       throw new NotFoundException('The customer not found');
-    }
-
-    if (user.roles.includes(Roles.CUSTOMER) && foundCustomer.userId !== user.id) {
-      throw new ForbiddenException('Access denied');
     }
 
     return this.customerRepository.update(id, updateCustomerDto);

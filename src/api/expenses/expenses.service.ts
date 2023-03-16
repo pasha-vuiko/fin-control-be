@@ -5,8 +5,6 @@ import { ExpensesRepository } from '@api/expenses/repositories/expenses.reposito
 import { IExpensesRepository } from '@api/expenses/interfaces/expenses-repository.interface';
 import { ExpenseEntity } from '@api/expenses/entities/expense.entity';
 import { CustomersService } from '@api/customers/customers.service';
-import { Roles } from '@shared/modules/auth/enums/roles';
-import { IUser } from '@shared/modules/auth/interfaces/user.interface';
 
 @Injectable()
 export class ExpensesService {
@@ -15,32 +13,33 @@ export class ExpensesService {
     private customersService: CustomersService,
   ) {}
 
-  async findMany(userId: string, userRoles: Roles[]): Promise<ExpenseEntity[]> {
+  async findManyAsCustomer(userId: string): Promise<ExpenseEntity[]> {
     const { id } = await this.customersService.findOneByUserId(userId);
-
-    // TODO Move to AdminModule
-    if (userRoles.includes(Roles.ADMIN)) {
-      return this.expensesRepository.findMany();
-    }
 
     return this.expensesRepository.findManyByCustomer(id);
   }
 
-  async findOne(id: string, userId: string, userRoles: Roles[]): Promise<ExpenseEntity> {
+  async findManyAsAdmin(): Promise<ExpenseEntity[]> {
+    return this.expensesRepository.findMany();
+  }
+
+  async findOneAsCustomer(id: string, userId: string): Promise<ExpenseEntity> {
     const [foundExpense, customer] = await Promise.all([
       this.expensesRepository.findOne(id),
       this.customersService.findOneByUserId(userId),
     ]);
 
-    if (!foundExpense) {
+    if (!foundExpense || foundExpense.customerId === customer.id) {
       throw new NotFoundException(`expense with ${id} is not found`);
     }
 
-    // TODO Move to AdminModule
-    const expenseDoesBelongsToCustomer = foundExpense.customerId === customer.id;
-    const isAdmin = userRoles.includes(Roles.ADMIN);
+    return foundExpense;
+  }
 
-    if (!isAdmin || !expenseDoesBelongsToCustomer) {
+  async findOneAsAdmin(id: string): Promise<ExpenseEntity> {
+    const foundExpense = await this.expensesRepository.findOne(id);
+
+    if (!foundExpense) {
       throw new NotFoundException(`expense with ${id} is not found`);
     }
 
@@ -59,21 +58,19 @@ export class ExpensesService {
     });
   }
 
-  async update(
+  async updateAsCustomer(
     id: string,
     updateExpenseDto: UpdateExpenseDto,
-    user: IUser,
+    userId: string,
   ): Promise<ExpenseEntity> {
     const [customer, expense] = await Promise.all([
-      this.customersService.findOneByUserId(user.id),
-      this.findOne(id, user.id, user.roles),
+      this.customersService.findOneByUserId(userId),
+      this.findOneAsCustomer(id, userId),
     ]);
 
-    // TODO Move to AdminModule
-    const isAdmin = user.roles.includes(Roles.ADMIN);
     const expenseDoesBelongsToCustomer = expense.customerId === customer.id;
 
-    if (!isAdmin || !expenseDoesBelongsToCustomer) {
+    if (!expenseDoesBelongsToCustomer) {
       throw new NotFoundException(`expense with ${id} is not found`);
     }
 
@@ -83,20 +80,33 @@ export class ExpensesService {
     });
   }
 
-  async delete(id: string, userId: string, userRoles: Roles[]): Promise<ExpenseEntity> {
+  async updateAsAdmin(
+    id: string,
+    updateExpenseDto: UpdateExpenseDto,
+    customerId: string,
+  ): Promise<ExpenseEntity> {
+    return this.expensesRepository.update(id, {
+      ...updateExpenseDto,
+      customerId,
+    });
+  }
+
+  async deleteAsCustomer(id: string, userId: string): Promise<ExpenseEntity> {
     const [customer, expense] = await Promise.all([
       this.customersService.findOneByUserId(userId),
-      this.findOne(id, userId, userRoles),
+      this.findOneAsCustomer(id, userId),
     ]);
 
-    // TODO Move to AdminModule
-    const isAdmin = userRoles.includes(Roles.ADMIN);
     const expenseDoesBelongsToCustomer = expense.customerId === customer.id;
 
-    if (!isAdmin || !expenseDoesBelongsToCustomer) {
+    if (!expenseDoesBelongsToCustomer) {
       throw new NotFoundException(`expense with ${id} is not found`);
     }
 
+    return this.expensesRepository.delete(id);
+  }
+
+  async deleteAsAdmin(id: string): Promise<ExpenseEntity> {
     return this.expensesRepository.delete(id);
   }
 }
