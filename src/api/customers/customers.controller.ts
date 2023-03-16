@@ -26,7 +26,11 @@ export class CustomersController {
   @Auth(Roles.ADMIN, Roles.CUSTOMER)
   @Get(':id')
   findOne(@Param('id') id: string, @User() user: IUser): Promise<CustomerEntity> {
-    return this.customerService.findOneById(id, user.id, user.roles);
+    if (user.roles.includes(Roles.ADMIN)) {
+      return this.customerService.findOneByIdAsAdmin(id);
+    }
+
+    return this.customerService.findOneByIdAsCustomer(id, user.id);
   }
 
   @Auth(Roles.ADMIN)
@@ -45,7 +49,10 @@ export class CustomersController {
     @User() user: IUser,
     @Body() updateCustomerDto: UpdateCustomerDto,
   ): Promise<CustomerEntity> {
-    return this.customerService.update(id, updateCustomerDto, user);
+    if (user.roles.includes(Roles.ADMIN)) {
+      return this.customerService.updateAsAdmin(id, updateCustomerDto);
+    }
+    return this.customerService.updateAsCustomer(id, updateCustomerDto, user.id);
   }
 
   @Auth(Roles.ADMIN)

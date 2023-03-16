@@ -8,6 +8,6 @@ import { CustomersRepository } from '@api/customers/repositories/customers.repos
   imports: [PrismaModule],
   controllers: [CustomersController],
   providers: [CustomersService, CustomersRepository],
-  exports: [CustomersService],
+  exports: [CustomersService, CustomersRepository],
 })
 export class CustomersModule {}
