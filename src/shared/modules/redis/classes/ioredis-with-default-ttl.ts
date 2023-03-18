@@ -3,9 +3,9 @@ import IoRedis, { Callback, RedisKey, RedisOptions } from 'ioredis';
 export class IoredisWithDefaultTtl extends IoRedis {
   private readonly defaultTTL: number | undefined;
 
-  constructor(config: RedisOptions & { ttl?: number }) {
+  constructor(config: RedisOptions & { defaultTTL?: number }) {
     super(config);
-    this.defaultTTL = config.ttl;
+    this.defaultTTL = config.defaultTTL;
   }
 
   //@ts-expect-error types are incompatible
@@ -26,7 +26,12 @@ export class IoredisWithDefaultTtl extends IoRedis {
 
     if (this.defaultTTL) {
       const SECONDS_TOKEN = 'EX';
-      return super.set(key, value, SECONDS_TOKEN, this.defaultTTL, callback);
+
+      if (callback) {
+        return super.set(key, value, SECONDS_TOKEN, this.defaultTTL, callback);
+      }
+
+      return super.set(key, value, SECONDS_TOKEN, this.defaultTTL);
     }
 
     return super.set(key, value);

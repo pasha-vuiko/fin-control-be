@@ -1,4 +1,5 @@
 import { generateRequestId } from '@shared/utils/generate-request-id.util';
+import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
 
 const appMode = process.env.NODE_ENV || 'production';
 
@@ -17,11 +18,12 @@ export const config = {
   cache: {
     redis: {
       host: process.env.REDIS_CONFIG_HOST,
-      port: process.env.REDIS_CONFIG_PORT,
+      port: Number(process.env.REDIS_CONFIG_PORT),
       name: process.env.REDIS_CONFIG_NAME,
-      sentinels: process.env.REDIS_CONFIG_SENTINELS, //redis-sentinel-0:26379,redis-sentinel-1:26379,redis-sentinel-2:26379
-      defaultTTL: process.env.REDIS_TTL, // seconds
-    },
+      sentinels: mapRedisSentinels(process.env.REDIS_CONFIG_SENTINELS),
+      defaultTTL: Number(process.env.REDIS_TTL), // seconds
+      enableAutoPipelining: true,
+    } satisfies IRedisModuleOptions,
   },
   auth: {
     auth0Domain: process.env.AUTH_AUTH0_DOMAIN,
@@ -29,3 +31,20 @@ export const config = {
     auth0ClientSecret: process.env.AUTH_CLIENT_SECRET,
   },
 };
+
+function mapRedisSentinels(
+  stringRedisSentinels: string | undefined,
+): Array<{ host: string; port: number }> | undefined {
+  if (!stringRedisSentinels) {
+    return undefined;
+  }
+
+  return stringRedisSentinels.split(',').map((hostPort: string) => {
+    const [sentinelHost, sentinelPort] = hostPort.split(':');
+
+    return {
+      host: sentinelHost,
+      port: Number(sentinelPort),
+    };
+  });
+}
