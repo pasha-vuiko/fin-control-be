@@ -16,10 +16,10 @@ import {
 import { isFunction, isNil } from '@nestjs/common/utils/shared.utils';
 import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
-import { AUTH_ROLES_META } from '@shared/modules/auth/decorators/auth.decorator';
 import { Reflector } from '@nestjs/core';
 import { Roles } from '@shared/modules/auth/enums/roles';
 import { AppLogger } from '@shared/modules/logger/app-logger';
+import { IUser } from '@shared/modules/auth/interfaces/user.interface';
 
 const HTTP_ADAPTER_HOST = 'HttpAdapterHost';
 const REFLECTOR = 'Reflector';
@@ -81,13 +81,10 @@ export class JsonCacheInterceptor implements NestInterceptor {
     const httpAdapter = this.httpAdapterHost.httpAdapter;
     const isHttpApp = httpAdapter && !!httpAdapter.getRequestMethod;
     const cacheMetadata = this.reflector.get(CACHE_KEY_METADATA, context.getHandler());
-    const requesterClientRoles = this.reflector.get<Roles[] | undefined>(
-      AUTH_ROLES_META,
-      context.getHandler(),
-    );
+    const user: IUser = context.switchToHttp().getRequest().user;
 
     // Avoiding of data leak in case if an endpoint can be used for both ADMIN and CUSTOMER roles
-    if (requesterClientRoles?.includes(Roles.ADMIN)) {
+    if (user?.roles?.includes(Roles.ADMIN)) {
       this.logger.debug(
         'generating empty cache key to avoid ADMIN appointed data leaks in case if an endpoint used for both ADMIN and CUSTOMER',
       );
