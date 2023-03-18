@@ -1,4 +1,3 @@
-import { RedisOptions } from 'ioredis';
 import {
   CacheModuleOptions,
   CacheOptionsFactory,
@@ -10,18 +9,24 @@ import {
 import { CacheStoreFactory } from '@nestjs/common/cache/interfaces/cache-manager.interface';
 
 import { REDIS_STORE } from '@shared/modules/redis/providers/redis-store.provider';
-import { config } from '../../../../../app.config';
 import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
+import { REDIS_MODULE_OPTIONS } from '@shared/modules/redis/providers/redis-module-options.provider';
+import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
 
 @Injectable()
 export class RedisConfigService implements CacheOptionsFactory, OnApplicationShutdown {
+  private static moduleOptions: IRedisModuleOptions;
   private static ioRedisInstance: IoredisWithDefaultTtl;
   private static logger = new Logger('RedisConfigService');
 
   constructor(
     @Inject(REDIS_STORE)
     private redisStore: CacheStoreFactory,
-  ) {}
+    @Inject(REDIS_MODULE_OPTIONS)
+    private moduleOptions: IRedisModuleOptions,
+  ) {
+    RedisConfigService.moduleOptions = moduleOptions;
+  }
 
   onApplicationShutdown(): void {
     RedisConfigService.getIoRedisInstance().disconnect();
@@ -40,43 +45,11 @@ export class RedisConfigService implements CacheOptionsFactory, OnApplicationShu
       return RedisConfigService.ioRedisInstance;
     }
 
-    const redisConfig = this.getRedisConfig();
-    RedisConfigService.ioRedisInstance = new IoredisWithDefaultTtl(redisConfig);
+    RedisConfigService.ioRedisInstance = new IoredisWithDefaultTtl(this.moduleOptions);
 
     this.listenToRedisError(RedisConfigService.ioRedisInstance);
 
     return RedisConfigService.ioRedisInstance;
-  }
-
-  private static getRedisConfig(): RedisOptions & { ttl?: number } {
-    const { sentinels, name, host, port, defaultTTL } = { ...config.cache.redis };
-    const baseConfig = {
-      enableAutoPipelining: true,
-      ttl: Number(defaultTTL),
-    };
-
-    if (sentinels && name) {
-      const formattedSentinels = sentinels.split(',').map((hostPort: string) => {
-        const [sentinelHost, sentinelPort] = hostPort.split(':');
-
-        return {
-          host: sentinelHost,
-          port: Number(sentinelPort),
-        };
-      });
-
-      return {
-        ...baseConfig,
-        name,
-        sentinels: formattedSentinels,
-      };
-    }
-
-    return {
-      ...baseConfig,
-      host,
-      port: Number(port),
-    };
   }
 
   private static listenToRedisError(redisClient: IoredisWithDefaultTtl): void {

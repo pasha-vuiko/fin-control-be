@@ -2,15 +2,18 @@ import { FastifyInstance } from 'fastify';
 import auth0Verify from 'fastify-auth0-verify';
 import fastifyPlugin from 'fastify-plugin';
 
-import { config } from '../../app.config';
-
-async function authenticate(fastify: FastifyInstance): Promise<void> {
-  await fastify.register(auth0Verify, {
-    domain: config.auth.auth0Domain,
-    secret: config.auth.auth0ClientSecret,
-  });
+async function authenticate(
+  fastify: FastifyInstance,
+  options: IAuth0PluginOpts,
+): Promise<void> {
+  await fastify.register(auth0Verify, options);
 
   fastify.decorateRequest('authenticate', fastify.authenticate);
 }
 
 export default fastifyPlugin(authenticate);
+
+export interface IAuth0PluginOpts {
+  domain: string;
+  secret: string;
+}

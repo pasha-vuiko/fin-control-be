@@ -16,7 +16,7 @@ import { ExpensesModule } from '@api/expenses/expenses.module';
     ExpensesModule,
     //shared
     AuthModule,
-    RedisModule,
+    RedisModule.forRoot(config.cache.redis),
     AppLoggerModule.forRoot(config.app.logger.level as LogLevel),
   ],
   controllers: [AppController],

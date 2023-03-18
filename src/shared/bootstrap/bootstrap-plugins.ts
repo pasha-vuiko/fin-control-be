@@ -21,7 +21,12 @@ export async function bootstrapPlugins(app: NestFastifyApplication): Promise<voi
 }
 
 async function registerPlugins(app: NestFastifyApplication): Promise<void> {
-  await app.register(authenticate);
+  const { auth0Domain, auth0ClientSecret } = config.auth;
+
+  await app.register(authenticate, {
+    domain: auth0Domain as string,
+    secret: auth0ClientSecret as string,
+  });
 }
 
 function setupExceptionFilters(app: NestFastifyApplication): void {
