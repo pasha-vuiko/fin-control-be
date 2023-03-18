@@ -2,7 +2,6 @@ import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from '@nestjs/swagger';
 
-import cors from '@fastify/cors';
 import authenticate from '../fastify-plugins/authenticate.plugin';
 import { PrismaService } from '@shared/modules/prisma/prisma.service';
 import { config } from '../../app.config';
@@ -10,6 +9,10 @@ import { AllExceptionsFilter } from '@shared/exception-filters/all-exceptions.fi
 import { packageJsonInfo } from '@shared/constants/package-json-info';
 
 export async function bootstrapPlugins(app: NestFastifyApplication): Promise<void> {
+  if (config.app.isDevelopment) {
+    app.enableCors();
+  }
+
   await registerPlugins(app);
   setupExceptionFilters(app);
   setupOpenApi(app);
@@ -18,9 +21,6 @@ export async function bootstrapPlugins(app: NestFastifyApplication): Promise<voi
 }
 
 async function registerPlugins(app: NestFastifyApplication): Promise<void> {
-  if (config.app.isDevelopment) {
-    await app.register(cors);
-  }
   await app.register(authenticate);
 }
 
