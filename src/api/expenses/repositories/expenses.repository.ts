@@ -8,6 +8,7 @@ import { Expense, Prisma } from '../../../../prisma/client';
 import ExpenseCreateInput = Prisma.ExpenseCreateInput;
 import { IPagination } from '@shared/interfaces/pagination.interface';
 import { mergePaginationWithDefault } from '@shared/utils/merge-pagination-with-default';
+import { omitObj } from '@shared/utils/omit-obj.util';
 
 @Injectable()
 export class ExpensesRepository implements IExpensesRepository {
@@ -48,8 +49,9 @@ export class ExpensesRepository implements IExpensesRepository {
   }
 
   async create(data: ICreateExpenseInput): Promise<IExpense> {
+    const dataWithoutCustomerId = omitObj(data, 'customerId');
     const prismaCreateExpenseInput: ExpenseCreateInput = {
-      ...data,
+      ...dataWithoutCustomerId,
       customer: {
         connect: { id: data.customerId },
       },
@@ -63,8 +65,9 @@ export class ExpensesRepository implements IExpensesRepository {
   }
 
   async update(id: string, data: IUpdateExpenseInput): Promise<IExpense> {
+    const dataWithoutCustomerId = omitObj(data, 'customerId');
     const updatedExpense = await this.prismaService.expense.update({
-      data,
+      data: dataWithoutCustomerId,
       where: { id },
     });
 
