@@ -3,13 +3,12 @@ import { ICreateCustomerInput } from '@api/customers/interfaces/create-customer-
 import { IUpdateCustomerInput } from '@api/customers/interfaces/update-customer-input.interface';
 import { ICustomer } from '@api/customers/interfaces/customer.interface';
 import { PrismaService } from '@shared/modules/prisma/prisma.service';
-import { Injectable } from '@nestjs/common';
-import { Customer, Prisma } from '../../../../prisma/client';
-import CustomerCreateInput = Prisma.CustomerCreateInput;
-import { omitObj } from '@shared/utils/omit-obj.util';
-import CustomerUpdateInput = Prisma.CustomerUpdateInput;
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { Customer } from '../../../../prisma/client';
 import { IPagination } from '@shared/interfaces/pagination.interface';
 import { mergePaginationWithDefault } from '@shared/utils/merge-pagination-with-default';
+import type { PrismaClientKnownRequestError } from '../../../../prisma/client/runtime';
+import { PrismaError } from 'prisma-error-enum';
 
 @Injectable()
 export class CustomersRepository implements ICustomersRepository {
@@ -37,7 +36,7 @@ export class CustomersRepository implements ICustomersRepository {
 
   async findOneByUserId(userId: string): Promise<ICustomer | null> {
     const foundCustomer = await this.prismaService.customer.findUnique({
-      where: { auth0Id: userId },
+      where: { userId },
     });
 
     if (!foundCustomer) {
@@ -48,28 +47,25 @@ export class CustomersRepository implements ICustomersRepository {
   }
 
   async create(data: ICreateCustomerInput): Promise<ICustomer> {
-    const createDataWithoutUserId = omitObj(data, 'userId');
-    const createCustomerInput: CustomerCreateInput = {
-      ...createDataWithoutUserId,
-      auth0Id: data.userId,
-    };
+    try {
+      const createdCustomer = await this.prismaService.customer.create({ data });
 
-    const createdCustomer = await this.prismaService.customer.create({
-      data: createCustomerInput,
-    });
+      return this.mapCustomerFromPrismaToCustomer(createdCustomer);
+    } catch (e: PrismaClientKnownRequestError | any) {
+      if (e.code === PrismaError.UniqueConstraintViolation) {
+        const uniqueConstraintFieldName = e?.meta?.target?.at(0);
+        throw new BadRequestException(
+          `Customer with this ${uniqueConstraintFieldName} already exists`,
+        );
+      }
 
-    return this.mapCustomerFromPrismaToCustomer(createdCustomer);
+      throw e;
+    }
   }
 
   async update(id: string, data: IUpdateCustomerInput): Promise<ICustomer> {
-    const updateDataWithoutUserId = omitObj(data, 'userId');
-    const updateCustomerInput: CustomerUpdateInput = {
-      ...updateDataWithoutUserId,
-      auth0Id: data.userId,
-    };
-
     const updatedCustomer = await this.prismaService.customer.update({
-      data: updateCustomerInput,
+      data: data,
       where: { id },
     });
 
@@ -85,7 +81,7 @@ export class CustomersRepository implements ICustomersRepository {
   private mapCustomerFromPrismaToCustomer(customer: Customer): ICustomer {
     return {
       id: customer.id,
-      userId: customer.auth0Id,
+      userId: customer.userId,
       firstName: customer.firstName,
       lastName: customer.lastName,
       birthdate: customer.birthdate,
