@@ -59,7 +59,7 @@ export class ExpensesRepository implements IExpensesRepository {
     const foundCreatedExpenses = await this.prismaService.expense.findMany({
       where: { customerId },
       orderBy: {
-        updatedAt: SortOrder.desc,
+        createdAt: SortOrder.desc,
       },
       take: count,
     });
