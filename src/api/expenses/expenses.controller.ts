@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ExpensesService } from './expenses.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
@@ -49,6 +59,10 @@ export class ExpensesController {
     createExpenseDTOs: CreateExpenseDto[],
     @User() user: IUser,
   ): Promise<ExpenseEntity[]> {
+    if (!Array.isArray(createExpenseDTOs)) {
+      throw new BadRequestException('body should be an array');
+    }
+
     return this.expensesService.createMany(createExpenseDTOs, user.id);
   }
 
