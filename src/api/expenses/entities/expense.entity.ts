@@ -13,4 +13,8 @@ export class ExpenseEntity implements IExpense {
 
   @ApiProperty({ enum: Object.keys(ExpenseType) })
   type: ExpenseType;
+
+  createdAt: Date;
+
+  updatedAt: Date;
 }

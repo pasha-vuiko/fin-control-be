@@ -10,7 +10,10 @@ export interface IExpensesRepository {
 
   findOne(id: string): Promise<IExpense | null>;
 
-  create(data: ICreateExpenseInput): Promise<IExpense>;
+  createMany(
+    createExpenseInputs: ICreateExpenseInput[],
+    customerId: string,
+  ): Promise<IExpense[]>;
 
   update(id: string, data: IUpdateExpenseInput): Promise<IExpense>;
 

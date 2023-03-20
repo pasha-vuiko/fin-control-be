@@ -5,10 +5,10 @@ import { ICreateExpenseInput } from '@api/expenses/interfaces/create-expense-inp
 import { IUpdateExpenseInput } from '@api/expenses/interfaces/update-expense-input.interface';
 import { IExpense } from '@api/expenses/interfaces/expense.interface';
 import { Expense, Prisma } from '../../../../prisma/client';
-import ExpenseCreateInput = Prisma.ExpenseCreateInput;
 import { IPagination } from '@shared/interfaces/pagination.interface';
 import { mergePaginationWithDefault } from '@shared/utils/merge-pagination-with-default';
 import { omitObj } from '@shared/utils/omit-obj.util';
+import SortOrder = Prisma.SortOrder;
 
 @Injectable()
 export class ExpensesRepository implements IExpensesRepository {
@@ -48,20 +48,25 @@ export class ExpensesRepository implements IExpensesRepository {
     return this.mapExpenseFromPrismaToExpense(foundExpense);
   }
 
-  async create(data: ICreateExpenseInput): Promise<IExpense> {
-    const dataWithoutCustomerId = omitObj(data, 'customerId');
-    const prismaCreateExpenseInput: ExpenseCreateInput = {
-      ...dataWithoutCustomerId,
-      customer: {
-        connect: { id: data.customerId },
-      },
-    };
-
-    const createdExpense = await this.prismaService.expense.create({
-      data: prismaCreateExpenseInput,
+  async createMany(
+    createExpenseInputs: ICreateExpenseInput[],
+    customerId: string,
+  ): Promise<IExpense[]> {
+    const { count } = await this.prismaService.expense.createMany({
+      data: createExpenseInputs,
     });
 
-    return this.mapExpenseFromPrismaToExpense(createdExpense);
+    const foundCreatedExpenses = await this.prismaService.expense.findMany({
+      where: { customerId },
+      orderBy: {
+        updatedAt: SortOrder.desc,
+      },
+      take: count,
+    });
+
+    return foundCreatedExpenses.map(expense =>
+      this.mapExpenseFromPrismaToExpense(expense),
+    );
   }
 
   async update(id: string, data: IUpdateExpenseInput): Promise<IExpense> {
@@ -87,6 +92,8 @@ export class ExpensesRepository implements IExpensesRepository {
       date: expense.date,
       amount: expense.amount.toNumber(),
       type: expense.type,
+      createdAt: expense.createdAt,
+      updatedAt: expense.updatedAt,
     };
   }
 }
