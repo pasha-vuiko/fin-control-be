@@ -92,6 +92,8 @@ export class CustomersRepository implements ICustomersRepository {
       email: customer.email,
       phone: customer.phone,
       sex: customer.sex,
+      createdAt: customer.createdAt,
+      updatedAt: customer.updatedAt,
     };
   }
 }

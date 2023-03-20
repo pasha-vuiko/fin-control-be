@@ -6,6 +6,7 @@ import { IExpensesRepository } from '@api/expenses/interfaces/expenses-repositor
 import { ExpenseEntity } from '@api/expenses/entities/expense.entity';
 import { CustomersService } from '@api/customers/customers.service';
 import { PaginationDto } from '@shared/dto/pagination.dto';
+import { ICreateExpenseInput } from '@api/expenses/interfaces/create-expense-input.interface';
 
 @Injectable()
 export class ExpensesService {
@@ -50,16 +51,22 @@ export class ExpensesService {
     return foundExpense;
   }
 
-  async create(
-    createExpenseDto: CreateExpenseDto,
+  async createMany(
+    createExpenseDTOs: CreateExpenseDto[],
     userId: string,
-  ): Promise<ExpenseEntity> {
+  ): Promise<ExpenseEntity[]> {
     const customer = await this.customersService.findOneByUserId(userId);
+    const createExpensesDataWithCustomerId: ICreateExpenseInput[] = createExpenseDTOs.map(
+      dto => ({
+        ...dto,
+        customerId: customer.id,
+      }),
+    );
 
-    return this.expensesRepository.create({
-      ...createExpenseDto,
-      customerId: customer.id,
-    });
+    return this.expensesRepository.createMany(
+      createExpensesDataWithCustomerId,
+      customer.id,
+    );
   }
 
   async update(

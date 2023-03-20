@@ -19,4 +19,8 @@ export class CustomerEntity implements ICustomer {
 
   @ApiProperty({ enum: Object.keys(Sex) })
   sex: Sex;
+
+  createdAt: Date;
+
+  updatedAt: Date;
 }

@@ -5,7 +5,7 @@ export class IoredisWithDefaultTtl extends IoRedis {
 
   constructor(config: RedisOptions & { defaultTTL?: number }) {
     super(config);
-    this.defaultTTL = config.defaultTTL;
+    this.defaultTTL = config?.defaultTTL;
   }
 
   //@ts-expect-error types are incompatible

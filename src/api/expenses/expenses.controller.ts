@@ -7,7 +7,7 @@ import { Roles } from '@shared/modules/auth/enums/roles';
 import { User } from '@shared/modules/auth/decorators/user.decorator';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
 import { ExpenseEntity } from '@api/expenses/entities/expense.entity';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { FindExpensesDto } from '@api/expenses/dto/find-expenses.dto';
 import { JsonCache } from '@shared/modules/redis/decorators/json-cache.decorator';
 
@@ -42,12 +42,14 @@ export class ExpensesController {
   }
 
   @Auth(Roles.CUSTOMER)
+  @ApiBody({ type: [CreateExpenseDto] })
   @Post()
   create(
-    @Body() createExpenseDto: CreateExpenseDto,
+    @Body()
+    createExpenseDTOs: CreateExpenseDto[],
     @User() user: IUser,
-  ): Promise<ExpenseEntity> {
-    return this.expensesService.create(createExpenseDto, user.id);
+  ): Promise<ExpenseEntity[]> {
+    return this.expensesService.createMany(createExpenseDTOs, user.id);
   }
 
   @Auth(Roles.CUSTOMER)
