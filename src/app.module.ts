@@ -7,14 +7,16 @@ import { RedisModule } from '@shared/modules/redis/redis.module';
 import { config } from './app.config';
 import { LogLevel } from '@shared/modules/logger/types';
 import { CustomersModule } from '@api/customers/customers.module';
+import { ExpensesModule } from '@api/expenses/expenses.module';
 
 @Module({
   imports: [
     // api
     CustomersModule,
+    ExpensesModule,
     //shared
     AuthModule,
-    RedisModule,
+    RedisModule.forRoot(config.cache.redis),
     AppLoggerModule.forRoot(config.app.logger.level as LogLevel),
   ],
   controllers: [AppController],
