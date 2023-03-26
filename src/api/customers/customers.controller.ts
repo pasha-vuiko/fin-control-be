@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
@@ -9,6 +9,7 @@ import { IUser } from '@shared/modules/auth/interfaces/user.interface';
 import { CustomerEntity } from '@api/customers/entities/customer.entity';
 import { ApiTags } from '@nestjs/swagger';
 import { JsonCache } from '@shared/modules/redis/decorators/json-cache.decorator';
+import { FindCustomersDto } from '@api/customers/dto/find-customers.dto';
 
 // TODO Add method to change customers Email and Phone
 @ApiTags('Customers')
@@ -18,18 +19,22 @@ export class CustomersController {
 
   @Auth(Roles.ADMIN)
   @Get()
-  findAll(): Promise<CustomerEntity[]> {
-    return this.customerService.findMany();
+  findMany(@Query() findDto: FindCustomersDto): Promise<CustomerEntity[]> {
+    return this.customerService.findMany(findDto);
   }
 
   @JsonCache()
   @Auth(Roles.ADMIN, Roles.CUSTOMER)
   @Get(':id')
   findOne(@Param('id') id: string, @User() user: IUser): Promise<CustomerEntity> {
-    return this.customerService.findOne(id, user);
+    if (user.roles.includes(Roles.ADMIN)) {
+      return this.customerService.findOneByIdAsAdmin(id);
+    }
+
+    return this.customerService.findOneByIdAsCustomer(id, user.id);
   }
 
-  @Auth(Roles.ADMIN)
+  @Auth(Roles.CUSTOMER)
   @Post()
   create(
     @Body() createCustomerDto: CreateCustomerDto,
@@ -45,12 +50,19 @@ export class CustomersController {
     @User() user: IUser,
     @Body() updateCustomerDto: UpdateCustomerDto,
   ): Promise<CustomerEntity> {
-    return this.customerService.update(id, updateCustomerDto, user);
+    if (user.roles.includes(Roles.ADMIN)) {
+      return this.customerService.updateAsAdmin(id, updateCustomerDto);
+    }
+    return this.customerService.updateAsCustomer(id, updateCustomerDto, user.id);
   }
 
-  @Auth(Roles.ADMIN)
+  @Auth(Roles.CUSTOMER, Roles.ADMIN)
   @Delete(':id')
-  remove(@Param('id') id: string): Promise<CustomerEntity> {
-    return this.customerService.remove(id);
+  remove(@Param('id') id: string, @User() user: IUser): Promise<CustomerEntity> {
+    if (user.roles.includes(Roles.ADMIN)) {
+      return this.customerService.removeAsAdmin(id);
+    }
+
+    return this.customerService.removeAsCustomer(id, user.id);
   }
 }

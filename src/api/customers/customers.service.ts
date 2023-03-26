@@ -10,7 +10,7 @@ import { ICustomersRepository } from '@api/customers/interfaces/customers.reposi
 import { CustomersRepository } from '@api/customers/repositories/customers.repository';
 import { CustomerEntity } from '@api/customers/entities/customer.entity';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
-import { Roles } from '@shared/modules/auth/enums/roles';
+import { PaginationDto } from '@shared/dto/pagination.dto';
 
 @Injectable()
 export class CustomersService {
@@ -18,19 +18,35 @@ export class CustomersService {
     @Inject(CustomersRepository) private customerRepository: ICustomersRepository,
   ) {}
 
-  findMany(): Promise<CustomerEntity[]> {
-    return this.customerRepository.findMany();
+  findMany(pagination?: PaginationDto): Promise<CustomerEntity[]> {
+    return this.customerRepository.findMany(pagination);
   }
 
-  async findOne(id: string, user: IUser): Promise<CustomerEntity> {
-    const foundCustomer = await this.customerRepository.findOne(id);
+  async findOneByIdAsCustomer(id: string, userId: string): Promise<CustomerEntity> {
+    const foundCustomer = await this.customerRepository.findOneById(id);
+
+    if (!foundCustomer || foundCustomer.userId !== userId) {
+      throw new NotFoundException('The customer was not found');
+    }
+
+    return foundCustomer;
+  }
+
+  async findOneByIdAsAdmin(id: string): Promise<CustomerEntity> {
+    const foundCustomer = await this.customerRepository.findOneById(id);
 
     if (!foundCustomer) {
       throw new NotFoundException('The customer was not found');
     }
 
-    if (user.roles.includes(Roles.CUSTOMER) && foundCustomer.auth0Id !== user.id) {
-      throw new ForbiddenException('Access denied');
+    return foundCustomer;
+  }
+
+  async findOneByUserId(userId: string): Promise<CustomerEntity> {
+    const foundCustomer = await this.customerRepository.findOneByUserId(userId);
+
+    if (!foundCustomer) {
+      throw new NotFoundException('The customer was not found');
     }
 
     return foundCustomer;
@@ -42,30 +58,53 @@ export class CustomersService {
     return this.customerRepository.create({
       ...createCustomerDto,
       birthdate: new Date(createCustomerDto.birthdate),
-      auth0Id: id,
+      userId: id,
       email,
     });
   }
 
-  async update(
+  async updateAsCustomer(
     id: string,
     updateCustomerDto: UpdateCustomerDto,
-    user: IUser,
+    userId: string,
   ): Promise<CustomerEntity> {
-    const foundCustomer = await this.customerRepository.findOne(id);
+    const foundCustomer = await this.customerRepository.findOneById(id);
 
-    if (!foundCustomer) {
+    if (!foundCustomer || foundCustomer.userId !== userId) {
       throw new NotFoundException('The customer not found');
-    }
-
-    if (user.roles.includes(Roles.CUSTOMER) && foundCustomer.auth0Id !== user.id) {
-      throw new ForbiddenException('Access denied');
     }
 
     return this.customerRepository.update(id, updateCustomerDto);
   }
 
-  remove(id: string): Promise<CustomerEntity> {
+  async updateAsAdmin(
+    id: string,
+    updateCustomerDto: UpdateCustomerDto,
+  ): Promise<CustomerEntity> {
+    const foundCustomer = await this.customerRepository.findOneById(id);
+
+    if (!foundCustomer) {
+      throw new NotFoundException('The customer not found');
+    }
+
+    return this.customerRepository.update(id, updateCustomerDto);
+  }
+
+  async removeAsCustomer(id: string, userId: string): Promise<CustomerEntity> {
+    const foundCustomer = await this.customerRepository.findOneById(id);
+
+    if (!foundCustomer) {
+      throw new NotFoundException('The customer not found');
+    }
+
+    if (foundCustomer.userId !== userId) {
+      throw new ForbiddenException('You are not allowed to delete this customer');
+    }
+
+    return this.customerRepository.remove(id);
+  }
+
+  removeAsAdmin(id: string): Promise<CustomerEntity> {
     return this.customerRepository.remove(id);
   }
 }

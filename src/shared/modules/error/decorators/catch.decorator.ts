@@ -32,7 +32,7 @@ function Factory(
     key: string | symbol,
     descriptor: PropertyDescriptor,
   ): PropertyDescriptor => {
-    const { value } = descriptor;
+    const { value: originalFn } = descriptor;
 
     if (!handler) {
       handler = ErrorClassConstructor as ErrHandler;
@@ -41,7 +41,7 @@ function Factory(
 
     descriptor.value = async function (...args: any[]): Promise<any> {
       try {
-        const result = value.apply(this, args);
+        const result = originalFn.apply(this, args);
 
         return isPromise(result) ? await result : await Promise.resolve(result);
       } catch (error) {
