@@ -3,7 +3,6 @@ import {
   CacheOptionsFactory,
   Inject,
   Injectable,
-  Logger,
   OnApplicationShutdown,
 } from '@nestjs/common';
 import { CacheStoreFactory } from '@nestjs/common/cache/interfaces/cache-manager.interface';
@@ -12,12 +11,13 @@ import { REDIS_STORE } from '@shared/modules/redis/providers/redis-store.provide
 import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
 import { REDIS_MODULE_OPTIONS } from '@shared/modules/redis/providers/redis-module-options.provider';
 import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
+import { AppLogger } from '@shared/modules/logger/app-logger';
 
 @Injectable()
 export class RedisConfigService implements CacheOptionsFactory, OnApplicationShutdown {
   private static moduleOptions: IRedisModuleOptions;
   private static ioRedisInstance: IoredisWithDefaultTtl;
-  private static logger = new Logger('RedisConfigService');
+  private static logger = new AppLogger('RedisConfigService');
 
   constructor(
     @Inject(REDIS_STORE)

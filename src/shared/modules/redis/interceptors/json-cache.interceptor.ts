@@ -9,7 +9,6 @@ import {
   HttpServer,
   Inject,
   Injectable,
-  Logger,
   NestInterceptor,
   Optional,
 } from '@nestjs/common';
@@ -121,9 +120,8 @@ export class JsonCacheInterceptor implements NestInterceptor {
 
       await this.ioRedisInstance.set(key, serializedResponseBody, 'EX', ttl);
     } catch (err) {
-      Logger.error(
+      this.logger.error(
         `An error has occurred when inserting "key: ${key}", "value: ${responseBody}"`,
-        'CacheInterceptor',
       );
     }
   }

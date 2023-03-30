@@ -32,6 +32,10 @@ export default (): PinoPretty.PrettyStream =>
         return `${logContext} ${methodAndStatus} ${reqUrl} - ${message} by ${responseTime} ms`;
       }
 
-      return `|${yellowConsole(log.context)}| ${message}`;
+      if (log.context) {
+        return `|${yellowConsole(log.context)}| ${message}`;
+      }
+
+      return `${message}`;
     },
   });

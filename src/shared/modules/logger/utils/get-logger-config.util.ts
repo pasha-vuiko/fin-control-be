@@ -1,18 +1,17 @@
 import { ISerializedRequest } from '@shared/modules/logger/interfaces/serialized-request.interface';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { Params as PinoParams } from 'nestjs-pino/params';
-import { resolve } from 'node:path';
 import pino, { LevelWithSilent } from 'pino';
+import pinoPrettyTransport from '@shared/modules/logger/utils/pino-pretty-transport';
 
 export function getLoggerConfig(level: LevelWithSilent): PinoParams {
-  const transportTargetPath = resolve(__dirname, 'pino-pretty-transport.js');
   const isDevelopment = process.env.NODE_ENV === 'development';
+  const isPretty = process.env.LOG_FORMAT === 'pretty';
 
   return {
     pinoHttp: {
       level: level,
-      transport: isDevelopment ? { target: transportTargetPath } : undefined,
-      stream: pino.destination({ sync: false }),
+      stream: isPretty ? pinoPrettyTransport() : pino.destination({ sync: false }),
       quietReqLogger: true,
       customLogLevel: function (_req, res, err): LevelWithSilent {
         if (res.statusCode >= 400 && res.statusCode < 500) {

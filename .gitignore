@@ -36,3 +36,9 @@ lerna-debug.log*
 
 # Prisma client
 /prisma/client/
+
+# DB data
+/cockroach-data/
+
+# ENV
+/.env
