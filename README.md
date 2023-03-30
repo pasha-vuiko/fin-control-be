@@ -50,6 +50,12 @@ npm run prisma:generate
 docker compose up
 ```
 
+Run this if you use local DB instance from docker-compose:
+
+```bash
+npm run prisma:deploy
+```
+
 Then run (watch mode)
 
 ```bash

@@ -1,15 +1,24 @@
 import { generateRequestId } from '@shared/utils/generate-request-id.util';
 import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
+import dotenv from 'dotenv';
+import dotenvExpand from 'dotenv-expand';
 
+const env = dotenv.config();
+dotenvExpand.expand(env);
+
+// TODO Add script to check if all env variables are set (.env.example)
 const appMode = process.env.NODE_ENV || 'production';
+process.env.TZ = 'UTC';
 
 export const config = {
   app: {
-    port: process.env.PORT || 3000,
+    port: process.env.PORT,
+    version: process.env.APP_VERSION,
     mode: appMode,
     isDevelopment: appMode === 'development',
     logger: {
-      level: process.env.LOGGER_LEVEL || 'info',
+      level: process.env.LOGGER_LEVEL,
+      prettyPrint: process.env.LOG_FORMAT === 'pretty',
     },
     fastify: {
       genReqId: generateRequestId,
@@ -30,7 +39,7 @@ export const config = {
     auth0ClientId: process.env.AUTH_CLIENT_ID,
     auth0ClientSecret: process.env.AUTH_CLIENT_SECRET,
   },
-};
+} as const;
 
 function mapRedisSentinels(
   stringRedisSentinels: string | undefined,

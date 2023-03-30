@@ -1,51 +1,27 @@
-###################
-# BUILD FOR LOCAL DEVELOPMENT
-###################
+FROM node:18.15.0-alpine
 
-FROM node:18.15-alpine As development
+RUN apk add --update \
+    openssl
 
-WORKDIR /usr/src/app
+ARG VERSION
 
-COPY package.json pnpm-lock.yaml ./
-
-COPY . .
+RUN mkdir -p /opt/app/
+COPY package.json package-lock.json nest-cli.json .env.example tsconfig.json tsconfig.build.json /opt/app/
+WORKDIR /opt/app/
 
 RUN npm ci
-
-RUN npm run prisma:generate
-
-###################
-# BUILD FOR PRODUCTION
-###################
-
-FROM node:18.15-alpine As build
-
-WORKDIR /usr/src/app
-
-COPY package.json pnpm-lock.yaml ./
-
-COPY --from=development /usr/src/app/node_modules ./node_modules
-
-COPY . .
-
+COPY src /opt/app/src/
 RUN npm run build
 
-ENV NODE_ENV production
+RUN rm -rf tsconfig.json tsconfig.build.json src
+RUN npm prune --production
 
-RUN npm ci
+ENV APP_PORT=3000 \
+    APP_VERSION=${VERSION:-unknown} \
+    NODE_ENV=production \
+    NODE_OPTIONS="--enable-source-maps" \
+    LOG_FORMAT=gcp
 
-RUN npm run prisma:generate
+EXPOSE 3000
 
-
-###################
-# PRODUCTION
-###################
-
-FROM node:18.15-alpine As production
-
-COPY --from=build /usr/src/app/node_modules ./node_modules
-COPY --from=build /usr/src/app/dist ./dist
-
-RUN npm run prisma:generate
-
-CMD [ "node", "dist/main.js" ]
+ENTRYPOINT ["node", "/opt/app/dist/main.js"]

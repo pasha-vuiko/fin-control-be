@@ -14,9 +14,10 @@ import { ExpensesModule } from '@api/expenses/expenses.module';
     // api
     CustomersModule,
     ExpensesModule,
-    //shared
+    // //shared
     AuthModule,
     RedisModule.forRoot(config.cache.redis),
+    // TODO Fix performance issue
     AppLoggerModule.forRoot(config.app.logger.level as LogLevel),
   ],
   controllers: [AppController],
