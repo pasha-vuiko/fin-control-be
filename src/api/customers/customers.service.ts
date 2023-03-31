@@ -22,16 +22,6 @@ export class CustomersService {
     return this.customerRepository.findMany(pagination);
   }
 
-  async findOneByIdAsCustomer(id: string, userId: string): Promise<CustomerEntity> {
-    const foundCustomer = await this.customerRepository.findOneById(id);
-
-    if (!foundCustomer || foundCustomer.userId !== userId) {
-      throw new NotFoundException('The customer was not found');
-    }
-
-    return foundCustomer;
-  }
-
   async findOneByIdAsAdmin(id: string): Promise<CustomerEntity> {
     const foundCustomer = await this.customerRepository.findOneById(id);
 
