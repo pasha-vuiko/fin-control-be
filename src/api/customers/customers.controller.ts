@@ -24,14 +24,17 @@ export class CustomersController {
   }
 
   @JsonCache()
-  @Auth(Roles.ADMIN, Roles.CUSTOMER)
-  @Get(':id')
-  findOne(@Param('id') id: string, @User() user: IUser): Promise<CustomerEntity> {
-    if (user.roles.includes(Roles.ADMIN)) {
-      return this.customerService.findOneByIdAsAdmin(id);
-    }
+  @Auth(Roles.CUSTOMER)
+  @Get('self')
+  findOneByUserId(@User() user: IUser): Promise<CustomerEntity> {
+    return this.customerService.findOneByUserId(user.id);
+  }
 
-    return this.customerService.findOneByIdAsCustomer(id, user.id);
+  @JsonCache()
+  @Auth(Roles.ADMIN)
+  @Get(':id')
+  findOne(@Param('id') id: string): Promise<CustomerEntity> {
+    return this.customerService.findOneByIdAsAdmin(id);
   }
 
   @Auth(Roles.CUSTOMER)
