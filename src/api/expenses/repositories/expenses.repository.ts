@@ -91,7 +91,7 @@ export class ExpensesRepository implements IExpensesRepository {
       customerId: expense.customerId,
       date: expense.date,
       amount: expense.amount.toNumber(),
-      type: expense.type,
+      category: expense.category,
       createdAt: expense.createdAt,
       updatedAt: expense.updatedAt,
     };

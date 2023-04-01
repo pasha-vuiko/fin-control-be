@@ -1,5 +1,5 @@
 import { IExpense } from '@api/expenses/interfaces/expense.interface';
-import { ExpenseType } from '../../../../prisma/client';
+import { ExpenseCategory } from '../../../../prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ExpenseEntity implements IExpense {
@@ -11,8 +11,8 @@ export class ExpenseEntity implements IExpense {
 
   amount: number;
 
-  @ApiProperty({ enum: Object.keys(ExpenseType) })
-  type: ExpenseType;
+  @ApiProperty({ enum: Object.keys(ExpenseCategory) })
+  category: ExpenseCategory;
 
   createdAt: Date;
 
