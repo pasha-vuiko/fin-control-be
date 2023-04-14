@@ -3,7 +3,6 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from '@nestjs/swagger';
 
 import { PrismaService } from '@shared/modules/prisma/prisma.service';
-import { config } from '../../app.config';
 import { AllExceptionsFilter } from '@shared/exception-filters/all-exceptions.filter';
 import { packageJsonInfo } from '@shared/constants/package-json-info';
 import { Logger } from 'nestjs-pino';
@@ -11,15 +10,16 @@ import { Logger } from 'nestjs-pino';
 export async function bootstrapPlugins(
   app: NestFastifyApplication,
   logger: Logger,
+  isDevelopment: boolean,
 ): Promise<void> {
   // Enable CORS only for local development, CORS should be enabled in Reverse Proxy instead of the app
-  if (config.app.isDevelopment) {
+  if (isDevelopment) {
     app.enableCors();
   }
 
   setupExceptionFilters(app);
   setupOpenApi(app);
-  setupRequestsValidation(app);
+  setupRequestsValidation(app, isDevelopment);
   await setupShutdownHooks(app, logger);
 }
 
@@ -27,13 +27,17 @@ function setupExceptionFilters(app: NestFastifyApplication): void {
   app.useGlobalFilters(new AllExceptionsFilter());
 }
 
-function setupRequestsValidation(app: NestFastifyApplication): void {
+function setupRequestsValidation(
+  app: NestFastifyApplication,
+  isDevelopment: boolean,
+): void {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       transform: true,
       forbidUnknownValues: false,
-      enableDebugMessages: config.app.isDevelopment,
+      enableDebugMessages: isDevelopment,
+      disableErrorMessages: !isDevelopment,
     }),
   );
 }
