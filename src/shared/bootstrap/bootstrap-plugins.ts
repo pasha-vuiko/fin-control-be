@@ -2,7 +2,6 @@ import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from '@nestjs/swagger';
 
-import authenticate from '../fastify-plugins/authenticate.plugin';
 import { PrismaService } from '@shared/modules/prisma/prisma.service';
 import { config } from '../../app.config';
 import { AllExceptionsFilter } from '@shared/exception-filters/all-exceptions.filter';
@@ -18,20 +17,10 @@ export async function bootstrapPlugins(
     app.enableCors();
   }
 
-  await registerPlugins(app);
   setupExceptionFilters(app);
   setupOpenApi(app);
   setupRequestsValidation(app);
   await setupShutdownHooks(app, logger);
-}
-
-async function registerPlugins(app: NestFastifyApplication): Promise<void> {
-  const { auth0Domain, auth0ClientSecret } = config.auth;
-
-  await app.register(authenticate, {
-    domain: auth0Domain as string,
-    secret: auth0ClientSecret as string,
-  });
 }
 
 function setupExceptionFilters(app: NestFastifyApplication): void {
