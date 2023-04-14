@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import auth0Verify from 'fastify-auth0-verify';
 import fastifyPlugin from 'fastify-plugin';
 
-async function authenticate(
+async function auth0Authenticate(
   fastify: FastifyInstance,
   options: IAuth0PluginOpts,
 ): Promise<void> {
@@ -11,7 +11,7 @@ async function authenticate(
   fastify.decorateRequest('authenticate', fastify.authenticate);
 }
 
-export default fastifyPlugin(authenticate);
+export default fastifyPlugin(auth0Authenticate);
 
 export interface IAuth0PluginOpts {
   domain: string;

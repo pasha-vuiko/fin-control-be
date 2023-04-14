@@ -15,7 +15,10 @@ import { ExpensesModule } from '@api/expenses/expenses.module';
     CustomersModule,
     ExpensesModule,
     // //shared
-    AuthModule,
+    AuthModule.forRoot({
+      domain: config.auth.auth0Domain as string,
+      secret: config.auth.auth0ClientSecret as string,
+    }),
     RedisModule.forRoot(config.cache.redis),
     // TODO Fix performance issue
     AppLoggerModule.forRoot(config.app.logger.level as LogLevel),
