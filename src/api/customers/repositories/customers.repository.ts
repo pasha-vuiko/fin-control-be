@@ -3,17 +3,18 @@ import { ICreateCustomerInput } from '@api/customers/interfaces/create-customer-
 import { IUpdateCustomerInput } from '@api/customers/interfaces/update-customer-input.interface';
 import { ICustomer } from '@api/customers/interfaces/customer.interface';
 import { PrismaService } from '@shared/modules/prisma/prisma.service';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Customer } from '../../../../prisma/client';
 import { IPagination } from '@shared/interfaces/pagination.interface';
 import { mergePaginationWithDefault } from '@shared/utils/merge-pagination-with-default';
-import type { PrismaClientKnownRequestError } from '../../../../prisma/client/runtime';
-import { PrismaError } from 'prisma-error-enum';
+import { handlePrismaError } from '@shared/modules/prisma/utils/handle-prisma-error';
+import { Catch } from '@shared/modules/error/decorators/catch.decorator';
 
 @Injectable()
 export class CustomersRepository implements ICustomersRepository {
   constructor(private prismaService: PrismaService) {}
 
+  @Catch(handlePrismaError)
   async findMany(pagination?: IPagination): Promise<ICustomer[]> {
     const { skip, take } = mergePaginationWithDefault(pagination);
 
@@ -24,6 +25,7 @@ export class CustomersRepository implements ICustomersRepository {
     );
   }
 
+  @Catch(handlePrismaError)
   async findOneById(id: string): Promise<ICustomer | null> {
     const foundCustomer = await this.prismaService.customer.findUnique({ where: { id } });
 
@@ -34,6 +36,7 @@ export class CustomersRepository implements ICustomersRepository {
     return this.mapCustomerFromPrismaToCustomer(foundCustomer);
   }
 
+  @Catch(handlePrismaError)
   async findOneByUserId(userId: string): Promise<ICustomer | null> {
     const foundCustomer = await this.prismaService.customer.findUnique({
       where: { userId },
@@ -46,23 +49,14 @@ export class CustomersRepository implements ICustomersRepository {
     return this.mapCustomerFromPrismaToCustomer(foundCustomer);
   }
 
+  @Catch(handlePrismaError)
   async create(data: ICreateCustomerInput): Promise<ICustomer> {
-    try {
-      const createdCustomer = await this.prismaService.customer.create({ data });
+    const createdCustomer = await this.prismaService.customer.create({ data });
 
-      return this.mapCustomerFromPrismaToCustomer(createdCustomer);
-    } catch (e: PrismaClientKnownRequestError | any) {
-      if (e.code === PrismaError.UniqueConstraintViolation) {
-        const uniqueConstraintFieldName = e?.meta?.target?.at(0);
-        throw new BadRequestException(
-          `Customer with this ${uniqueConstraintFieldName} already exists`,
-        );
-      }
-
-      throw e;
-    }
+    return this.mapCustomerFromPrismaToCustomer(createdCustomer);
   }
 
+  @Catch(handlePrismaError)
   async update(id: string, data: IUpdateCustomerInput): Promise<ICustomer> {
     const updatedCustomer = await this.prismaService.customer.update({
       data: data,
@@ -72,6 +66,7 @@ export class CustomersRepository implements ICustomersRepository {
     return this.mapCustomerFromPrismaToCustomer(updatedCustomer);
   }
 
+  @Catch(handlePrismaError)
   async remove(id: string): Promise<ICustomer> {
     const removedCustomer = await this.prismaService.customer.delete({ where: { id } });
 
