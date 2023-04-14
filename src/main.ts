@@ -6,7 +6,6 @@ import { config } from './app.config';
 import { bootstrapPlugins } from '@shared/bootstrap/bootstrap-plugins';
 import { bootstrapLogger } from '@shared/bootstrap/bootstrap-logger';
 
-// TODO Create util or decorator to map Prisma errors to NestJS HttpExceptions
 async function bootstrap(): Promise<NestFastifyApplication> {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
