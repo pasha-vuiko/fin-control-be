@@ -74,16 +74,10 @@ export class ExpensesService {
     updateExpenseDto: UpdateExpenseDto,
     userId: string,
   ): Promise<ExpenseEntity> {
-    const [customer, expense] = await Promise.all([
+    const [customer] = await Promise.all([
       this.customersService.findOneByUserId(userId),
       this.findOneAsCustomer(id, userId),
     ]);
-
-    const expenseDoesBelongsToCustomer = expense.customerId === customer.id;
-
-    if (!expenseDoesBelongsToCustomer) {
-      throw new NotFoundException(`expense with ${id} is not found`);
-    }
 
     return this.expensesRepository.update(id, {
       ...updateExpenseDto,

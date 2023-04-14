@@ -1,4 +1,4 @@
-import { ErrHandler } from '@shared/modules/error/decorators/catch.decorator';
+import { TErrorHandler } from '@shared/modules/error/decorators/catch.decorator';
 import { AppLogger } from '@shared/modules/logger/app-logger';
 import { getLogContext } from '@shared/modules/logger/utils/get-log-context.util';
 
@@ -6,7 +6,7 @@ import { getLogContext } from '@shared/modules/logger/utils/get-log-context.util
  *
  * @description Logs error
  */
-export const internalErrHandler: ErrHandler = (
+export const internalErrHandler: TErrorHandler = (
   err: Error,
   methodContext: any,
   methodName = '',

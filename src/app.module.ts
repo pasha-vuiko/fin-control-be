@@ -14,7 +14,7 @@ import { ExpensesModule } from '@api/expenses/expenses.module';
     // api
     CustomersModule,
     ExpensesModule,
-    // //shared
+    // shared
     AuthModule.forRoot({
       domain: config.auth.auth0Domain as string,
       secret: config.auth.auth0ClientSecret as string,

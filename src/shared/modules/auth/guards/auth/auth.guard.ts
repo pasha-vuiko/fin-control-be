@@ -19,7 +19,7 @@ export class AuthGuard implements CanActivate {
     const reply = context.switchToHttp().getResponse();
 
     await req.authenticate(req, reply).catch((e: Error | any) => {
-      throw new UnauthorizedException('Failed to auth via Auth0', e);
+      throw new UnauthorizedException(`Failed to auth, ${e.message}`, e);
     });
 
     const requiredRoles = this.getRequiredRoles(context);
