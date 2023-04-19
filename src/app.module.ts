@@ -16,7 +16,9 @@ import { PrismaModule } from '@shared/modules/prisma/prisma.module';
     CustomersModule,
     ExpensesModule,
     // shared
-    PrismaModule,
+    PrismaModule.forRoot({
+      errorFormat: config.app.isDevelopment ? 'pretty' : 'minimal',
+    }),
     AuthModule.forRoot({
       domain: config.auth.auth0Domain as string,
       secret: config.auth.auth0ClientSecret as string,
