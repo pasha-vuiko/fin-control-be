@@ -7,8 +7,7 @@ export function checkEnvVarsSet(exampleEnvFilePath: string): boolean {
   const parsedEnvFileContent = dotenv.parse(exampleEnvFileContent);
 
   const missingEnvVars = Object.keys(parsedEnvFileContent).filter(
-    // eslint-disable-next-line security/detect-object-injection
-    envVarName => process.env[envVarName] === undefined,
+    envVarName => !Object.hasOwn(process.env, envVarName),
   );
 
   if (missingEnvVars.length) {

@@ -8,6 +8,7 @@ import { config } from './app.config';
 import { LogLevel } from '@shared/modules/logger/types';
 import { CustomersModule } from '@api/customers/customers.module';
 import { ExpensesModule } from '@api/expenses/expenses.module';
+import { PrismaModule } from '@shared/modules/prisma/prisma.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ExpensesModule } from '@api/expenses/expenses.module';
     CustomersModule,
     ExpensesModule,
     // shared
+    PrismaModule,
     AuthModule.forRoot({
       domain: config.auth.auth0Domain as string,
       secret: config.auth.auth0ClientSecret as string,

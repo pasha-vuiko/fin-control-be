@@ -1,4 +1,4 @@
-import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { Command } from 'ioredis';
 
@@ -13,9 +13,10 @@ import { ICreateSearchIndexSchema } from '@shared/modules/redis/interfaces/creat
 import { transformCreateSearchIndexArgs } from '@shared/modules/redis/utils/transform-create-search-index-args.util';
 import { Catch } from '@shared/modules/error/decorators/catch.decorator';
 import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Injectable()
-export class RedisCacheService {
+export class RedisService {
   private ioRedisInstance: IoredisWithDefaultTtl;
 
   constructor(
@@ -143,7 +144,7 @@ export class RedisCacheService {
       maxSearchLimit,
     );
 
-    return RedisCacheService.parseSearchResult(rawSearchResults);
+    return RedisService.parseSearchResult(rawSearchResults);
   }
 
   @Catch(internalErrHandler)
@@ -151,6 +152,12 @@ export class RedisCacheService {
     return this.ioRedisInstance.ttl(cacheKey);
   }
 
+  /**
+   * @description creates RediSearch index. Requires RediSearch to be installed in the Redis
+   * @param index
+   * @param schema
+   * @param options
+   */
   public async createIndex(
     index: CacheIndexesEnum,
     schema: ICreateSearchIndexSchema,
