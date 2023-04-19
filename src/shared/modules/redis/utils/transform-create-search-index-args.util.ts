@@ -7,6 +7,14 @@ import {
   SchemaFieldTypesEnum,
 } from '@shared/modules/redis/interfaces/create-search-index-schema.interface';
 
+/**
+ * @description creates redis-cli arguments for creating of RediSearch index.
+ * Copies the functionality of client.ft.create() from https://github.com/redis/node-redis/tree/d65a641b2db96c6d63a2a51c43e823aba8256e28/packages/search
+ * @param index
+ * @param schema
+ * @param options
+ */
+// eslint-disable-next-line max-lines-per-function
 export const transformCreateSearchIndexArgs = (
   index: CacheIndexesEnum,
   schema: ICreateSearchIndexSchema,
