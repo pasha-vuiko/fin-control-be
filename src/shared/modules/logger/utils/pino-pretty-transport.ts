@@ -1,10 +1,11 @@
+import PinoPretty from 'pino-pretty';
+
 import {
   blueConsole,
   cyanConsole,
   magentaBrightConsole,
   yellowConsole,
 } from '@shared/modules/logger/utils/console-color.util';
-import PinoPretty from 'pino-pretty';
 
 export default (): PinoPretty.PrettyStream =>
   PinoPretty({

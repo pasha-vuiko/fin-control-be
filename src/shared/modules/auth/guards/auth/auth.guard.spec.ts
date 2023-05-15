@@ -1,5 +1,6 @@
-import { AuthGuard } from './auth.guard';
 import { Reflector } from '@nestjs/core';
+
+import { AuthGuard } from './auth.guard';
 
 describe('AuthGuard', () => {
   let authGuard: AuthGuard;

@@ -1,5 +1,7 @@
 import { isPromise } from 'node:util/types';
+
 import { isFunction } from '@nestjs/common/utils/shared.utils';
+
 import { isAsyncFn } from '@shared/utils/is-async-fn';
 
 /**

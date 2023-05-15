@@ -1,5 +1,7 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/common';
 import type { FastifyReply, FastifyRequest } from 'fastify';
+
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/common';
+
 import { AppLogger } from '@shared/modules/logger/app-logger';
 
 @Catch()

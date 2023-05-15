@@ -1,14 +1,16 @@
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 
-import { AppModule } from './app.module';
-import { config } from './app.config';
-import { bootstrapPlugins } from '@shared/bootstrap/bootstrap-plugins';
 import { bootstrapLogger } from '@shared/bootstrap/bootstrap-logger';
+import { bootstrapPlugins } from '@shared/bootstrap/bootstrap-plugins';
+
+import { config } from './app.config';
+import { AppModule } from './app.module';
 
 async function bootstrap(): Promise<NestFastifyApplication> {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
+    //@ts-expect-error types of configuration are not compatible
     new FastifyAdapter(config.app.fastify),
     { bufferLogs: true },
   );

@@ -1,8 +1,9 @@
 import {
-  createParamDecorator,
   ExecutionContext,
   UnauthorizedException,
+  createParamDecorator,
 } from '@nestjs/common';
+
 import { IAuth0User } from '@shared/modules/auth/interfaces/auth0-user.interface';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
 import { getRolesFromAuth0User } from '@shared/modules/auth/utils/getRolesFromAuth0User';

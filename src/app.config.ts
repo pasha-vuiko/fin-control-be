@@ -3,9 +3,9 @@ import { resolve } from 'node:path';
 import dotenv from 'dotenv';
 import dotenvExpand from 'dotenv-expand';
 
-import { generateRequestId } from '@shared/utils/generate-request-id.util';
 import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
 import { checkEnvVarsSet } from '@shared/utils/check-env-vars-set';
+import { generateRequestId } from '@shared/utils/generate-request-id.util';
 
 // Loading config and checking if all env vars are set
 const env = dotenv.config();

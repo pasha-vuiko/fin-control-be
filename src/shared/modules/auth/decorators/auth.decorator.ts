@@ -1,7 +1,8 @@
-import { Roles } from '@shared/modules/auth/enums/roles';
-import { applyDecorators, SetMetadata, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@shared/modules/auth/guards/auth/auth.guard';
+import { SetMetadata, UseGuards, applyDecorators } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
+
+import { Roles } from '@shared/modules/auth/enums/roles';
+import { AuthGuard } from '@shared/modules/auth/guards/auth/auth.guard';
 
 export const AUTH_ROLES_META = Symbol('roles');
 

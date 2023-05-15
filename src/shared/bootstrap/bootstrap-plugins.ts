@@ -1,11 +1,12 @@
-import { NestFastifyApplication } from '@nestjs/platform-fastify';
+import { Logger } from 'nestjs-pino';
+
 import { ValidationPipe } from '@nestjs/common';
+import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from '@nestjs/swagger';
 
-import { PrismaService } from '@shared/modules/prisma/prisma.service';
-import { AllExceptionsFilter } from '@shared/exception-filters/all-exceptions.filter';
 import { packageJsonInfo } from '@shared/constants/package-json-info';
-import { Logger } from 'nestjs-pino';
+import { AllExceptionsFilter } from '@shared/exception-filters/all-exceptions.filter';
+import { PrismaService } from '@shared/modules/prisma/prisma.service';
 
 export async function bootstrapPlugins(
   app: NestFastifyApplication,

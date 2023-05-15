@@ -1,8 +1,9 @@
-import { NotRequired } from '@shared/decorators/validation/not-required.decorator';
-import { IsNumber } from 'class-validator';
-import { IPagination } from '@shared/interfaces/pagination.interface';
-import { DEFAULT_PAGINATION } from '@shared/constants/pagination-defaults';
 import { Transform } from 'class-transformer';
+import { IsNumber } from 'class-validator';
+
+import { DEFAULT_PAGINATION } from '@shared/constants/pagination-defaults';
+import { NotRequired } from '@shared/decorators/validation/not-required.decorator';
+import { IPagination } from '@shared/interfaces/pagination.interface';
 
 export class PaginationDto implements IPagination {
   @IsNumber()
