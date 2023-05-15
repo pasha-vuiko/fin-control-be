@@ -1,15 +1,18 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+
+import { Auth } from '@shared/modules/auth/decorators/auth.decorator';
+import { User } from '@shared/modules/auth/decorators/user.decorator';
+import { Roles } from '@shared/modules/auth/enums/roles';
+import { IUser } from '@shared/modules/auth/interfaces/user.interface';
+import { JsonCache } from '@shared/modules/redis/decorators/json-cache.decorator';
+
+import { FindCustomersDto } from '@api/customers/dto/find-customers.dto';
+import { CustomerEntity } from '@api/customers/entities/customer.entity';
+
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
-import { Auth } from '@shared/modules/auth/decorators/auth.decorator';
-import { Roles } from '@shared/modules/auth/enums/roles';
-import { User } from '@shared/modules/auth/decorators/user.decorator';
-import { IUser } from '@shared/modules/auth/interfaces/user.interface';
-import { CustomerEntity } from '@api/customers/entities/customer.entity';
-import { ApiTags } from '@nestjs/swagger';
-import { JsonCache } from '@shared/modules/redis/decorators/json-cache.decorator';
-import { FindCustomersDto } from '@api/customers/dto/find-customers.dto';
 
 // TODO Add method to change customers Email and Phone
 @ApiTags('Customers')

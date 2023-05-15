@@ -1,7 +1,8 @@
-import { IExpense } from '@api/expenses/interfaces/expense.interface';
-import { ICreateExpenseInput } from '@api/expenses/interfaces/create-expense-input.interface';
-import { IUpdateExpenseInput } from '@api/expenses/interfaces/update-expense-input.interface';
 import { IPagination } from '@shared/interfaces/pagination.interface';
+
+import { ICreateExpenseInput } from '@api/expenses/interfaces/create-expense-input.interface';
+import { IExpense } from '@api/expenses/interfaces/expense.interface';
+import { IUpdateExpenseInput } from '@api/expenses/interfaces/update-expense-input.interface';
 
 export interface IExpensesRepository {
   findMany(pagination?: IPagination): Promise<IExpense[]>;

@@ -1,7 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
+import { packageJsonInfo } from '@shared/constants/package-json-info';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { packageJsonInfo } from '@shared/constants/package-json-info';
 
 describe('AppController', () => {
   let appController: AppController;

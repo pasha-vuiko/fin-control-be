@@ -1,5 +1,3 @@
-import { Sex } from '../../../../prisma/client';
-import { ICreateCustomerInput } from '@api/customers/interfaces/create-customer-input.interface';
 import {
   IsDateString,
   IsEnum,
@@ -7,8 +5,14 @@ import {
   IsNotEmpty,
   IsString,
 } from 'class-validator';
-import { NotRequired } from '@shared/decorators/validation/not-required.decorator';
+
 import { ApiProperty } from '@nestjs/swagger';
+
+import { NotRequired } from '@shared/decorators/validation/not-required.decorator';
+
+import { ICreateCustomerInput } from '@api/customers/interfaces/create-customer-input.interface';
+
+import { Sex } from '../../../../prisma/client';
 
 export class CreateCustomerDto
   implements Omit<ICreateCustomerInput, 'id' | 'userId' | 'email'>

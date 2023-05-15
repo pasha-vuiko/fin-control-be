@@ -1,5 +1,6 @@
-import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
 import { Provider } from '@nestjs/common';
+
+import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
 
 export const REDIS_MODULE_OPTIONS = Symbol('REDIS_MODULE_OPTIONS');
 

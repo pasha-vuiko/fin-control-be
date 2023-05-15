@@ -1,9 +1,10 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { IAuthModuleOptions } from '@shared/modules/auth/interfaces/auth-module-options.interface';
 import { HttpAdapterHost } from '@nestjs/core';
-import auth0Authenticate from '@shared/modules/auth/fastify-plugins/auth0-authenticate.plugin';
-import { AUTH_MODULE_OPTIONS } from '@shared/modules/auth/constants/auth-module-opts-injection-token';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
+
+import { AUTH_MODULE_OPTIONS } from '@shared/modules/auth/constants/auth-module-opts-injection-token';
+import auth0Authenticate from '@shared/modules/auth/fastify-plugins/auth0-authenticate.plugin';
+import { IAuthModuleOptions } from '@shared/modules/auth/interfaces/auth-module-options.interface';
 
 @Injectable()
 export class AuthConfigService implements OnModuleInit {

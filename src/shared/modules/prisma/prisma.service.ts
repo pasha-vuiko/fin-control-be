@@ -1,8 +1,10 @@
 import { INestApplication, Inject, Injectable, OnModuleInit } from '@nestjs/common';
+
 import { AppLogger } from '@shared/modules/logger/app-logger';
-import { PrismaClient } from '../../../../prisma/client';
-import { TPrismaOptions } from '@shared/modules/prisma/types/prisma-options.type';
 import { PRISMA_MODULE_OPTIONS } from '@shared/modules/prisma/constants/prisma-module-options-injection-token';
+import { TPrismaOptions } from '@shared/modules/prisma/types/prisma-options.type';
+
+import { PrismaClient } from '../../../../prisma/client';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {

@@ -1,7 +1,8 @@
-import { ISerializedRequest } from '@shared/modules/logger/interfaces/serialized-request.interface';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { Params as PinoParams } from 'nestjs-pino/params';
 import pino, { LevelWithSilent } from 'pino';
+
+import { ISerializedRequest } from '@shared/modules/logger/interfaces/serialized-request.interface';
 import pinoPrettyTransport from '@shared/modules/logger/utils/pino-pretty-transport';
 
 export function getLoggerConfig(level: LevelWithSilent): PinoParams {

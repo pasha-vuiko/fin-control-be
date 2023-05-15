@@ -1,5 +1,6 @@
-import { Provider } from '@nestjs/common';
 import redisStore from 'cache-manager-ioredis';
+
+import { Provider } from '@nestjs/common';
 
 export const REDIS_STORE = 'REDIS_STORE';
 

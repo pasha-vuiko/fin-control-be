@@ -1,12 +1,12 @@
+import { CacheModule } from '@nestjs/cache-manager';
 import { DynamicModule, Module } from '@nestjs/common';
 
-import { RedisService } from '@shared/modules/redis/services/redis/redis.service';
-import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
-import { redisStoreProvider } from '@shared/modules/redis/providers/redis-store.provider';
 import { JsonCacheInterceptor } from '@shared/modules/redis/interceptors/json-cache.interceptor';
 import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
 import { redisModuleOptionsProvider } from '@shared/modules/redis/providers/redis-module-options.provider';
-import { CacheModule } from '@nestjs/cache-manager';
+import { redisStoreProvider } from '@shared/modules/redis/providers/redis-store.provider';
+import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
+import { RedisService } from '@shared/modules/redis/services/redis/redis.service';
 
 @Module({
   exports: [CacheModule, RedisService, RedisConfigService],

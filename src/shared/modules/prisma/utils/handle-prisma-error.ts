@@ -1,4 +1,5 @@
-import { TErrorHandler } from '@shared/modules/error/decorators/catch.decorator';
+import { PrismaError } from 'prisma-error-enum';
+
 import {
   BadRequestException,
   ConflictException,
@@ -7,11 +8,14 @@ import {
   RequestTimeoutException,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { PrismaError } from 'prisma-error-enum';
-import { Prisma } from '../../../../../prisma/client';
-import PrismaClientKnownRequestError = Prisma.PrismaClientKnownRequestError;
+
+import { TErrorHandler } from '@shared/modules/error/decorators/catch.decorator';
 import { AppLogger } from '@shared/modules/logger/app-logger';
 import { getLogContext } from '@shared/modules/logger/utils/get-log-context.util';
+
+import { Prisma } from '../../../../../prisma/client';
+
+import PrismaClientKnownRequestError = Prisma.PrismaClientKnownRequestError;
 
 export const handlePrismaError: TErrorHandler = (
   err,

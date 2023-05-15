@@ -1,6 +1,7 @@
-import { Observable, of } from 'rxjs';
 import { FastifyReply } from 'fastify';
+import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
+
 import {
   CACHE_KEY_METADATA,
   CACHE_TTL_METADATA,
@@ -13,12 +14,13 @@ import {
   Optional,
 } from '@nestjs/common';
 import { isFunction, isNil } from '@nestjs/common/utils/shared.utils';
-import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
-import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
 import { Reflector } from '@nestjs/core';
+
 import { Roles } from '@shared/modules/auth/enums/roles';
-import { AppLogger } from '@shared/modules/logger/app-logger';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
+import { AppLogger } from '@shared/modules/logger/app-logger';
+import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
+import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 
 const HTTP_ADAPTER_HOST = 'HttpAdapterHost';
 const REFLECTOR = 'Reflector';

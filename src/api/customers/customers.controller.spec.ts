@@ -1,10 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
+import { PrismaModule } from '@shared/modules/prisma/prisma.module';
+import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
+import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
+
+import { CustomersRepository } from '@api/customers/repositories/customers.repository';
+
 import { CustomersController } from './customers.controller';
 import { CustomersService } from './customers.service';
-import { CustomersRepository } from '@api/customers/repositories/customers.repository';
-import { PrismaModule } from '@shared/modules/prisma/prisma.module';
-import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
-import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
 
 describe('CustomersController', () => {
   let controller: CustomersController;

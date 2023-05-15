@@ -1,5 +1,7 @@
-import { FastifyRequest } from 'fastify';
 import { randomUUID } from 'node:crypto';
+
+import { FastifyRequest } from 'fastify';
+
 import { REQUEST_ID_HEADER } from '@shared/modules/logger/constants/request-id-header';
 
 export function generateRequestId(req: FastifyRequest): string {

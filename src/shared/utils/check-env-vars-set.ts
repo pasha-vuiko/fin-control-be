@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+
 import dotenv from 'dotenv';
 
 export function checkEnvVarsSet(exampleEnvFilePath: string): boolean {

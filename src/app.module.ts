@@ -1,14 +1,17 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { AppLoggerModule } from '@shared/modules/logger/app-logger.module';
+
 import { AuthModule } from '@shared/modules/auth/auth.module';
-import { RedisModule } from '@shared/modules/redis/redis.module';
-import { config } from './app.config';
+import { AppLoggerModule } from '@shared/modules/logger/app-logger.module';
 import { LogLevel } from '@shared/modules/logger/types';
+import { PrismaModule } from '@shared/modules/prisma/prisma.module';
+import { RedisModule } from '@shared/modules/redis/redis.module';
+
 import { CustomersModule } from '@api/customers/customers.module';
 import { ExpensesModule } from '@api/expenses/expenses.module';
-import { PrismaModule } from '@shared/modules/prisma/prisma.module';
+
+import { config } from './app.config';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [

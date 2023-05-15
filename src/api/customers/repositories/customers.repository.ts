@@ -1,14 +1,17 @@
-import { ICustomersRepository } from '@api/customers/interfaces/customers.repository.interface';
-import { ICreateCustomerInput } from '@api/customers/interfaces/create-customer-input.interface';
-import { IUpdateCustomerInput } from '@api/customers/interfaces/update-customer-input.interface';
-import { ICustomer } from '@api/customers/interfaces/customer.interface';
-import { PrismaService } from '@shared/modules/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
-import { Customer } from '../../../../prisma/client';
+
 import { IPagination } from '@shared/interfaces/pagination.interface';
-import { mergePaginationWithDefault } from '@shared/utils/merge-pagination-with-default';
-import { handlePrismaError } from '@shared/modules/prisma/utils/handle-prisma-error';
 import { Catch } from '@shared/modules/error/decorators/catch.decorator';
+import { PrismaService } from '@shared/modules/prisma/prisma.service';
+import { handlePrismaError } from '@shared/modules/prisma/utils/handle-prisma-error';
+import { mergePaginationWithDefault } from '@shared/utils/merge-pagination-with-default';
+
+import { ICreateCustomerInput } from '@api/customers/interfaces/create-customer-input.interface';
+import { ICustomer } from '@api/customers/interfaces/customer.interface';
+import { ICustomersRepository } from '@api/customers/interfaces/customers.repository.interface';
+import { IUpdateCustomerInput } from '@api/customers/interfaces/update-customer-input.interface';
+
+import { Customer } from '../../../../prisma/client';
 
 @Injectable()
 export class CustomersRepository implements ICustomersRepository {

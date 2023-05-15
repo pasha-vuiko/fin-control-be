@@ -1,7 +1,8 @@
-import { applyDecorators } from '@nestjs/common';
-import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsDecimal } from 'class-validator';
+
+import { applyDecorators } from '@nestjs/common';
+import { ApiProperty } from '@nestjs/swagger';
 
 export function IsDecimalNum(): PropertyDecorator {
   return applyDecorators(

@@ -1,7 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CustomersService } from './customers.service';
-import { CustomersRepository } from '@api/customers/repositories/customers.repository';
+
 import { PrismaModule } from '@shared/modules/prisma/prisma.module';
+
+import { CustomersRepository } from '@api/customers/repositories/customers.repository';
+
+import { CustomersService } from './customers.service';
 
 describe('CustomerService', () => {
   let service: CustomersService;
