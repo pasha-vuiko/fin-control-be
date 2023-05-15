@@ -1,9 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { AppModule } from '../src/app.module';
-import { packageJsonInfo } from '@shared/constants/package-json-info';
+
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
+import { Test, TestingModule } from '@nestjs/testing';
+
+import { packageJsonInfo } from '@shared/constants/package-json-info';
+
 import { config } from '../src/app.config';
+import { AppModule } from '../src/app.module';
 
 describe('AppController (e2e)', () => {
   let app: NestFastifyApplication;
@@ -14,6 +17,7 @@ describe('AppController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication<NestFastifyApplication>(
+      //@ts-expect-error types of configuration are not compatible
       new FastifyAdapter(config.app.fastify),
     );
 
