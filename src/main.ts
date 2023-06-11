@@ -10,6 +10,7 @@ import { AppModule } from './app.module';
 async function bootstrap(): Promise<NestFastifyApplication> {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
+    // @ts-expect-error fastify config type in not compatible with current version of Fastify
     new FastifyAdapter(config.app.fastify),
     { bufferLogs: true },
   );
