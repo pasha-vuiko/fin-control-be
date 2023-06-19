@@ -1,5 +1,6 @@
 import { CacheInterceptor } from '@nestjs/cache-manager';
-import { CacheTTL, UseInterceptors, applyDecorators } from '@nestjs/common';
+import { CacheTTL } from '@nestjs/cache-manager';
+import { UseInterceptors, applyDecorators } from '@nestjs/common';
 
 /**
  *

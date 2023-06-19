@@ -1,10 +1,5 @@
-import {
-  CacheModuleOptions,
-  CacheOptionsFactory,
-  Inject,
-  Injectable,
-  OnApplicationShutdown,
-} from '@nestjs/common';
+import { CacheModuleOptions, CacheOptionsFactory } from '@nestjs/cache-manager';
+import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { CacheStoreFactory } from '@nestjs/common/cache/interfaces/cache-manager.interface';
 
 import { AppLogger } from '@shared/modules/logger/app-logger';

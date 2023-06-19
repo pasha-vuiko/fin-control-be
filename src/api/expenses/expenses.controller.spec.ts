@@ -19,7 +19,7 @@ describe('ExpensesController', () => {
       .mockReturnValue({} as IoredisWithDefaultTtl);
 
     const module: TestingModule = await Test.createTestingModule({
-      imports: [PrismaModule, CustomersModule],
+      imports: [PrismaModule.forRoot(), CustomersModule],
       controllers: [ExpensesController],
       providers: [ExpensesService, ExpensesRepository],
     }).compile();

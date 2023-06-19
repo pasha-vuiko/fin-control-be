@@ -1,4 +1,5 @@
-import { CacheTTL, UseInterceptors, applyDecorators } from '@nestjs/common';
+import { CacheTTL } from '@nestjs/cache-manager';
+import { UseInterceptors, applyDecorators } from '@nestjs/common';
 
 import { JsonCacheInterceptor } from '@shared/modules/redis/interceptors/json-cache.interceptor';
 
