@@ -17,7 +17,6 @@ describe('AppController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication<NestFastifyApplication>(
-      //@ts-expect-error types of configuration are not compatible
       new FastifyAdapter(config.app.fastify),
     );
 

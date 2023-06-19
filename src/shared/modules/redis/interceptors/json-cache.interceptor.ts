@@ -2,9 +2,8 @@ import { FastifyReply } from 'fastify';
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
+import { CACHE_KEY_METADATA, CACHE_TTL_METADATA } from '@nestjs/cache-manager';
 import {
-  CACHE_KEY_METADATA,
-  CACHE_TTL_METADATA,
   CallHandler,
   ExecutionContext,
   HttpServer,

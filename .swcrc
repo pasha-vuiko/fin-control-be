@@ -1,19 +1,17 @@
 {
-  "sourceMaps": "inline",
-  "module": {
-    "type": "commonjs",
-    "strict": true
-  },
+  "$schema": "https://json.schemastore.org/swcrc",
+  "sourceMaps": true,
   "jsc": {
-    "target": "es2022",
     "parser": {
       "syntax": "typescript",
-      "decorators": true
+      "decorators": true,
+      "dynamicImport": true
     },
-    "transform": {
-      "legacyDecorator": true,
-      "decoratorMetadata": true
+    "paths": {
+      "@api/*": ["src/api/*"],
+      "@shared/*": ["src/shared/*"]
     },
-    "keepClassNames": true
-  }
+    "baseUrl": "./"
+  },
+  "minify": false
 }
