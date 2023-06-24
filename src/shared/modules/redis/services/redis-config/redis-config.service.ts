@@ -1,17 +1,12 @@
-import {
-  CacheModuleOptions,
-  CacheOptionsFactory,
-  Inject,
-  Injectable,
-  OnApplicationShutdown,
-} from '@nestjs/common';
+import { CacheModuleOptions, CacheOptionsFactory } from '@nestjs/cache-manager';
+import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { CacheStoreFactory } from '@nestjs/common/cache/interfaces/cache-manager.interface';
 
-import { REDIS_STORE } from '@shared/modules/redis/providers/redis-store.provider';
-import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
-import { REDIS_MODULE_OPTIONS } from '@shared/modules/redis/providers/redis-module-options.provider';
-import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
 import { AppLogger } from '@shared/modules/logger/app-logger';
+import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
+import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
+import { REDIS_MODULE_OPTIONS } from '@shared/modules/redis/providers/redis-module-options.provider';
+import { REDIS_STORE } from '@shared/modules/redis/providers/redis-store.provider';
 
 @Injectable()
 export class RedisConfigService implements CacheOptionsFactory, OnApplicationShutdown {

@@ -1,12 +1,15 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+
+import { PaginationDto } from '@shared/dto/pagination.dto';
+
+import { CustomersService } from '@api/customers/customers.service';
+import { ExpenseEntity } from '@api/expenses/entities/expense.entity';
+import { ICreateExpenseInput } from '@api/expenses/interfaces/create-expense-input.interface';
+import { IExpensesRepository } from '@api/expenses/interfaces/expenses-repository.interface';
+import { ExpensesRepository } from '@api/expenses/repositories/expenses.repository';
+
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
-import { ExpensesRepository } from '@api/expenses/repositories/expenses.repository';
-import { IExpensesRepository } from '@api/expenses/interfaces/expenses-repository.interface';
-import { ExpenseEntity } from '@api/expenses/entities/expense.entity';
-import { CustomersService } from '@api/customers/customers.service';
-import { PaginationDto } from '@shared/dto/pagination.dto';
-import { ICreateExpenseInput } from '@api/expenses/interfaces/create-expense-input.interface';
 
 @Injectable()
 export class ExpensesService {
@@ -74,16 +77,10 @@ export class ExpensesService {
     updateExpenseDto: UpdateExpenseDto,
     userId: string,
   ): Promise<ExpenseEntity> {
-    const [customer, expense] = await Promise.all([
+    const [customer] = await Promise.all([
       this.customersService.findOneByUserId(userId),
       this.findOneAsCustomer(id, userId),
     ]);
-
-    const expenseDoesBelongsToCustomer = expense.customerId === customer.id;
-
-    if (!expenseDoesBelongsToCustomer) {
-      throw new NotFoundException(`expense with ${id} is not found`);
-    }
 
     return this.expensesRepository.update(id, {
       ...updateExpenseDto,

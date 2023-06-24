@@ -1,21 +1,23 @@
-import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { Command } from 'ioredis';
 
-import { DEFAULT_CACHE_TTL } from '@shared/modules/redis/constants/defaults';
-import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
-import { CacheIndexesEnum } from '@shared/modules/redis/enums/cache-indexes.enum';
-import { internalErrHandler } from '@shared/modules/error/handlers/internal-err-handler';
-import { ICreateIndexOptions } from '@shared/modules/redis/interfaces/create-index-options.interface';
-import { ArrayType } from '@shared/types/array.type';
-import { ISearchResults } from '@shared/modules/redis/interfaces/search-results.interface';
-import { ICreateSearchIndexSchema } from '@shared/modules/redis/interfaces/create-search-index-schema.interface';
-import { transformCreateSearchIndexArgs } from '@shared/modules/redis/utils/transform-create-search-index-args.util';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Inject, Injectable } from '@nestjs/common';
+
 import { Catch } from '@shared/modules/error/decorators/catch.decorator';
+import { internalErrHandler } from '@shared/modules/error/handlers/internal-err-handler';
 import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
+import { DEFAULT_CACHE_TTL } from '@shared/modules/redis/constants/defaults';
+import { CacheIndexesEnum } from '@shared/modules/redis/enums/cache-indexes.enum';
+import { ICreateIndexOptions } from '@shared/modules/redis/interfaces/create-index-options.interface';
+import { ICreateSearchIndexSchema } from '@shared/modules/redis/interfaces/create-search-index-schema.interface';
+import { ISearchResults } from '@shared/modules/redis/interfaces/search-results.interface';
+import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
+import { transformCreateSearchIndexArgs } from '@shared/modules/redis/utils/transform-create-search-index-args.util';
+import { ArrayType } from '@shared/types/array.type';
 
 @Injectable()
-export class RedisCacheService {
+export class RedisService {
   private ioRedisInstance: IoredisWithDefaultTtl;
 
   constructor(
@@ -143,7 +145,7 @@ export class RedisCacheService {
       maxSearchLimit,
     );
 
-    return RedisCacheService.parseSearchResult(rawSearchResults);
+    return RedisService.parseSearchResult(rawSearchResults);
   }
 
   @Catch(internalErrHandler)
@@ -151,6 +153,12 @@ export class RedisCacheService {
     return this.ioRedisInstance.ttl(cacheKey);
   }
 
+  /**
+   * @description creates RediSearch index. Requires RediSearch to be installed in the Redis
+   * @param index
+   * @param schema
+   * @param options
+   */
   public async createIndex(
     index: CacheIndexesEnum,
     schema: ICreateSearchIndexSchema,

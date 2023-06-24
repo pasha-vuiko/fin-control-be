@@ -1,15 +1,17 @@
-import { INestApplication, Injectable, OnModuleInit } from '@nestjs/common';
+import { INestApplication, Inject, Injectable, OnModuleInit } from '@nestjs/common';
+
 import { AppLogger } from '@shared/modules/logger/app-logger';
+import { PRISMA_MODULE_OPTIONS } from '@shared/modules/prisma/constants/prisma-module-options-injection-token';
+import { TPrismaOptions } from '@shared/modules/prisma/types/prisma-options.type';
+
 import { PrismaClient } from '../../../../prisma/client';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
   private readonly logger = new AppLogger(PrismaService.name);
 
-  constructor() {
-    super({
-      errorFormat: process.env.NODE_ENV === 'development' ? 'pretty' : 'minimal',
-    });
+  constructor(@Inject(PRISMA_MODULE_OPTIONS) options: TPrismaOptions) {
+    super(options);
   }
 
   onModuleInit(): void {

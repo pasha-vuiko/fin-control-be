@@ -4,13 +4,16 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateCustomerDto } from './dto/create-customer.dto';
-import { UpdateCustomerDto } from './dto/update-customer.dto';
+
+import { PaginationDto } from '@shared/dto/pagination.dto';
+import { IUser } from '@shared/modules/auth/interfaces/user.interface';
+
+import { CustomerEntity } from '@api/customers/entities/customer.entity';
 import { ICustomersRepository } from '@api/customers/interfaces/customers.repository.interface';
 import { CustomersRepository } from '@api/customers/repositories/customers.repository';
-import { CustomerEntity } from '@api/customers/entities/customer.entity';
-import { IUser } from '@shared/modules/auth/interfaces/user.interface';
-import { PaginationDto } from '@shared/dto/pagination.dto';
+
+import { CreateCustomerDto } from './dto/create-customer.dto';
+import { UpdateCustomerDto } from './dto/update-customer.dto';
 
 @Injectable()
 export class CustomersService {
@@ -20,16 +23,6 @@ export class CustomersService {
 
   findMany(pagination?: PaginationDto): Promise<CustomerEntity[]> {
     return this.customerRepository.findMany(pagination);
-  }
-
-  async findOneByIdAsCustomer(id: string, userId: string): Promise<CustomerEntity> {
-    const foundCustomer = await this.customerRepository.findOneById(id);
-
-    if (!foundCustomer || foundCustomer.userId !== userId) {
-      throw new NotFoundException('The customer was not found');
-    }
-
-    return foundCustomer;
   }
 
   async findOneByIdAsAdmin(id: string): Promise<CustomerEntity> {

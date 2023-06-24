@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { packageJsonInfo } from '@shared/constants/package-json-info';
 
 @Injectable()

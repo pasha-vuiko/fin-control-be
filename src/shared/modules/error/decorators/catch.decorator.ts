@@ -1,5 +1,8 @@
 import { isPromise } from 'node:util/types';
+
 import { isFunction } from '@nestjs/common/utils/shared.utils';
+
+import { isAsyncFn } from '@shared/utils/is-async-fn';
 
 /**
  *
@@ -11,22 +14,23 @@ import { isFunction } from '@nestjs/common/utils/shared.utils';
  */
 export const CatchTheError = (
   ErrorClassConstructor: (...args: any[]) => any,
-  handler: ErrHandler,
+  handler: TErrorHandler,
 ): MethodDecorator => Factory(ErrorClassConstructor, handler);
 
 /**
  *
  * @param handler Error handler function
- * @description Catches method errors and handles them with handler function,
- * Turns entry method to async even if it wasn't async before
+ * @description Catches method errors and handles them with handler function
  */
-export const Catch = (handler: ErrHandler): MethodDecorator => Factory(handler);
+export const Catch = (handler: TErrorHandler): MethodDecorator => Factory(handler);
 
+// eslint-disable-next-line max-lines-per-function
 function Factory(
   // eslint-disable-next-line @typescript-eslint/ban-types
-  ErrorClassConstructor: Function | ErrHandler,
-  handler?: ErrHandler,
+  ErrorClassConstructor: Function | TErrorHandler,
+  handler?: TErrorHandler,
 ) {
+  // eslint-disable-next-line max-lines-per-function
   return (
     _target: any,
     key: string | symbol,
@@ -35,25 +39,41 @@ function Factory(
     const { value: originalFn } = descriptor;
 
     if (!handler) {
-      handler = ErrorClassConstructor as ErrHandler;
+      handler = ErrorClassConstructor as TErrorHandler;
       ErrorClassConstructor = undefined as unknown as any;
     }
 
-    descriptor.value = async function (...args: any[]): Promise<any> {
-      try {
-        const result = originalFn.apply(this, args);
+    const handleError = (error: any, args: any): any => {
+      if (
+        isFunction(handler) &&
+        (ErrorClassConstructor === undefined || error instanceof ErrorClassConstructor)
+      ) {
+        //@ts-expect-error handler is possibly undefined
+        return handler.call(null, error, this, key, args);
+      }
 
-        return isPromise(result) ? await result : await Promise.resolve(result);
-      } catch (error) {
-        if (
-          isFunction(handler) &&
-          (ErrorClassConstructor === undefined || error instanceof ErrorClassConstructor)
-        ) {
-          //@ts-expect-error handler is possibly undefined
-          return handler.call(null, error, this, key, args);
+      throw error;
+    };
+
+    if (isAsyncFn(originalFn)) {
+      descriptor.value = async function (...args: any[]): Promise<any> {
+        try {
+          const result = originalFn.apply(this, args);
+
+          return isPromise(result) ? await result : await Promise.resolve(result);
+        } catch (error) {
+          handleError(error, args);
         }
+      };
 
-        throw error;
+      return descriptor;
+    }
+
+    descriptor.value = function (...args: any[]): any {
+      try {
+        return originalFn.apply(this, args);
+      } catch (error) {
+        handleError(error, args);
       }
     };
 
@@ -61,7 +81,7 @@ function Factory(
   };
 }
 
-export type ErrHandler = (
+export type TErrorHandler = (
   err: any,
   methodContext: any,
   methodName?: string,

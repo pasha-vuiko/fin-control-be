@@ -1,11 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ExpensesController } from './expenses.controller';
-import { ExpensesService } from './expenses.service';
+
 import { PrismaModule } from '@shared/modules/prisma/prisma.module';
+import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
+import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
+
 import { CustomersModule } from '@api/customers/customers.module';
 import { ExpensesRepository } from '@api/expenses/repositories/expenses.repository';
-import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
-import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
+
+import { ExpensesController } from './expenses.controller';
+import { ExpensesService } from './expenses.service';
 
 describe('ExpensesController', () => {
   let controller: ExpensesController;
@@ -16,7 +19,7 @@ describe('ExpensesController', () => {
       .mockReturnValue({} as IoredisWithDefaultTtl);
 
     const module: TestingModule = await Test.createTestingModule({
-      imports: [PrismaModule, CustomersModule],
+      imports: [PrismaModule.forRoot(), CustomersModule],
       controllers: [ExpensesController],
       providers: [ExpensesService, ExpensesRepository],
     }).compile();

@@ -1,50 +1,44 @@
-import { NestFastifyApplication } from '@nestjs/platform-fastify';
+import { Logger } from 'nestjs-pino';
+
 import { ValidationPipe } from '@nestjs/common';
+import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from '@nestjs/swagger';
 
-import authenticate from '../fastify-plugins/authenticate.plugin';
-import { PrismaService } from '@shared/modules/prisma/prisma.service';
-import { config } from '../../app.config';
-import { AllExceptionsFilter } from '@shared/exception-filters/all-exceptions.filter';
 import { packageJsonInfo } from '@shared/constants/package-json-info';
-import { Logger } from 'nestjs-pino';
+import { AllExceptionsFilter } from '@shared/exception-filters/all-exceptions.filter';
+import { PrismaService } from '@shared/modules/prisma/prisma.service';
 
 export async function bootstrapPlugins(
   app: NestFastifyApplication,
   logger: Logger,
+  isDevelopment: boolean,
 ): Promise<void> {
   // Enable CORS only for local development, CORS should be enabled in Reverse Proxy instead of the app
-  if (config.app.isDevelopment) {
+  if (isDevelopment) {
     app.enableCors();
   }
 
-  await registerPlugins(app);
   setupExceptionFilters(app);
   setupOpenApi(app);
-  setupRequestsValidation(app);
+  setupRequestsValidation(app, isDevelopment);
   await setupShutdownHooks(app, logger);
-}
-
-async function registerPlugins(app: NestFastifyApplication): Promise<void> {
-  const { auth0Domain, auth0ClientSecret } = config.auth;
-
-  await app.register(authenticate, {
-    domain: auth0Domain as string,
-    secret: auth0ClientSecret as string,
-  });
 }
 
 function setupExceptionFilters(app: NestFastifyApplication): void {
   app.useGlobalFilters(new AllExceptionsFilter());
 }
 
-function setupRequestsValidation(app: NestFastifyApplication): void {
+function setupRequestsValidation(
+  app: NestFastifyApplication,
+  isDevelopment: boolean,
+): void {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       transform: true,
       forbidUnknownValues: false,
-      enableDebugMessages: config.app.isDevelopment,
+      enableDebugMessages: isDevelopment,
+      disableErrorMessages: !isDevelopment,
     }),
   );
 }

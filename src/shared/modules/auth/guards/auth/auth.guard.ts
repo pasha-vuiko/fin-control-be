@@ -5,9 +5,10 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Roles } from '@shared/modules/auth/enums/roles';
-import { AUTH_ROLES_META } from '@shared/modules/auth/decorators/auth.decorator';
 import { Reflector } from '@nestjs/core';
+
+import { AUTH_ROLES_META } from '@shared/modules/auth/decorators/auth.decorator';
+import { Roles } from '@shared/modules/auth/enums/roles';
 import { getRolesFromAuth0User } from '@shared/modules/auth/utils/getRolesFromAuth0User';
 
 @Injectable()
@@ -19,7 +20,7 @@ export class AuthGuard implements CanActivate {
     const reply = context.switchToHttp().getResponse();
 
     await req.authenticate(req, reply).catch((e: Error | any) => {
-      throw new UnauthorizedException('Failed to auth via Auth0', e);
+      throw new UnauthorizedException(`Failed to auth, ${e.message}`, e);
     });
 
     const requiredRoles = this.getRequiredRoles(context);

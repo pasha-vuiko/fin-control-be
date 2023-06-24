@@ -1,6 +1,7 @@
-import { Logger } from '@nestjs/common';
 import { storage } from 'nestjs-pino/storage';
 import pino from 'pino';
+
+import { Logger } from '@nestjs/common';
 
 export class AppLogger extends Logger {
   // @ts-expect-error child method has different arguments from the parent

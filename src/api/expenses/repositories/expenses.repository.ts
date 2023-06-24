@@ -1,19 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@shared/modules/prisma/prisma.service';
-import { IExpensesRepository } from '@api/expenses/interfaces/expenses-repository.interface';
-import { ICreateExpenseInput } from '@api/expenses/interfaces/create-expense-input.interface';
-import { IUpdateExpenseInput } from '@api/expenses/interfaces/update-expense-input.interface';
-import { IExpense } from '@api/expenses/interfaces/expense.interface';
-import { Expense, Prisma } from '../../../../prisma/client';
+
 import { IPagination } from '@shared/interfaces/pagination.interface';
+import { Catch } from '@shared/modules/error/decorators/catch.decorator';
+import { PrismaService } from '@shared/modules/prisma/prisma.service';
+import { handlePrismaError } from '@shared/modules/prisma/utils/handle-prisma-error';
 import { mergePaginationWithDefault } from '@shared/utils/merge-pagination-with-default';
 import { omitObj } from '@shared/utils/omit-obj.util';
+
+import { ICreateExpenseInput } from '@api/expenses/interfaces/create-expense-input.interface';
+import { IExpense } from '@api/expenses/interfaces/expense.interface';
+import { IExpensesRepository } from '@api/expenses/interfaces/expenses-repository.interface';
+import { IUpdateExpenseInput } from '@api/expenses/interfaces/update-expense-input.interface';
+
+import { Expense, Prisma } from '../../../../prisma/client';
+
 import SortOrder = Prisma.SortOrder;
 
 @Injectable()
 export class ExpensesRepository implements IExpensesRepository {
   constructor(private prismaService: PrismaService) {}
 
+  @Catch(handlePrismaError)
   async findMany(pagination?: IPagination): Promise<IExpense[]> {
     const { skip, take } = mergePaginationWithDefault(pagination);
     const foundExpenses = await this.prismaService.expense.findMany({ skip, take });
@@ -21,6 +28,7 @@ export class ExpensesRepository implements IExpensesRepository {
     return foundExpenses.map(expense => this.mapExpenseFromPrismaToExpense(expense));
   }
 
+  @Catch(handlePrismaError)
   async findManyByCustomer(
     customerId: string,
     pagination?: IPagination,
@@ -38,6 +46,7 @@ export class ExpensesRepository implements IExpensesRepository {
     return foundExpenses.map(expense => this.mapExpenseFromPrismaToExpense(expense));
   }
 
+  @Catch(handlePrismaError)
   async findOne(id: string): Promise<IExpense | null> {
     const foundExpense = await this.prismaService.expense.findUnique({ where: { id } });
 
@@ -48,6 +57,7 @@ export class ExpensesRepository implements IExpensesRepository {
     return this.mapExpenseFromPrismaToExpense(foundExpense);
   }
 
+  @Catch(handlePrismaError)
   async createMany(
     createExpenseInputs: ICreateExpenseInput[],
     customerId: string,
@@ -69,6 +79,7 @@ export class ExpensesRepository implements IExpensesRepository {
     );
   }
 
+  @Catch(handlePrismaError)
   async update(id: string, data: IUpdateExpenseInput): Promise<IExpense> {
     const dataWithoutCustomerId = omitObj(data, 'customerId');
     const updatedExpense = await this.prismaService.expense.update({
@@ -79,6 +90,7 @@ export class ExpensesRepository implements IExpensesRepository {
     return this.mapExpenseFromPrismaToExpense(updatedExpense);
   }
 
+  @Catch(handlePrismaError)
   async delete(id: string): Promise<IExpense> {
     const deletedExpense = await this.prismaService.expense.delete({ where: { id } });
 
@@ -91,7 +103,7 @@ export class ExpensesRepository implements IExpensesRepository {
       customerId: expense.customerId,
       date: expense.date,
       amount: expense.amount.toNumber(),
-      type: expense.type,
+      category: expense.category,
       createdAt: expense.createdAt,
       updatedAt: expense.updatedAt,
     };

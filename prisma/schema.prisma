@@ -18,22 +18,22 @@ model Customer {
   lastName  String
   email     String    @unique
   phone     String?   @unique
-  birthdate DateTime
+  birthdate DateTime  @db.Timestamptz(6)
   sex       Sex
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now()) @updatedAt
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
   Expense   Expense[]
 }
 
 model Expense {
-  id         String      @id @default(uuid())
+  id         String          @id @default(uuid())
   customerId String
-  amount     Decimal     @db.Decimal(10, 2)
-  date       DateTime
-  type       ExpenseType
-  customer   Customer    @relation(fields: [customerId], references: [id])
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @default(now()) @updatedAt
+  amount     Decimal         @db.Decimal(10, 2)
+  date       DateTime        @db.Timestamptz(6)
+  category   ExpenseCategory
+  customer   Customer        @relation(fields: [customerId], references: [id])
+  createdAt  DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime        @default(now()) @updatedAt @db.Timestamptz(6)
 }
 
 enum Sex {
@@ -41,11 +41,25 @@ enum Sex {
   FEMALE
 }
 
-enum ExpenseType {
+enum ExpenseCategory {
   FOOD
+  MEDICINE
   CLOTHES
-  HOBBIES
-  GAMES
+  UTILITY_PAYMENTS
+  ANIMALS
+  PLACES_TO_EAT
+  EDUCATION
+  BOOKS
+  TAXI
+  GIFTS
+  DONATIONS
+  MOBILE_SERVICES
   SUBSCRIPTIONS
+  SPORTS
+  ENTERAINMENT
+  BEAUTY_AND_CARE
+  HOUSEHOLD
+  PUBLIC_TRANSPORT
+  TRAVEL
   OTHER
 }
