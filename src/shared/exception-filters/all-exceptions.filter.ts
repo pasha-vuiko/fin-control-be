@@ -16,6 +16,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const responsePayload = this.getResponsePayload(exception, request.id);
     const status = responsePayload.error.code;
 
+    // @ts-expect-error for some reason type of parameter payload in send() is undefined
     response.status(status).send(responsePayload);
   }
 
