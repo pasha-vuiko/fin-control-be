@@ -8,6 +8,7 @@ import { Roles } from '@shared/modules/auth/enums/roles';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
 import { isAdmin } from '@shared/modules/auth/utils/is-admin.util';
 import { AppLogger } from '@shared/modules/logger/app-logger';
+import { JsonCache } from '@shared/modules/redis/decorators/json-cache.decorator';
 
 import { RegularPaymentSearchDto } from '@api/regular-payments/dto/regular-payment-search.dto';
 import { RegularPaymentEntity } from '@api/regular-payments/entities/regular-payment.entity';
@@ -22,6 +23,7 @@ export class RegularPaymentsController {
   constructor(private readonly regularPaymentsService: RegularPaymentsService) {}
 
   @Auth(Roles.CUSTOMER, Roles.ADMIN)
+  @JsonCache()
   @Get()
   findMany(
     @Query() filter: RegularPaymentSearchDto,
@@ -37,6 +39,7 @@ export class RegularPaymentsController {
   }
 
   @Auth(Roles.CUSTOMER, Roles.ADMIN)
+  @JsonCache()
   @Get(':id')
   findOne(@Param('id') id: string, @User() user: IUser): Promise<RegularPaymentEntity> {
     if (isAdmin(user)) {
