@@ -12,17 +12,18 @@ datasource db {
 }
 
 model Customer {
-  id        String    @id @default(uuid())
-  userId    String    @unique
-  firstName String
-  lastName  String
-  email     String    @unique
-  phone     String?   @unique
-  birthdate DateTime  @db.Timestamptz(6)
-  sex       Sex
-  createdAt DateTime  @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
-  Expense   Expense[]
+  id             String           @id @default(uuid())
+  userId         String           @unique
+  firstName      String
+  lastName       String
+  email          String           @unique
+  phone          String?          @unique
+  birthdate      DateTime         @db.Timestamptz(6)
+  sex            Sex
+  createdAt      DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime         @default(now()) @updatedAt @db.Timestamptz(6)
+  Expense        Expense[]
+  RegulatPayment RegularPayment[]
 }
 
 model Expense {
@@ -30,10 +31,21 @@ model Expense {
   customerId String
   amount     Decimal         @db.Decimal(10, 2)
   date       DateTime        @db.Timestamptz(6)
-  category   ExpenseCategory
-  customer   Customer        @relation(fields: [customerId], references: [id])
   createdAt  DateTime        @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime        @default(now()) @updatedAt @db.Timestamptz(6)
+  category   ExpenseCategory
+  customer   Customer        @relation(fields: [customerId], references: [id])
+}
+
+model RegularPayment {
+  id           String          @id @default(uuid())
+  customerId   String
+  amount       Decimal         @db.Decimal(10, 2)
+  dateOfCharge DateTime        @db.Timestamptz(6)
+  createdAt    DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime        @default(now()) @updatedAt @db.Timestamptz(6)
+  category     ExpenseCategory
+  customer     Customer        @relation(fields: [customerId], references: [id])
 }
 
 enum Sex {

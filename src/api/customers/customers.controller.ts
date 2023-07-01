@@ -7,12 +7,12 @@ import { Roles } from '@shared/modules/auth/enums/roles';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
 import { JsonCache } from '@shared/modules/redis/decorators/json-cache.decorator';
 
-import { FindCustomersDto } from '@api/customers/dto/find-customers.dto';
+import { CustomersFindDto } from '@api/customers/dto/customers-find.dto';
 import { CustomerEntity } from '@api/customers/entities/customer.entity';
 
 import { CustomersService } from './customers.service';
-import { CreateCustomerDto } from './dto/create-customer.dto';
-import { UpdateCustomerDto } from './dto/update-customer.dto';
+import { CustomerCreateDto } from './dto/customer-create.dto';
+import { CustomerUpdateDto } from './dto/customer-update.dto';
 
 // TODO Add method to change customers Email and Phone
 @ApiTags('Customers')
@@ -22,7 +22,7 @@ export class CustomersController {
 
   @Auth(Roles.ADMIN)
   @Get()
-  findMany(@Query() findDto: FindCustomersDto): Promise<CustomerEntity[]> {
+  findMany(@Query() findDto: CustomersFindDto): Promise<CustomerEntity[]> {
     return this.customerService.findMany(findDto);
   }
 
@@ -43,7 +43,7 @@ export class CustomersController {
   @Auth(Roles.CUSTOMER)
   @Post()
   create(
-    @Body() createCustomerDto: CreateCustomerDto,
+    @Body() createCustomerDto: CustomerCreateDto,
     @User() user: IUser,
   ): Promise<CustomerEntity> {
     return this.customerService.create(createCustomerDto, user);
@@ -54,7 +54,7 @@ export class CustomersController {
   update(
     @Param('id') id: string,
     @User() user: IUser,
-    @Body() updateCustomerDto: UpdateCustomerDto,
+    @Body() updateCustomerDto: CustomerUpdateDto,
   ): Promise<CustomerEntity> {
     if (user.roles.includes(Roles.ADMIN)) {
       return this.customerService.updateAsAdmin(id, updateCustomerDto);

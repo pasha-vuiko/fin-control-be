@@ -4,12 +4,12 @@ import { PaginationDto } from '@shared/dto/pagination.dto';
 
 import { CustomersService } from '@api/customers/customers.service';
 import { ExpenseEntity } from '@api/expenses/entities/expense.entity';
-import { ICreateExpenseInput } from '@api/expenses/interfaces/create-expense-input.interface';
+import { IExpenseCreateInput } from '@api/expenses/interfaces/expense-create-input.interface';
 import { IExpensesRepository } from '@api/expenses/interfaces/expenses-repository.interface';
 import { ExpensesRepository } from '@api/expenses/repositories/expenses.repository';
 
-import { CreateExpenseDto } from './dto/create-expense.dto';
-import { UpdateExpenseDto } from './dto/update-expense.dto';
+import { ExpenseCreateDto } from './dto/expense-create.dto';
+import { ExpenseUpdateDto } from './dto/expense-update.dto';
 
 @Injectable()
 export class ExpensesService {
@@ -55,11 +55,11 @@ export class ExpensesService {
   }
 
   async createMany(
-    createExpenseDTOs: CreateExpenseDto[],
+    expensesToCreate: ExpenseCreateDto[],
     userId: string,
   ): Promise<ExpenseEntity[]> {
     const customer = await this.customersService.findOneByUserId(userId);
-    const createExpensesDataWithCustomerId: ICreateExpenseInput[] = createExpenseDTOs.map(
+    const createExpensesDataWithCustomerId: IExpenseCreateInput[] = expensesToCreate.map(
       dto => ({
         ...dto,
         customerId: customer.id,
@@ -72,9 +72,15 @@ export class ExpensesService {
     );
   }
 
+  async createManyViaTransaction(
+    expensesToCreate: IExpenseCreateInput[],
+  ): Promise<ExpenseEntity[]> {
+    return this.expensesRepository.createManyViaTransaction(expensesToCreate);
+  }
+
   async update(
     id: string,
-    updateExpenseDto: UpdateExpenseDto,
+    updateExpenseDto: ExpenseUpdateDto,
     userId: string,
   ): Promise<ExpenseEntity> {
     const [customer] = await Promise.all([

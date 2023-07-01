@@ -6,10 +6,10 @@ import { PrismaService } from '@shared/modules/prisma/prisma.service';
 import { handlePrismaError } from '@shared/modules/prisma/utils/handle-prisma-error';
 import { mergePaginationWithDefault } from '@shared/utils/merge-pagination-with-default';
 
-import { ICreateCustomerInput } from '@api/customers/interfaces/create-customer-input.interface';
+import { ICustomerCreateInput } from '@api/customers/interfaces/customer-create-input.interface';
+import { ICustomerUpdateInput } from '@api/customers/interfaces/customer-update-input.interface';
 import { ICustomer } from '@api/customers/interfaces/customer.interface';
 import { ICustomersRepository } from '@api/customers/interfaces/customers.repository.interface';
-import { IUpdateCustomerInput } from '@api/customers/interfaces/update-customer-input.interface';
 
 import { Customer } from '../../../../prisma/client';
 
@@ -53,14 +53,14 @@ export class CustomersRepository implements ICustomersRepository {
   }
 
   @Catch(handlePrismaError)
-  async create(data: ICreateCustomerInput): Promise<ICustomer> {
+  async create(data: ICustomerCreateInput): Promise<ICustomer> {
     const createdCustomer = await this.prismaService.customer.create({ data });
 
     return this.mapCustomerFromPrismaToCustomer(createdCustomer);
   }
 
   @Catch(handlePrismaError)
-  async update(id: string, data: IUpdateCustomerInput): Promise<ICustomer> {
+  async update(id: string, data: ICustomerUpdateInput): Promise<ICustomer> {
     const updatedCustomer = await this.prismaService.customer.update({
       data: data,
       where: { id },

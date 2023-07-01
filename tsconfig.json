@@ -3,6 +3,7 @@
     "strict": true,
     "strictPropertyInitialization": false,
     "module": "commonjs",
+    "moduleResolution": "node",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,

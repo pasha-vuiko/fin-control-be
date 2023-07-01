@@ -1,3 +1,3 @@
 import { PaginationDto } from '@shared/dto/pagination.dto';
 
-export class FindCustomersDto extends PaginationDto {}
+export class CustomersFindDto extends PaginationDto {}

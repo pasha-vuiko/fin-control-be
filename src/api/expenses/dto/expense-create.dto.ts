@@ -4,11 +4,11 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { IsDecimalNum } from '@shared/decorators/validation/is-decimal-num.decorator';
 
-import { ICreateExpenseInput } from '@api/expenses/interfaces/create-expense-input.interface';
+import { IExpenseCreateInput } from '@api/expenses/interfaces/expense-create-input.interface';
 
 import { ExpenseCategory } from '../../../../prisma/client';
 
-export class CreateExpenseDto implements Omit<ICreateExpenseInput, 'customerId'> {
+export class ExpenseCreateDto implements Omit<IExpenseCreateInput, 'customerId'> {
   @IsDecimalNum()
   @IsNotEmpty()
   amount: number;

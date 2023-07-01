@@ -10,12 +10,12 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { NotRequired } from '@shared/decorators/validation/not-required.decorator';
 
-import { ICreateCustomerInput } from '@api/customers/interfaces/create-customer-input.interface';
+import { ICustomerCreateInput } from '@api/customers/interfaces/customer-create-input.interface';
 
 import { Sex } from '../../../../prisma/client';
 
-export class CreateCustomerDto
-  implements Omit<ICreateCustomerInput, 'id' | 'userId' | 'email'>
+export class CustomerCreateDto
+  implements Omit<ICustomerCreateInput, 'id' | 'userId' | 'email'>
 {
   @IsNotEmpty()
   @IsString()

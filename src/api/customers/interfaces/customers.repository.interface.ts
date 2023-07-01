@@ -1,8 +1,8 @@
 import { IPagination } from '@shared/interfaces/pagination.interface';
 
-import { ICreateCustomerInput } from '@api/customers/interfaces/create-customer-input.interface';
+import { ICustomerCreateInput } from '@api/customers/interfaces/customer-create-input.interface';
+import { ICustomerUpdateInput } from '@api/customers/interfaces/customer-update-input.interface';
 import { ICustomer } from '@api/customers/interfaces/customer.interface';
-import { IUpdateCustomerInput } from '@api/customers/interfaces/update-customer-input.interface';
 
 export interface ICustomersRepository {
   findMany(pagination?: IPagination): Promise<ICustomer[]>;
@@ -11,9 +11,9 @@ export interface ICustomersRepository {
 
   findOneByUserId(id: string): Promise<ICustomer | null>;
 
-  create(data: ICreateCustomerInput): Promise<ICustomer>;
+  create(data: ICustomerCreateInput): Promise<ICustomer>;
 
-  update(id: string, data: IUpdateCustomerInput): Promise<ICustomer>;
+  update(id: string, data: ICustomerUpdateInput): Promise<ICustomer>;
 
   remove(id: string): Promise<ICustomer>;
 }

@@ -8,6 +8,7 @@ import { ExpensesService } from './expenses.service';
 
 @Module({
   imports: [CustomersModule],
+  exports: [ExpensesService],
   controllers: [ExpensesController],
   providers: [ExpensesService, ExpensesRepository],
 })

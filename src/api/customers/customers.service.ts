@@ -12,8 +12,8 @@ import { CustomerEntity } from '@api/customers/entities/customer.entity';
 import { ICustomersRepository } from '@api/customers/interfaces/customers.repository.interface';
 import { CustomersRepository } from '@api/customers/repositories/customers.repository';
 
-import { CreateCustomerDto } from './dto/create-customer.dto';
-import { UpdateCustomerDto } from './dto/update-customer.dto';
+import { CustomerCreateDto } from './dto/customer-create.dto';
+import { CustomerUpdateDto } from './dto/customer-update.dto';
 
 @Injectable()
 export class CustomersService {
@@ -45,7 +45,7 @@ export class CustomersService {
     return foundCustomer;
   }
 
-  create(createCustomerDto: CreateCustomerDto, user: IUser): Promise<CustomerEntity> {
+  create(createCustomerDto: CustomerCreateDto, user: IUser): Promise<CustomerEntity> {
     const { id, email } = user;
 
     return this.customerRepository.create({
@@ -58,7 +58,7 @@ export class CustomersService {
 
   async updateAsCustomer(
     id: string,
-    updateCustomerDto: UpdateCustomerDto,
+    updateCustomerDto: CustomerUpdateDto,
     userId: string,
   ): Promise<CustomerEntity> {
     const foundCustomer = await this.customerRepository.findOneById(id);
@@ -72,7 +72,7 @@ export class CustomersService {
 
   async updateAsAdmin(
     id: string,
-    updateCustomerDto: UpdateCustomerDto,
+    updateCustomerDto: CustomerUpdateDto,
   ): Promise<CustomerEntity> {
     const foundCustomer = await this.customerRepository.findOneById(id);
 

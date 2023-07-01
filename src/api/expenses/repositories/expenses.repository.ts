@@ -7,10 +7,10 @@ import { handlePrismaError } from '@shared/modules/prisma/utils/handle-prisma-er
 import { mergePaginationWithDefault } from '@shared/utils/merge-pagination-with-default';
 import { omitObj } from '@shared/utils/omit-obj.util';
 
-import { ICreateExpenseInput } from '@api/expenses/interfaces/create-expense-input.interface';
+import { IExpenseCreateInput } from '@api/expenses/interfaces/expense-create-input.interface';
+import { IExpenseUpdateInput } from '@api/expenses/interfaces/expense-update-input.interface';
 import { IExpense } from '@api/expenses/interfaces/expense.interface';
 import { IExpensesRepository } from '@api/expenses/interfaces/expenses-repository.interface';
-import { IUpdateExpenseInput } from '@api/expenses/interfaces/update-expense-input.interface';
 
 import { Expense, Prisma } from '../../../../prisma/client';
 
@@ -59,7 +59,7 @@ export class ExpensesRepository implements IExpensesRepository {
 
   @Catch(handlePrismaError)
   async createMany(
-    createExpenseInputs: ICreateExpenseInput[],
+    createExpenseInputs: IExpenseCreateInput[],
     customerId: string,
   ): Promise<IExpense[]> {
     const { count } = await this.prismaService.expense.createMany({
@@ -80,7 +80,29 @@ export class ExpensesRepository implements IExpensesRepository {
   }
 
   @Catch(handlePrismaError)
-  async update(id: string, data: IUpdateExpenseInput): Promise<IExpense> {
+  async createManyViaTransaction(
+    createExpenseInputs: IExpenseCreateInput[],
+  ): Promise<IExpense[]> {
+    const foundCreatedExpenses = await this.prismaService.$transaction(async tx => {
+      const { count } = await tx.expense.createMany({
+        data: createExpenseInputs,
+      });
+
+      return tx.expense.findMany({
+        orderBy: {
+          createdAt: SortOrder.desc,
+        },
+        take: count,
+      });
+    });
+
+    return foundCreatedExpenses.map(expense =>
+      this.mapExpenseFromPrismaToExpense(expense),
+    );
+  }
+
+  @Catch(handlePrismaError)
+  async update(id: string, data: IExpenseUpdateInput): Promise<IExpense> {
     const dataWithoutCustomerId = omitObj(data, 'customerId');
     const updatedExpense = await this.prismaService.expense.update({
       data: dataWithoutCustomerId,

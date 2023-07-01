@@ -8,6 +8,7 @@ import { RedisModule } from '@shared/modules/redis/redis.module';
 
 import { CustomersModule } from '@api/customers/customers.module';
 import { ExpensesModule } from '@api/expenses/expenses.module';
+import { RegularPaymentsModule } from '@api/regular-payments/regular-payments.module';
 
 import { config } from './app.config';
 import { AppController } from './app.controller';
@@ -18,6 +19,7 @@ import { AppService } from './app.service';
     // api
     CustomersModule,
     ExpensesModule,
+    RegularPaymentsModule,
     // shared
     PrismaModule.forRoot({
       errorFormat: config.app.isDevelopment ? 'pretty' : 'minimal',
