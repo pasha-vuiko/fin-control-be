@@ -1,10 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { RegularPaymentsController } from './regular-payments.controller';
-import { RegularPaymentsService } from './regular-payments.service';
 import { CustomersModule } from '@api/customers/customers.module';
 import { ExpensesModule } from '@api/expenses/expenses.module';
 import { RegularPaymentsRepository } from '@api/regular-payments/repositories/regular-payments.repository';
+
+import { RegularPaymentsController } from './regular-payments.controller';
+import { RegularPaymentsService } from './regular-payments.service';
 
 describe('RegularPaymentsController', () => {
   let controller: RegularPaymentsController;
@@ -13,7 +14,7 @@ describe('RegularPaymentsController', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [CustomersModule, ExpensesModule],
       controllers: [RegularPaymentsController],
-      providers: [RegularPaymentsService, RegularPaymentsRepository]
+      providers: [RegularPaymentsService, RegularPaymentsRepository],
     }).compile();
 
     controller = module.get<RegularPaymentsController>(RegularPaymentsController);
