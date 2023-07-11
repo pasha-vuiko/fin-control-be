@@ -17,7 +17,7 @@ export class RegularPaymentCreateDto
   @IsEnum(ExpenseCategory)
   @IsNotEmpty()
   @ApiProperty({ enum: Object.keys(ExpenseCategory) })
-  category: ExpenseCategory; // TODO Replace with self implemented enum
+  category: ExpenseCategory;
 
   @IsDateString()
   @IsNotEmpty()
