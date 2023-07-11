@@ -6,7 +6,6 @@ import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from '@nestjs/sw
 
 import { packageJsonInfo } from '@shared/constants/package-json-info';
 import { AllExceptionsFilter } from '@shared/exception-filters/all-exceptions.filter';
-import { PrismaService } from '@shared/modules/prisma/prisma.service';
 
 export async function bootstrapPlugins(
   app: NestFastifyApplication,
@@ -48,9 +47,6 @@ async function setupShutdownHooks(
   logger: Logger,
 ): Promise<void> {
   app.enableShutdownHooks();
-  const prismaService = app.get(PrismaService);
-  await prismaService.enableShutdownHooks(app);
-
   // Accessing pino instance to have access to 'fatal' log level
   // @ts-expect-error access to protected field
   const pinoLogger = logger.logger;

@@ -1,4 +1,4 @@
-import { INestApplication, Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 
 import { AppLogger } from '@shared/modules/logger/app-logger';
 import { PRISMA_MODULE_OPTIONS } from '@shared/modules/prisma/constants/prisma-module-options-injection-token';
@@ -7,7 +7,10 @@ import { TPrismaOptions } from '@shared/modules/prisma/types/prisma-options.type
 import { PrismaClient } from '../../../../prisma/client';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit {
+export class PrismaService
+  extends PrismaClient
+  implements OnModuleInit, OnApplicationShutdown
+{
   private readonly logger = new AppLogger(PrismaService.name);
 
   constructor(@Inject(PRISMA_MODULE_OPTIONS) options: TPrismaOptions) {
@@ -25,10 +28,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
       );
   }
 
-  async enableShutdownHooks(app: INestApplication): Promise<void> {
-    this.$on('beforeExit', async (): Promise<void> => {
-      await this.$disconnect();
-      await app.close();
-    });
+  async onApplicationShutdown(signal?: string): Promise<void> {
+    await this.$disconnect();
+    this.logger.log('Successfully disconnected from the DB');
   }
 }

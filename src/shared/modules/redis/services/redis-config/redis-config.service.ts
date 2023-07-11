@@ -25,7 +25,7 @@ export class RedisConfigService implements CacheOptionsFactory, OnApplicationShu
 
   onApplicationShutdown(): void {
     RedisConfigService.getIoRedisInstance().disconnect();
-    RedisConfigService.logger.log('Redis is disconnected');
+    RedisConfigService.logger.log('Successfully disconnected from the Redis');
   }
 
   public createCacheOptions(): CacheModuleOptions {
@@ -42,6 +42,7 @@ export class RedisConfigService implements CacheOptionsFactory, OnApplicationShu
 
     RedisConfigService.ioRedisInstance = new IoredisWithDefaultTtl(this.moduleOptions);
 
+    this.listenToRedisConnection(RedisConfigService.ioRedisInstance);
     this.listenToRedisError(RedisConfigService.ioRedisInstance);
 
     return RedisConfigService.ioRedisInstance;
@@ -50,6 +51,12 @@ export class RedisConfigService implements CacheOptionsFactory, OnApplicationShu
   private static listenToRedisError(redisClient: IoredisWithDefaultTtl): void {
     redisClient.on('error', err => {
       this.logger.error(`Redis error: ${err.message}`);
+    });
+  }
+
+  private static listenToRedisConnection(redisClient: IoredisWithDefaultTtl): void {
+    redisClient.on('connect', () => {
+      this.logger.log(`Successfully connected to the Redis`);
     });
   }
 }
