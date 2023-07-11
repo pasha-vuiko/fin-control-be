@@ -1,6 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
+import { ApiPagePaginatedRes } from '@shared/decorators/swagger/api-page-pagineted-res.decorator';
+import { PagePaginationResEntity } from '@shared/entities/page-pagination-res.entity';
 import { Auth } from '@shared/modules/auth/decorators/auth.decorator';
 import { User } from '@shared/modules/auth/decorators/user.decorator';
 import { Roles } from '@shared/modules/auth/enums/roles';
@@ -20,10 +22,22 @@ import { CustomerUpdateDto } from './dto/customer-update.dto';
 export class CustomersController {
   constructor(private readonly customerService: CustomersService) {}
 
+  @ApiPagePaginatedRes(CustomerEntity)
   @Auth(Roles.ADMIN)
   @Get()
-  findMany(@Query() findDto: CustomersFindDto): Promise<CustomerEntity[]> {
-    return this.customerService.findMany(findDto);
+  async findMany(
+    @Query() findDto: CustomersFindDto,
+  ): Promise<PagePaginationResEntity<CustomerEntity>> {
+    const { page, numOfItems } = findDto;
+
+    const { total, items } = await this.customerService.findMany({ page, numOfItems });
+
+    return {
+      items,
+      total,
+      page,
+      numOfItems,
+    };
   }
 
   @JsonCache()

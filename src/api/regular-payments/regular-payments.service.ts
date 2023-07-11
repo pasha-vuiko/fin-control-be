@@ -1,6 +1,7 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
-import { IPagination } from '@shared/interfaces/pagination.interface';
+import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-output.entity';
+import { IPagePaginationInput } from '@shared/interfaces/page-pagination-input.interface';
 
 import { CustomersService } from '@api/customers/customers.service';
 import { ExpensesService } from '@api/expenses/expenses.service';
@@ -22,14 +23,16 @@ export class RegularPaymentsService {
     private expensesService: ExpensesService,
   ) {}
 
-  findManyAsAdmin(pagination?: IPagination): Promise<RegularPaymentEntity[]> {
+  findManyAsAdmin(
+    pagination: IPagePaginationInput,
+  ): Promise<PagePaginationOutputEntity<RegularPaymentEntity>> {
     return this.regularPaymentsRepository.findMany({}, pagination);
   }
 
   async findManyAsCustomer(
     userId: string,
-    pagination?: IPagination,
-  ): Promise<RegularPaymentEntity[]> {
+    pagination: IPagePaginationInput,
+  ): Promise<PagePaginationOutputEntity<RegularPaymentEntity>> {
     const customer = await this.customersService.findOneByUserId(userId);
 
     return this.regularPaymentsRepository.findMany(
@@ -90,7 +93,7 @@ export class RegularPaymentsService {
   }
 
   async applyRegularPayments(monthYear: string): Promise<void> {
-    const regularPayments = await this.regularPaymentsRepository.findMany({});
+    const regularPayments = await this.regularPaymentsRepository.findAll();
 
     const expensesToCreate: IExpenseCreateInput[] = regularPayments.map(
       regularPayment => ({

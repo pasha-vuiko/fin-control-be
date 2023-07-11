@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 
-import { IPagination } from '@shared/interfaces/pagination.interface';
+import { IPagePaginationInput } from '@shared/interfaces/page-pagination-input.interface';
+import { IPagePaginationOutput } from '@shared/interfaces/page-pagination-output.interface';
 import { Catch } from '@shared/modules/error/decorators/catch.decorator';
 import { PrismaService } from '@shared/modules/prisma/prisma.service';
+import { getPrismaPaginationParams } from '@shared/modules/prisma/utils/get-prisma-pagination-params';
 import { handlePrismaError } from '@shared/modules/prisma/utils/handle-prisma-error';
-import { mergePaginationWithDefault } from '@shared/utils/merge-pagination-with-default';
 import { omitObj } from '@shared/utils/omit-obj.util';
 
 import { IExpenseCreateInput } from '@api/expenses/interfaces/expense-create-input.interface';
@@ -21,29 +22,53 @@ export class ExpensesRepository implements IExpensesRepository {
   constructor(private prismaService: PrismaService) {}
 
   @Catch(handlePrismaError)
-  async findMany(pagination?: IPagination): Promise<IExpense[]> {
-    const { skip, take } = mergePaginationWithDefault(pagination);
-    const foundExpenses = await this.prismaService.expense.findMany({ skip, take });
+  async findMany(
+    pagination: IPagePaginationInput,
+  ): Promise<IPagePaginationOutput<IExpense>> {
+    const { take, skip } = getPrismaPaginationParams(pagination);
 
-    return foundExpenses.map(expense => this.mapExpenseFromPrismaToExpense(expense));
+    const { expenses, total } = await this.prismaService.$transaction(async tx => {
+      const expenses = await tx.expense
+        .findMany({
+          skip,
+          take,
+        })
+        .then(expenses =>
+          expenses.map(expense => this.mapExpenseFromPrismaToExpense(expense)),
+        );
+      const total = await tx.expense.count();
+
+      return { expenses, total };
+    });
+
+    return { items: expenses, total };
   }
 
   @Catch(handlePrismaError)
   async findManyByCustomer(
     customerId: string,
-    pagination?: IPagination,
-  ): Promise<IExpense[]> {
-    const { skip, take } = mergePaginationWithDefault(pagination);
+    pagination: IPagePaginationInput,
+  ): Promise<IPagePaginationOutput<IExpense>> {
+    const { take, skip } = getPrismaPaginationParams(pagination);
 
-    const foundExpenses = await this.prismaService.expense.findMany({
-      where: {
-        customerId,
-      },
-      skip,
-      take,
+    const { expenses, total } = await this.prismaService.$transaction(async tx => {
+      const total = await tx.expense.count();
+      const foundExpenses = await this.prismaService.expense
+        .findMany({
+          where: {
+            customerId,
+          },
+          skip,
+          take,
+        })
+        .then(expenses =>
+          expenses.map(expense => this.mapExpenseFromPrismaToExpense(expense)),
+        );
+
+      return { expenses: foundExpenses, total };
     });
 
-    return foundExpenses.map(expense => this.mapExpenseFromPrismaToExpense(expense));
+    return { items: expenses, total };
   }
 
   @Catch(handlePrismaError)

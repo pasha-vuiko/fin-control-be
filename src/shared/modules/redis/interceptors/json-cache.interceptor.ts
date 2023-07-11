@@ -15,7 +15,6 @@ import {
 import { isFunction, isNil } from '@nestjs/common/utils/shared.utils';
 import { Reflector } from '@nestjs/core';
 
-import { Roles } from '@shared/modules/auth/enums/roles';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
 import { AppLogger } from '@shared/modules/logger/app-logger';
 import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
@@ -38,6 +37,7 @@ export class JsonCacheInterceptor implements NestInterceptor {
   protected readonly httpAdapterHost: IHttpAdapterHost;
 
   protected allowedMethods = ['GET'];
+
   constructor(@Inject(REFLECTOR) protected readonly reflector: Reflector) {
     this.ioRedisInstance = RedisConfigService.getIoRedisInstance();
   }
@@ -78,31 +78,26 @@ export class JsonCacheInterceptor implements NestInterceptor {
   }
 
   private getCacheKey(context: ExecutionContext): string | undefined {
-    const httpAdapter = this.httpAdapterHost.httpAdapter;
-    const isHttpApp = httpAdapter && !!httpAdapter.getRequestMethod;
-    const cacheMetadata = this.reflector.get(CACHE_KEY_METADATA, context.getHandler());
-    const user: IUser = context.switchToHttp().getRequest().user;
-
-    // Avoiding of data leak in case if an endpoint can be used for both ADMIN and CUSTOMER roles
-    if (user?.roles?.includes(Roles.ADMIN)) {
-      this.logger.debug(
-        'generating empty cache key to avoid ADMIN appointed data leaks in case if an endpoint used for both ADMIN and CUSTOMER',
-      );
-
-      return undefined;
-    }
-
-    if (!isHttpApp || cacheMetadata) {
-      return cacheMetadata;
-    }
-
-    const request = context.getArgByIndex(0);
-
     if (!this.isRequestCacheable(context)) {
       return undefined;
     }
 
-    return httpAdapter.getRequestUrl(request);
+    const httpAdapter = this.httpAdapterHost.httpAdapter;
+    const isHttpApp = httpAdapter && !!httpAdapter.getRequestMethod;
+    const cacheMetadata = this.reflector.get(CACHE_KEY_METADATA, context.getHandler());
+
+    const user: IUser | undefined = context.switchToHttp().getRequest()?.user;
+    const userId = user?.id;
+    const cacheKeyPrefix = userId || 'guestUser:';
+
+    if (!isHttpApp || cacheMetadata) {
+      return cacheKeyPrefix + cacheMetadata;
+    }
+
+    const request = context.getArgByIndex(0);
+    const reqUrl = httpAdapter.getRequestUrl(request);
+
+    return cacheKeyPrefix + reqUrl;
   }
 
   protected isRequestCacheable(context: ExecutionContext): boolean {

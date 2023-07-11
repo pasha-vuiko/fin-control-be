@@ -2,6 +2,8 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestj
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ApiTags } from '@nestjs/swagger';
 
+import { ApiPagePaginatedRes } from '@shared/decorators/swagger/api-page-pagineted-res.decorator';
+import { PagePaginationResEntity } from '@shared/entities/page-pagination-res.entity';
 import { Auth } from '@shared/modules/auth/decorators/auth.decorator';
 import { User } from '@shared/modules/auth/decorators/user.decorator';
 import { Roles } from '@shared/modules/auth/enums/roles';
@@ -22,24 +24,35 @@ import { RegularPaymentsService } from './regular-payments.service';
 export class RegularPaymentsController {
   constructor(private readonly regularPaymentsService: RegularPaymentsService) {}
 
-  @Auth(Roles.CUSTOMER, Roles.ADMIN)
+  @ApiPagePaginatedRes(RegularPaymentEntity)
   @JsonCache()
+  @Auth(Roles.CUSTOMER, Roles.ADMIN)
   @Get()
-  findMany(
-    @Query() filter: RegularPaymentSearchDto,
+  async findMany(
+    @Query() findDto: RegularPaymentSearchDto,
     @User() user: IUser,
-  ): Promise<RegularPaymentEntity[]> {
-    const { skip, take } = filter;
+  ): Promise<PagePaginationResEntity<RegularPaymentEntity>> {
+    const { numOfItems, page } = findDto;
 
     if (isAdmin(user)) {
-      return this.regularPaymentsService.findManyAsAdmin({ skip, take });
+      const { items, total } = await this.regularPaymentsService.findManyAsAdmin({
+        numOfItems,
+        page,
+      });
+
+      return { items, total, page, numOfItems };
     }
 
-    return this.regularPaymentsService.findManyAsCustomer(user.id, { skip, take });
+    const { items, total } = await this.regularPaymentsService.findManyAsCustomer(
+      user.id,
+      { numOfItems, page },
+    );
+
+    return { items, total, page, numOfItems };
   }
 
-  @Auth(Roles.CUSTOMER, Roles.ADMIN)
   @JsonCache()
+  @Auth(Roles.CUSTOMER, Roles.ADMIN)
   @Get(':id')
   findOne(@Param('id') id: string, @User() user: IUser): Promise<RegularPaymentEntity> {
     if (isAdmin(user)) {

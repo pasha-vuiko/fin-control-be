@@ -1,6 +1,7 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
-import { PaginationDto } from '@shared/dto/pagination.dto';
+import { PagePaginationDto } from '@shared/dto/page-pagination.dto';
+import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-output.entity';
 
 import { CustomersService } from '@api/customers/customers.service';
 import { ExpenseEntity } from '@api/expenses/entities/expense.entity';
@@ -20,14 +21,16 @@ export class ExpensesService {
 
   async findManyAsCustomer(
     userId: string,
-    pagination?: PaginationDto,
-  ): Promise<ExpenseEntity[]> {
+    pagination?: PagePaginationDto,
+  ): Promise<PagePaginationOutputEntity<ExpenseEntity>> {
     const { id } = await this.customersService.findOneByUserId(userId);
 
     return this.expensesRepository.findManyByCustomer(id, pagination);
   }
 
-  async findManyAsAdmin(pagination?: PaginationDto): Promise<ExpenseEntity[]> {
+  async findManyAsAdmin(
+    pagination: PagePaginationDto,
+  ): Promise<PagePaginationOutputEntity<ExpenseEntity>> {
     return this.expensesRepository.findMany(pagination);
   }
 

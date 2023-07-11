@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 
-import { IPagination } from '@shared/interfaces/pagination.interface';
+import { IPagePaginationInput } from '@shared/interfaces/page-pagination-input.interface';
+import { IPagePaginationOutput } from '@shared/interfaces/page-pagination-output.interface';
 import { Catch } from '@shared/modules/error/decorators/catch.decorator';
 import { PrismaService } from '@shared/modules/prisma/prisma.service';
+import { getPrismaPaginationParams } from '@shared/modules/prisma/utils/get-prisma-pagination-params';
 import { handlePrismaError } from '@shared/modules/prisma/utils/handle-prisma-error';
 
 import { IRegularPaymentCreateInput } from '@api/regular-payments/interfaces/regular-payment-create-input.interface';
@@ -22,16 +24,34 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
   @Catch(handlePrismaError)
   async findMany(
     filter: IRegularPaymentsFilter,
-    pagination?: IPagination,
-  ): Promise<IRegularPayment[]> {
-    const { skip, take } = pagination ?? {};
+    pagination: IPagePaginationInput,
+  ): Promise<IPagePaginationOutput<IRegularPayment>> {
+    const { take, skip } = getPrismaPaginationParams(pagination);
     const { customerId } = filter;
 
-    const regularPayments = await this.prisma.regularPayment.findMany({
-      where: { customerId },
-      skip,
-      take,
+    const { regularPayments, total } = await this.prisma.$transaction(async tx => {
+      const total = await tx.regularPayment.count({ where: { customerId } });
+      const regularPayments = await tx.regularPayment
+        .findMany({
+          where: { customerId },
+          skip,
+          take,
+        })
+        .then(regularPayments =>
+          regularPayments.map(regularPayment =>
+            this.mapPrismaRegularPaymentToRegularPayment(regularPayment),
+          ),
+        );
+
+      return { regularPayments, total };
     });
+
+    return { items: regularPayments, total };
+  }
+
+  @Catch(handlePrismaError)
+  async findAll(): Promise<IRegularPayment[]> {
+    const regularPayments = await this.prisma.regularPayment.findMany();
 
     return regularPayments.map(regularPayment =>
       this.mapPrismaRegularPaymentToRegularPayment(regularPayment),

@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 
-import { IPagination } from '@shared/interfaces/pagination.interface';
+import { IPagePaginationInput } from '@shared/interfaces/page-pagination-input.interface';
+import { IPagePaginationOutput } from '@shared/interfaces/page-pagination-output.interface';
 import { Catch } from '@shared/modules/error/decorators/catch.decorator';
 import { PrismaService } from '@shared/modules/prisma/prisma.service';
+import { getPrismaPaginationParams } from '@shared/modules/prisma/utils/get-prisma-pagination-params';
 import { handlePrismaError } from '@shared/modules/prisma/utils/handle-prisma-error';
-import { mergePaginationWithDefault } from '@shared/utils/merge-pagination-with-default';
 
 import { ICustomerCreateInput } from '@api/customers/interfaces/customer-create-input.interface';
 import { ICustomerUpdateInput } from '@api/customers/interfaces/customer-update-input.interface';
@@ -18,14 +19,29 @@ export class CustomersRepository implements ICustomersRepository {
   constructor(private prismaService: PrismaService) {}
 
   @Catch(handlePrismaError)
-  async findMany(pagination?: IPagination): Promise<ICustomer[]> {
-    const { skip, take } = mergePaginationWithDefault(pagination);
+  async findMany(
+    pagination: IPagePaginationInput,
+  ): Promise<IPagePaginationOutput<ICustomer>> {
+    const { customers, total } = await this.prismaService.$transaction(async tx => {
+      const { take, skip } = getPrismaPaginationParams(pagination);
 
-    const foundCustomers = await this.prismaService.customer.findMany({ skip, take });
+      const total = await tx.customer.count();
+      const customers = await tx.customer
+        .findMany({
+          take,
+          skip,
+        })
+        .then(customers =>
+          customers.map(customer => this.mapCustomerFromPrismaToCustomer(customer)),
+        );
 
-    return foundCustomers.map(foundCustomer =>
-      this.mapCustomerFromPrismaToCustomer(foundCustomer),
-    );
+      return { customers, total };
+    });
+
+    return {
+      items: customers,
+      total,
+    };
   }
 
   @Catch(handlePrismaError)

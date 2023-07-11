@@ -11,6 +11,8 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 
+import { ApiPagePaginatedRes } from '@shared/decorators/swagger/api-page-pagineted-res.decorator';
+import { PagePaginationResEntity } from '@shared/entities/page-pagination-res.entity';
 import { Auth } from '@shared/modules/auth/decorators/auth.decorator';
 import { User } from '@shared/modules/auth/decorators/user.decorator';
 import { Roles } from '@shared/modules/auth/enums/roles';
@@ -30,22 +32,35 @@ import { ExpensesService } from './expenses.service';
 export class ExpensesController {
   constructor(private readonly expensesService: ExpensesService) {}
 
+  @ApiPagePaginatedRes(ExpenseEntity)
   @JsonCache()
   @Auth(Roles.CUSTOMER, Roles.ADMIN)
   @Get()
-  findMany(
+  async findMany(
     @Query() findDto: ExpensesFindDto,
     @User() user: IUser,
-  ): Promise<ExpenseEntity[]> {
+  ): Promise<PagePaginationResEntity<ExpenseEntity>> {
+    const { page, numOfItems } = findDto;
+
     if (isAdmin(user)) {
-      return this.expensesService.findManyAsAdmin(findDto);
+      const { items, total } = await this.expensesService.findManyAsAdmin({
+        page,
+        numOfItems,
+      });
+
+      return { items, total, page, numOfItems };
     }
 
-    return this.expensesService.findManyAsCustomer(user.id, findDto);
+    const { items, total } = await this.expensesService.findManyAsCustomer(user.id, {
+      page,
+      numOfItems,
+    });
+
+    return { items, total, page, numOfItems };
   }
 
-  @Auth(Roles.CUSTOMER, Roles.ADMIN)
   @JsonCache()
+  @Auth(Roles.CUSTOMER, Roles.ADMIN)
   @Get(':id')
   findOne(@Param('id') id: string, @User() user: IUser): Promise<ExpenseEntity> {
     if (isAdmin(user)) {
@@ -56,11 +71,10 @@ export class ExpensesController {
   }
 
   @Auth(Roles.CUSTOMER)
-  @ApiBody({ type: [ExpenseCreateDto] }) // TODO Find out is it necessary
+  @ApiBody({ type: [ExpenseCreateDto] })
   @Post()
   create(
-    @Body()
-    expensesToCreate: ExpenseCreateDto[],
+    @Body() expensesToCreate: ExpenseCreateDto[],
     @User() user: IUser,
   ): Promise<ExpenseEntity[]> {
     if (!Array.isArray(expensesToCreate)) {

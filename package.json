@@ -1,6 +1,6 @@
 {
   "name": "fin-control-be",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "private": true,
   "description": "BE for self finances tracking application",
   "license": "UNLICENSED",

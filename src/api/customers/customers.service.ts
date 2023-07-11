@@ -5,7 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { PaginationDto } from '@shared/dto/pagination.dto';
+import { PagePaginationDto } from '@shared/dto/page-pagination.dto';
+import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-output.entity';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
 
 import { CustomerEntity } from '@api/customers/entities/customer.entity';
@@ -21,7 +22,9 @@ export class CustomersService {
     @Inject(CustomersRepository) private customerRepository: ICustomersRepository,
   ) {}
 
-  findMany(pagination?: PaginationDto): Promise<CustomerEntity[]> {
+  findMany(
+    pagination: PagePaginationDto,
+  ): Promise<PagePaginationOutputEntity<CustomerEntity>> {
     return this.customerRepository.findMany(pagination);
   }
 

@@ -1,5 +1,7 @@
 import { IsDateString, IsEnum, IsInt, IsNotEmpty, Min } from 'class-validator';
 
+import { ApiProperty } from '@nestjs/swagger';
+
 import { IRegularPaymentCreateInput } from '@api/regular-payments/interfaces/regular-payment-create-input.interface';
 
 import { ExpenseCategory } from '../../../../prisma/client';
@@ -14,6 +16,7 @@ export class RegularPaymentCreateDto
 
   @IsEnum(ExpenseCategory)
   @IsNotEmpty()
+  @ApiProperty({ enum: Object.keys(ExpenseCategory) })
   category: ExpenseCategory; // TODO Replace with self implemented enum
 
   @IsDateString()

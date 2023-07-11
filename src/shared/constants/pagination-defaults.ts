@@ -1,6 +1,6 @@
-import { IPagination } from '@shared/interfaces/pagination.interface';
+import { IPagePaginationInput } from '@shared/interfaces/page-pagination-input.interface';
 
-export const DEFAULT_PAGINATION: IPagination = {
-  skip: 0,
-  take: 20,
+export const DEFAULT_PAGE_PAGINATION: Required<IPagePaginationInput> = {
+  numOfItems: 20,
+  page: 0,
 };

@@ -14,6 +14,8 @@ import { config } from './app.config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
+// TODO Add proper pagination response for all apis
+// TODO Split admin and customer permissions APIs
 @Module({
   imports: [
     // api
