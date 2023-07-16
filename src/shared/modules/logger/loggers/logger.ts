@@ -1,9 +1,10 @@
-import { storage } from 'nestjs-pino/storage';
 import pino from 'pino';
 
-import { Logger } from '@nestjs/common';
+import { Logger as NestLogger } from '@nestjs/common';
 
-export class AppLogger extends Logger {
+import { loggerAsyncContext } from '@shared/modules/logger/utils/logger-async-context';
+
+export class Logger extends NestLogger {
   // @ts-expect-error child method has different arguments from the parent
   verbose(message: any, additionalData?: Record<string, any> | Error): void {
     if (additionalData) {
@@ -56,7 +57,7 @@ export class AppLogger extends Logger {
   }
 
   static getBindings(): pino.Bindings | undefined {
-    const pinoLogger = storage.getStore()?.logger;
+    const pinoLogger = loggerAsyncContext.getStore()?.pinoLogger;
 
     if (!pinoLogger) {
       return undefined;

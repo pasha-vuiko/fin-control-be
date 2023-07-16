@@ -1,38 +1,39 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { Params as PinoParams } from 'nestjs-pino/params';
 import pino, { LevelWithSilent } from 'pino';
 
+import { IFastifyLoggerPluginOptions } from '@shared/modules/logger/interfaces/logger-options.interface';
 import { ISerializedRequest } from '@shared/modules/logger/interfaces/serialized-request.interface';
 import pinoPrettyTransport from '@shared/modules/logger/utils/pino-pretty-transport';
 
-export function getLoggerConfig(level: LevelWithSilent): PinoParams {
+export function getFastifyLoggerPluginConfig(
+  level: LevelWithSilent,
+): IFastifyLoggerPluginOptions {
   const isDevelopment = process.env.NODE_ENV === 'development';
   const isPretty = process.env.LOG_FORMAT === 'pretty';
 
   return {
-    pinoHttp: {
+    pinoOptions: {
       level: level,
-      stream: isPretty ? pinoPrettyTransport() : pino.destination({ sync: false }),
-      quietReqLogger: true,
-      customLogLevel: function (_req, res, err): LevelWithSilent {
-        if (res.statusCode >= 400 && res.statusCode < 500) {
-          return 'warn';
-        }
+    },
+    stream: isPretty ? pinoPrettyTransport() : pino.destination({ sync: false }),
+    customLogLevel: function (_req, res): LevelWithSilent {
+      if (res.statusCode >= 400 && res.statusCode < 500) {
+        return 'warn';
+      }
 
-        if (res.statusCode >= 500 || err) {
-          return 'error';
-        }
+      if (res.statusCode >= 500) {
+        return 'error';
+      }
 
-        if (res.statusCode >= 300 && res.statusCode < 400) {
-          return 'debug';
-        }
+      if (res.statusCode >= 300 && res.statusCode < 400) {
+        return 'debug';
+      }
 
-        return isDevelopment ? 'debug' : 'silent';
-      },
-      serializers: {
-        req: (req: FastifyRequest): ISerializedRequest => serializeReq(req),
-        res: (reply: FastifyReply): any => serializeRes(reply),
-      },
+      return isDevelopment ? 'debug' : 'silent';
+    },
+    reqResSerializers: {
+      req: req => serializeReq(req),
+      res: reply => serializeRes(reply),
     },
   };
 }

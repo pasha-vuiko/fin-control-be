@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 
 import { TErrorHandler } from '@shared/modules/error/decorators/catch.decorator';
-import { AppLogger } from '@shared/modules/logger/app-logger';
+import { Logger } from '@shared/modules/logger/loggers/logger';
 import { getLogContext } from '@shared/modules/logger/utils/get-log-context.util';
 
 import { Prisma } from '../../../../../prisma/client';
@@ -25,7 +25,7 @@ export const handlePrismaError: TErrorHandler = (
 ) => {
   const logContext =
     getLogContext(methodContext, methodName, methodArgs) ?? `handlePrismaError`;
-  const logger = new AppLogger(logContext);
+  const logger = new Logger(logContext);
 
   if (!(err instanceof PrismaClientKnownRequestError)) {
     throw err;
@@ -37,7 +37,7 @@ export const handlePrismaError: TErrorHandler = (
 // eslint-disable-next-line max-lines-per-function
 function handlePrismaClientKnownRequestError(
   err: PrismaClientKnownRequestError,
-  logger: AppLogger,
+  logger: Logger,
 ): void {
   switch (err.code) {
     case PrismaError.UniqueConstraintViolation:

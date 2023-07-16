@@ -9,7 +9,7 @@ import { User } from '@shared/modules/auth/decorators/user.decorator';
 import { Roles } from '@shared/modules/auth/enums/roles';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
 import { isAdmin } from '@shared/modules/auth/utils/is-admin.util';
-import { AppLogger } from '@shared/modules/logger/app-logger';
+import { Logger } from '@shared/modules/logger/loggers/logger';
 import { JsonCache } from '@shared/modules/redis/decorators/json-cache.decorator';
 
 import { RegularPaymentSearchDto } from '@api/regular-payments/dto/regular-payment-search.dto';
@@ -91,7 +91,7 @@ export class RegularPaymentsController {
   // TODO Add retry mechanism if failed to apply regular payments or process was down
   @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT)
   async applyRegularPayments(): Promise<void> {
-    const logger = new AppLogger(RegularPaymentsController.name);
+    const logger = new Logger(RegularPaymentsController.name);
 
     const monthYear = new Date().toLocaleDateString('en-GB', {
       month: 'numeric',

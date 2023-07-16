@@ -16,7 +16,7 @@ import { isFunction, isNil } from '@nestjs/common/utils/shared.utils';
 import { Reflector } from '@nestjs/core';
 
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
-import { AppLogger } from '@shared/modules/logger/app-logger';
+import { Logger } from '@shared/modules/logger/loggers/logger';
 import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
 import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 
@@ -30,7 +30,7 @@ export interface IHttpAdapterHost<T extends HttpServer = any> {
 @Injectable()
 export class JsonCacheInterceptor implements NestInterceptor {
   private ioRedisInstance: IoredisWithDefaultTtl;
-  private logger = new AppLogger(JsonCacheInterceptor.name);
+  private logger = new Logger(JsonCacheInterceptor.name);
 
   @Optional()
   @Inject(HTTP_ADAPTER_HOST)
@@ -88,7 +88,7 @@ export class JsonCacheInterceptor implements NestInterceptor {
 
     const user: IUser | undefined = context.switchToHttp().getRequest()?.user;
     const userId = user?.id;
-    const cacheKeyPrefix = userId || 'guestUser:';
+    const cacheKeyPrefix = userId || 'publicUser:';
 
     if (!isHttpApp || cacheMetadata) {
       return cacheKeyPrefix + cacheMetadata;

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { AuthModule } from '@shared/modules/auth/auth.module';
-import { AppLoggerModule } from '@shared/modules/logger/app-logger.module';
+import { LoggerModule } from '@shared/modules/logger/logger.module';
 import { LogLevel } from '@shared/modules/logger/types';
 import { PrismaModule } from '@shared/modules/prisma/prisma.module';
 import { RedisModule } from '@shared/modules/redis/redis.module';
@@ -30,8 +30,7 @@ import { AppService } from './app.service';
       secret: config.auth.auth0ClientSecret as string,
     }),
     RedisModule.forRoot(config.cache.redis),
-    // TODO Fix performance issue
-    AppLoggerModule.forRoot(config.app.logger.level as LogLevel),
+    LoggerModule.forRoot(config.app.logger.level as LogLevel),
   ],
   controllers: [AppController],
   providers: [AppService],

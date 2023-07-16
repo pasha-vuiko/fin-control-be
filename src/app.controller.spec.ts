@@ -17,7 +17,7 @@ describe('AppController', () => {
     appController = app.get<AppController>(AppController);
   });
 
-  describe('root', () => {
+  describe('getAppVersion', () => {
     it('should return app info', () => {
       expect(appController.getAppVersion()).toBe(
         `App version: ${packageJsonInfo.version}`,

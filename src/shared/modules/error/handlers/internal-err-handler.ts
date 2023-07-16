@@ -1,5 +1,5 @@
 import { TErrorHandler } from '@shared/modules/error/decorators/catch.decorator';
-import { AppLogger } from '@shared/modules/logger/app-logger';
+import { Logger } from '@shared/modules/logger/loggers/logger';
 import { getLogContext } from '@shared/modules/logger/utils/get-log-context.util';
 
 /***
@@ -14,7 +14,7 @@ export const internalErrHandler: TErrorHandler = (
 ) => {
   const logContext =
     getLogContext(methodContext, methodName, methodArgs) ?? 'internalErrHandler';
-  const logger = new AppLogger(logContext);
+  const logger = new Logger(logContext);
 
   logger.error(err.message, err);
 };

@@ -1,15 +1,13 @@
-import { Logger } from 'nestjs-pino';
-
 import { ValidationPipe } from '@nestjs/common';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from '@nestjs/swagger';
 
 import { packageJsonInfo } from '@shared/constants/package-json-info';
 import { AllExceptionsFilter } from '@shared/exception-filters/all-exceptions.filter';
+import { PinoLogger } from '@shared/modules/logger/loggers/pino-logger.service';
 
 export async function bootstrapPlugins(
   app: NestFastifyApplication,
-  logger: Logger,
   isDevelopment: boolean,
 ): Promise<void> {
   // Enable CORS only for local development, CORS should be enabled in Reverse Proxy instead of the app
@@ -20,7 +18,7 @@ export async function bootstrapPlugins(
   setupExceptionFilters(app);
   setupOpenApi(app);
   setupRequestsValidation(app, isDevelopment);
-  await setupShutdownHooks(app, logger);
+  await setupShutdownHooks(app);
 }
 
 function setupExceptionFilters(app: NestFastifyApplication): void {
@@ -42,11 +40,9 @@ function setupRequestsValidation(
   );
 }
 
-async function setupShutdownHooks(
-  app: NestFastifyApplication,
-  logger: Logger,
-): Promise<void> {
+async function setupShutdownHooks(app: NestFastifyApplication): Promise<void> {
   app.enableShutdownHooks();
+  const logger = app.get(PinoLogger);
   // Accessing pino instance to have access to 'fatal' log level
   // @ts-expect-error access to protected field
   const pinoLogger = logger.logger;

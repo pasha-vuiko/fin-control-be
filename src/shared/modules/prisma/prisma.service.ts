@@ -1,6 +1,6 @@
 import { Inject, Injectable, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 
-import { AppLogger } from '@shared/modules/logger/app-logger';
+import { Logger } from '@shared/modules/logger/loggers/logger';
 import { PRISMA_MODULE_OPTIONS } from '@shared/modules/prisma/constants/prisma-module-options-injection-token';
 import { TPrismaOptions } from '@shared/modules/prisma/types/prisma-options.type';
 
@@ -11,7 +11,7 @@ export class PrismaService
   extends PrismaClient
   implements OnModuleInit, OnApplicationShutdown
 {
-  private readonly logger = new AppLogger(PrismaService.name);
+  private readonly logger = new Logger(PrismaService.name);
 
   constructor(@Inject(PRISMA_MODULE_OPTIONS) options: TPrismaOptions) {
     super(options);

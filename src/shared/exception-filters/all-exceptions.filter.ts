@@ -2,11 +2,11 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/common';
 
-import { AppLogger } from '@shared/modules/logger/app-logger';
+import { Logger } from '@shared/modules/logger/loggers/logger';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  private logger = new AppLogger(AllExceptionsFilter.name);
+  private logger = new Logger(AllExceptionsFilter.name);
 
   catch(exception: HttpException | Error, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
