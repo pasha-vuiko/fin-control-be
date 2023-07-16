@@ -8,7 +8,6 @@ import pinoPrettyTransport from '@shared/modules/logger/utils/pino-pretty-transp
 export function getFastifyLoggerPluginConfig(
   level: LevelWithSilent,
 ): IFastifyLoggerPluginOptions {
-  const isDevelopment = process.env.NODE_ENV === 'development';
   const isPretty = process.env.LOG_FORMAT === 'pretty';
 
   return {
@@ -17,19 +16,21 @@ export function getFastifyLoggerPluginConfig(
     },
     stream: isPretty ? pinoPrettyTransport() : pino.destination({ sync: false }),
     customLogLevel: function (_req, res): LevelWithSilent {
-      if (res.statusCode >= 400 && res.statusCode < 500) {
+      const { statusCode } = res;
+
+      if (statusCode >= 400 && statusCode < 500) {
         return 'warn';
       }
 
-      if (res.statusCode >= 500) {
+      if (statusCode >= 500) {
         return 'error';
       }
 
-      if (res.statusCode >= 300 && res.statusCode < 400) {
+      if (statusCode >= 300 && statusCode < 400) {
         return 'debug';
       }
 
-      return isDevelopment ? 'debug' : 'silent';
+      return 'debug';
     },
     reqResSerializers: {
       req: req => serializeReq(req),
