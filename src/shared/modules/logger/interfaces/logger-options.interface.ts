@@ -5,7 +5,7 @@ import {
   LoggerOptions as PinoLoggerOptions,
 } from 'pino';
 
-export interface IFastifyLoggerPluginOptions {
+export interface ILoggerOptions {
   pinoOptions?: PinoLoggerOptions;
 
   stream?: DestinationStream;

@@ -2,7 +2,7 @@ import { DynamicModule, Module } from '@nestjs/common';
 import { Provider } from '@nestjs/common/interfaces';
 
 import { FASTIFY_LOGGER_PLUGIN_OPTIONS } from '@shared/modules/logger/constants/logger-options-provider-token';
-import { IFastifyLoggerPluginOptions } from '@shared/modules/logger/interfaces/logger-options.interface';
+import { ILoggerOptions } from '@shared/modules/logger/interfaces/logger-options.interface';
 import { InternalPinoLogger } from '@shared/modules/logger/loggers/internal-pino-logger.service';
 import { PinoLogger } from '@shared/modules/logger/loggers/pino-logger.service';
 import { LoggerConfigService } from '@shared/modules/logger/services/logger-config.service';
@@ -12,10 +12,11 @@ import { getPinoLoggerProviders } from '@shared/modules/logger/utils/inject-pino
 
 @Module({})
 export class LoggerModule {
-  static forRoot(loggerLevel: LogLevel): DynamicModule {
-    const fastifyLoggerPluginOptions = getFastifyLoggerPluginConfig(loggerLevel);
+  static forRoot(loggerLevel: LogLevel, options?: ILoggerOptions): DynamicModule {
+    const fastifyLoggerPluginOptions =
+      options ?? getFastifyLoggerPluginConfig(loggerLevel);
 
-    const paramsProvider: Provider<IFastifyLoggerPluginOptions> = {
+    const paramsProvider: Provider<ILoggerOptions> = {
       provide: FASTIFY_LOGGER_PLUGIN_OPTIONS,
       useValue: fastifyLoggerPluginOptions || {},
     };

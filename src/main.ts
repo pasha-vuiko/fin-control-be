@@ -15,8 +15,8 @@ async function bootstrap(): Promise<NestFastifyApplication> {
     { bufferLogs: true },
   );
 
-  const logger = bootstrapLogger(app);
   await bootstrapPlugins(app, config.app.isDevelopment);
+  const logger = bootstrapLogger(app);
 
   await app.listen(config.app.port as string, '0.0.0.0');
   logger.log(`App is running on: ${await app.getUrl()}`, 'main.ts');

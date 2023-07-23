@@ -1,13 +1,11 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import pino, { LevelWithSilent } from 'pino';
 
-import { IFastifyLoggerPluginOptions } from '@shared/modules/logger/interfaces/logger-options.interface';
+import { ILoggerOptions } from '@shared/modules/logger/interfaces/logger-options.interface';
 import { ISerializedRequest } from '@shared/modules/logger/interfaces/serialized-request.interface';
 import pinoPrettyTransport from '@shared/modules/logger/utils/pino-pretty-transport';
 
-export function getFastifyLoggerPluginConfig(
-  level: LevelWithSilent,
-): IFastifyLoggerPluginOptions {
+export function getFastifyLoggerPluginConfig(level: LevelWithSilent): ILoggerOptions {
   const isPretty = process.env.LOG_FORMAT === 'pretty';
 
   return {

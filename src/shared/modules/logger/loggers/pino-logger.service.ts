@@ -3,7 +3,7 @@ import { Level } from 'pino';
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 
 import { FASTIFY_LOGGER_PLUGIN_OPTIONS } from '@shared/modules/logger/constants/logger-options-provider-token';
-import { IFastifyLoggerPluginOptions } from '@shared/modules/logger/interfaces/logger-options.interface';
+import { ILoggerOptions } from '@shared/modules/logger/interfaces/logger-options.interface';
 
 import { InternalPinoLogger } from './internal-pino-logger.service';
 
@@ -13,7 +13,7 @@ export class PinoLogger implements LoggerService {
 
   constructor(
     protected readonly logger: InternalPinoLogger,
-    @Inject(FASTIFY_LOGGER_PLUGIN_OPTIONS) { renameContext }: IFastifyLoggerPluginOptions,
+    @Inject(FASTIFY_LOGGER_PLUGIN_OPTIONS) { renameContext }: ILoggerOptions,
   ) {
     this.contextName = renameContext || 'context';
   }
@@ -34,11 +34,11 @@ export class PinoLogger implements LoggerService {
     this.call('warn', message, ...optionalParams);
   }
 
-  error(message: any, ...optionalParams: any[]) {
+  error(message: any, ...optionalParams: any[]): void {
     this.call('error', message, ...optionalParams);
   }
 
-  private call(level: Level, message: any, ...optionalParams: any[]) {
+  private call(level: Level, message: any, ...optionalParams: any[]): void {
     const objArg: Record<string, any> = {};
 
     // optionalParams contains extra params passed to logger

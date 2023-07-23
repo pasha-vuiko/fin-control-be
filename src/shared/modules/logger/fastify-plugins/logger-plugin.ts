@@ -2,15 +2,14 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import fastifyPlugin from 'fastify-plugin';
 import { Logger } from 'pino';
 
-import { IFastifyLoggerPluginOptions } from '@shared/modules/logger/interfaces/logger-options.interface';
+import { ILoggerOptions } from '@shared/modules/logger/interfaces/logger-options.interface';
 import { LogLevel } from '@shared/modules/logger/types';
 import {
   LoggerStore,
   loggerAsyncContext,
 } from '@shared/modules/logger/utils/logger-async-context';
 
-export interface ILoggerPluginOptions
-  extends Omit<IFastifyLoggerPluginOptions, 'pinoOptions'> {
+export interface ILoggerPluginOptions extends Omit<ILoggerOptions, 'pinoOptions'> {
   pinoLogger: Logger;
 }
 

@@ -6,19 +6,25 @@ import { FastifyAdapter } from '@nestjs/platform-fastify';
 
 import { FASTIFY_LOGGER_PLUGIN_OPTIONS } from '@shared/modules/logger/constants/logger-options-provider-token';
 import { loggerPlugin } from '@shared/modules/logger/fastify-plugins/logger-plugin';
-import { IFastifyLoggerPluginOptions } from '@shared/modules/logger/interfaces/logger-options.interface';
+import { ILoggerOptions } from '@shared/modules/logger/interfaces/logger-options.interface';
 import { loggerAsyncContext } from '@shared/modules/logger/utils/logger-async-context';
 
 @Injectable()
 export class LoggerConfigService implements OnModuleInit {
   constructor(
     @Inject(FASTIFY_LOGGER_PLUGIN_OPTIONS)
-    private loggerModuleOptions: IFastifyLoggerPluginOptions,
+    private loggerModuleOptions: ILoggerOptions,
     private adapterHost: HttpAdapterHost<FastifyAdapter>,
   ) {}
 
   async onModuleInit(): Promise<void> {
     const pinoLogger = this.getPinoLogger();
+
+    const isFastifyAdapter = this.adapterHost.httpAdapter instanceof FastifyAdapter;
+
+    if (!isFastifyAdapter) {
+      throw new Error('LoggerModule supports only FastifyAdapter');
+    }
 
     //@ts-expect-error type of the plugin is not compatible with the type of the register method
     await this.adapterHost.httpAdapter.register(loggerPlugin, { pinoLogger });
@@ -29,7 +35,7 @@ export class LoggerConfigService implements OnModuleInit {
       ...(this.loggerModuleOptions.pinoOptions
         ? this.loggerModuleOptions.pinoOptions
         : {}),
-      mixin() {
+      mixin(): Record<string, any> {
         return {
           reqId: loggerAsyncContext.getStore()?.reqId,
         };
