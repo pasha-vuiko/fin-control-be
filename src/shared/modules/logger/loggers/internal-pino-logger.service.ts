@@ -54,44 +54,44 @@ export class InternalPinoLogger implements PinoMethods {
   trace(msg: string, ...args: any[]): void;
   trace(obj: unknown, msg?: string, ...args: any[]): void;
   trace(...args: Parameters<LoggerFn>): void {
-    this.call('trace', ...args);
+    this.call('trace', args);
   }
 
   debug(msg: string, ...args: any[]): void;
   debug(obj: unknown, msg?: string, ...args: any[]): void;
   debug(...args: Parameters<LoggerFn>): void {
-    this.call('debug', ...args);
+    this.call('debug', args);
   }
 
   info(msg: string, ...args: any[]): void;
   info(obj: unknown, msg?: string, ...args: any[]): void;
   info(...args: Parameters<LoggerFn>): void {
-    this.call('info', ...args);
+    this.call('info', args);
   }
 
   warn(msg: string, ...args: any[]): void;
   warn(obj: unknown, msg?: string, ...args: any[]): void;
   warn(...args: Parameters<LoggerFn>): void {
-    this.call('warn', ...args);
+    this.call('warn', args);
   }
 
   error(msg: string, ...args: any[]): void;
   error(obj: unknown, msg?: string, ...args: any[]): void;
   error(...args: Parameters<LoggerFn>): void {
-    this.call('error', ...args);
+    this.call('error', args);
   }
 
   fatal(msg: string, ...args: any[]): void;
   fatal(obj: unknown, msg?: string, ...args: any[]): void;
   fatal(...args: Parameters<LoggerFn>): void {
-    this.call('fatal', ...args);
+    this.call('fatal', args);
   }
 
   setContext(value: string): void {
     this.context = value;
   }
 
-  protected call(method: pino.Level, ...args: Parameters<LoggerFn>): void {
+  protected call(method: pino.Level, args: Parameters<LoggerFn>): void {
     // @ts-expect-error args are union of tuple types
     // eslint-disable-next-line security/detect-object-injection
     this.logger[method](...args);

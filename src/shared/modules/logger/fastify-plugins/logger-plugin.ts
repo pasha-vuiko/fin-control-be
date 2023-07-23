@@ -77,9 +77,5 @@ function getDefaultResLogLevel(_req: FastifyRequest, res: FastifyReply): LogLeve
     return 'error';
   }
 
-  if (statusCode >= 300 && statusCode < 400) {
-    return 'debug';
-  }
-
   return 'debug';
 }

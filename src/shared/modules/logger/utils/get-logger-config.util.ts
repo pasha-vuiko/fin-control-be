@@ -7,6 +7,7 @@ import pinoPrettyTransport from '@shared/modules/logger/utils/pino-pretty-transp
 
 export function getFastifyLoggerPluginConfig(level: LevelWithSilent): ILoggerOptions {
   const isPretty = process.env.LOG_FORMAT === 'pretty';
+  const isDevelopment = process.env.NODE_ENV === 'development';
 
   return {
     pinoOptions: {
@@ -28,7 +29,7 @@ export function getFastifyLoggerPluginConfig(level: LevelWithSilent): ILoggerOpt
         return 'debug';
       }
 
-      return 'debug';
+      return isDevelopment ? 'debug' : 'silent';
     },
     reqResSerializers: {
       req: req => serializeReq(req),

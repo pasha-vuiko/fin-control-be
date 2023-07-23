@@ -14,7 +14,7 @@ export interface ILoggerOptions {
 
   customLogLevel?: (req: FastifyRequest, res: FastifyReply) => LevelWithSilent;
 
-  reqResSerializers: {
+  reqResSerializers?: {
     req: (req: FastifyRequest) => Record<string, any>;
     res: (res: FastifyReply) => Record<string, any>;
   };
