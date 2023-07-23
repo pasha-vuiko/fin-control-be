@@ -19,6 +19,7 @@ export class RegularPaymentCreateDto
   @ApiProperty({ enum: Object.keys(ExpenseCategory) })
   category: ExpenseCategory;
 
+  @ApiProperty({ type: Date })
   @IsDateString()
   @IsNotEmpty()
   dateOfCharge: string;

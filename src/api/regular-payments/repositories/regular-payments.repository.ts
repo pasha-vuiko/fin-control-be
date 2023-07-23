@@ -19,7 +19,7 @@ import { RegularPayment } from '../../../../prisma/client';
 
 @Injectable()
 export class RegularPaymentsRepository implements IRegularPaymentsRepository {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prismaService: PrismaService) {}
 
   @Catch(handlePrismaError)
   async findMany(
@@ -29,29 +29,24 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
     const { take, skip } = getPrismaPaginationParams(pagination);
     const { customerId } = filter;
 
-    const { regularPayments, total } = await this.prisma.$transaction(async tx => {
-      const total = await tx.regularPayment.count({ where: { customerId } });
-      const regularPayments = await tx.regularPayment
-        .findMany({
+    return this.prismaService
+      .$transaction([
+        this.prismaService.regularPayment.findMany({
           where: { customerId },
           skip,
           take,
-        })
-        .then(regularPayments =>
-          regularPayments.map(regularPayment =>
-            this.mapPrismaRegularPaymentToRegularPayment(regularPayment),
-          ),
-        );
-
-      return { regularPayments, total };
-    });
-
-    return { items: regularPayments, total };
+        }),
+        this.prismaService.regularPayment.count({ where: { customerId } }),
+      ])
+      .then(([regularPayments, total]) => ({
+        items: this.mapPrismaRegularPaymentsToRegularPayments(regularPayments),
+        total,
+      }));
   }
 
   @Catch(handlePrismaError)
   async findAll(): Promise<IRegularPayment[]> {
-    const regularPayments = await this.prisma.regularPayment.findMany();
+    const regularPayments = await this.prismaService.regularPayment.findMany();
 
     return regularPayments.map(regularPayment =>
       this.mapPrismaRegularPaymentToRegularPayment(regularPayment),
@@ -60,7 +55,9 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
 
   @Catch(handlePrismaError)
   async findOne(id: string): Promise<IRegularPayment | null> {
-    const regularPayment = await this.prisma.regularPayment.findUnique({ where: { id } });
+    const regularPayment = await this.prismaService.regularPayment.findUnique({
+      where: { id },
+    });
 
     if (!regularPayment) {
       return null;
@@ -71,14 +68,16 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
 
   @Catch(handlePrismaError)
   async create(data: IRegularPaymentCreateInput): Promise<IRegularPayment> {
-    const createdRegularPayment = await this.prisma.regularPayment.create({ data });
+    const createdRegularPayment = await this.prismaService.regularPayment.create({
+      data,
+    });
 
     return this.mapPrismaRegularPaymentToRegularPayment(createdRegularPayment);
   }
 
   @Catch(handlePrismaError)
   async update(id: string, data: IRegularPaymentUpdateInput): Promise<IRegularPayment> {
-    const updatedRegularPayment = await this.prisma.regularPayment.update({
+    const updatedRegularPayment = await this.prismaService.regularPayment.update({
       data,
       where: { id },
     });
@@ -88,11 +87,19 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
 
   @Catch(handlePrismaError)
   async delete(id: string): Promise<IRegularPayment> {
-    const deletedRegularPayment = await this.prisma.regularPayment.delete({
+    const deletedRegularPayment = await this.prismaService.regularPayment.delete({
       where: { id },
     });
 
     return this.mapPrismaRegularPaymentToRegularPayment(deletedRegularPayment);
+  }
+
+  private mapPrismaRegularPaymentsToRegularPayments(
+    prismaRegularPayments: RegularPayment[],
+  ): IRegularPayment[] {
+    return prismaRegularPayments.map(prismaRegularPayment =>
+      this.mapPrismaRegularPaymentToRegularPayment(prismaRegularPayment),
+    );
   }
 
   private mapPrismaRegularPaymentToRegularPayment(

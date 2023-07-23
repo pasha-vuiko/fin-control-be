@@ -24,6 +24,7 @@ services:
     ports:
       - '6379:6379'
 
+
   cockroachdb:
     image: cockroachdb/cockroach:v22.2.8
     ports:

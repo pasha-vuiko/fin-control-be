@@ -27,21 +27,15 @@ export class ExpensesRepository implements IExpensesRepository {
   ): Promise<IPagePaginationOutput<IExpense>> {
     const { take, skip } = getPrismaPaginationParams(pagination);
 
-    const { expenses, total } = await this.prismaService.$transaction(async tx => {
-      const expenses = await tx.expense
-        .findMany({
-          skip,
-          take,
-        })
-        .then(expenses =>
-          expenses.map(expense => this.mapExpenseFromPrismaToExpense(expense)),
-        );
-      const total = await tx.expense.count();
-
-      return { expenses, total };
-    });
-
-    return { items: expenses, total };
+    return this.prismaService
+      .$transaction([
+        this.prismaService.expense.findMany({ skip, take }),
+        this.prismaService.expense.count(),
+      ])
+      .then(([expenses, total]) => ({
+        items: this.mapExpensesFromPrismaToExpenses(expenses),
+        total,
+      }));
   }
 
   @Catch(handlePrismaError)
@@ -51,24 +45,19 @@ export class ExpensesRepository implements IExpensesRepository {
   ): Promise<IPagePaginationOutput<IExpense>> {
     const { take, skip } = getPrismaPaginationParams(pagination);
 
-    const { expenses, total } = await this.prismaService.$transaction(async tx => {
-      const total = await tx.expense.count();
-      const foundExpenses = await this.prismaService.expense
-        .findMany({
-          where: {
-            customerId,
-          },
+    return this.prismaService
+      .$transaction([
+        this.prismaService.expense.findMany({
+          where: { customerId },
           skip,
           take,
-        })
-        .then(expenses =>
-          expenses.map(expense => this.mapExpenseFromPrismaToExpense(expense)),
-        );
-
-      return { expenses: foundExpenses, total };
-    });
-
-    return { items: expenses, total };
+        }),
+        this.prismaService.expense.count(),
+      ])
+      .then(([expenses, total]) => ({
+        items: this.mapExpensesFromPrismaToExpenses(expenses),
+        total,
+      }));
   }
 
   @Catch(handlePrismaError)
@@ -91,57 +80,58 @@ export class ExpensesRepository implements IExpensesRepository {
       data: createExpenseInputs,
     });
 
-    const foundCreatedExpenses = await this.prismaService.expense.findMany({
-      where: { customerId },
-      orderBy: {
-        createdAt: SortOrder.desc,
-      },
-      take: count,
-    });
-
-    return foundCreatedExpenses.map(expense =>
-      this.mapExpenseFromPrismaToExpense(expense),
-    );
+    return this.prismaService.expense
+      .findMany({
+        where: { customerId },
+        orderBy: {
+          createdAt: SortOrder.desc,
+        },
+        take: count,
+      })
+      .then(createdExpenses => this.mapExpensesFromPrismaToExpenses(createdExpenses));
   }
 
   @Catch(handlePrismaError)
   async createManyViaTransaction(
     createExpenseInputs: IExpenseCreateInput[],
   ): Promise<IExpense[]> {
-    const foundCreatedExpenses = await this.prismaService.$transaction(async tx => {
-      const { count } = await tx.expense.createMany({
-        data: createExpenseInputs,
-      });
+    return this.prismaService
+      .$transaction(async tx => {
+        const { count } = await tx.expense.createMany({
+          data: createExpenseInputs,
+        });
 
-      return tx.expense.findMany({
-        orderBy: {
-          createdAt: SortOrder.desc,
-        },
-        take: count,
-      });
-    });
-
-    return foundCreatedExpenses.map(expense =>
-      this.mapExpenseFromPrismaToExpense(expense),
-    );
+        return tx.expense.findMany({
+          orderBy: {
+            createdAt: SortOrder.desc,
+          },
+          take: count,
+        });
+      })
+      .then(createdExpenses => this.mapExpensesFromPrismaToExpenses(createdExpenses));
   }
 
   @Catch(handlePrismaError)
   async update(id: string, data: IExpenseUpdateInput): Promise<IExpense> {
     const dataWithoutCustomerId = omitObj(data, 'customerId');
-    const updatedExpense = await this.prismaService.expense.update({
-      data: dataWithoutCustomerId,
-      where: { id },
-    });
 
-    return this.mapExpenseFromPrismaToExpense(updatedExpense);
+    return this.prismaService.expense
+      .update({
+        data: dataWithoutCustomerId,
+        where: { id },
+      })
+      .then(updatedExpense => this.mapExpenseFromPrismaToExpense(updatedExpense));
   }
 
   @Catch(handlePrismaError)
   async delete(id: string): Promise<IExpense> {
-    const deletedExpense = await this.prismaService.expense.delete({ where: { id } });
+    return this.prismaService.expense
+      .delete({ where: { id } })
+      .then(deletedExpense => this.mapExpenseFromPrismaToExpense(deletedExpense));
+  }
 
-    return this.mapExpenseFromPrismaToExpense(deletedExpense);
+  private mapExpensesFromPrismaToExpenses(expenses: Expense[]): IExpense[] {
+    return expenses.map(expense => this.mapExpenseFromPrismaToExpense(expense));
   }
 
   private mapExpenseFromPrismaToExpense(expense: Expense): IExpense {

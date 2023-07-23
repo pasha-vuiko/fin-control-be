@@ -13,6 +13,7 @@ export class ExpenseCreateDto implements Omit<IExpenseCreateInput, 'customerId'>
   @IsNotEmpty()
   amount: number;
 
+  @ApiProperty({ type: Date })
   @IsDateString()
   @IsNotEmpty()
   date: string;

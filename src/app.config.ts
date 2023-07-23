@@ -13,6 +13,7 @@ dotenvExpand.expand(env);
 process.env.TZ = 'UTC';
 checkEnvVarsSet(resolve(__dirname, '../.env.example'));
 
+// TODO Add config validation
 export const config = {
   app: {
     port: process.env.PORT,

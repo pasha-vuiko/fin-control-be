@@ -22,26 +22,17 @@ export class CustomersRepository implements ICustomersRepository {
   async findMany(
     pagination: IPagePaginationInput,
   ): Promise<IPagePaginationOutput<ICustomer>> {
-    const { customers, total } = await this.prismaService.$transaction(async tx => {
-      const { take, skip } = getPrismaPaginationParams(pagination);
+    const { skip, take } = getPrismaPaginationParams(pagination);
 
-      const total = await tx.customer.count();
-      const customers = await tx.customer
-        .findMany({
-          take,
-          skip,
-        })
-        .then(customers =>
-          customers.map(customer => this.mapCustomerFromPrismaToCustomer(customer)),
-        );
-
-      return { customers, total };
-    });
-
-    return {
-      items: customers,
-      total,
-    };
+    return this.prismaService
+      .$transaction([
+        this.prismaService.customer.findMany({ skip, take }),
+        this.prismaService.customer.count(),
+      ])
+      .then(([customers, total]) => ({
+        items: this.mapCustomersFromPrismaToCustomers(customers),
+        total,
+      }));
   }
 
   @Catch(handlePrismaError)
@@ -59,6 +50,7 @@ export class CustomersRepository implements ICustomersRepository {
   async findOneByUserId(userId: string): Promise<ICustomer | null> {
     const foundCustomer = await this.prismaService.customer.findUnique({
       where: { userId },
+      include: { expense: true },
     });
 
     if (!foundCustomer) {
@@ -70,26 +62,27 @@ export class CustomersRepository implements ICustomersRepository {
 
   @Catch(handlePrismaError)
   async create(data: ICustomerCreateInput): Promise<ICustomer> {
-    const createdCustomer = await this.prismaService.customer.create({ data });
-
-    return this.mapCustomerFromPrismaToCustomer(createdCustomer);
+    return this.prismaService.customer
+      .create({ data })
+      .then(createdCustomer => this.mapCustomerFromPrismaToCustomer(createdCustomer));
   }
 
   @Catch(handlePrismaError)
   async update(id: string, data: ICustomerUpdateInput): Promise<ICustomer> {
-    const updatedCustomer = await this.prismaService.customer.update({
-      data: data,
-      where: { id },
-    });
-
-    return this.mapCustomerFromPrismaToCustomer(updatedCustomer);
+    return this.prismaService.customer
+      .update({ data, where: { id } })
+      .then(updatedCustomer => this.mapCustomerFromPrismaToCustomer(updatedCustomer));
   }
 
   @Catch(handlePrismaError)
   async remove(id: string): Promise<ICustomer> {
-    const removedCustomer = await this.prismaService.customer.delete({ where: { id } });
+    return this.prismaService.customer
+      .delete({ where: { id } })
+      .then(removedCustomer => this.mapCustomerFromPrismaToCustomer(removedCustomer));
+  }
 
-    return this.mapCustomerFromPrismaToCustomer(removedCustomer);
+  private mapCustomersFromPrismaToCustomers(customers: Customer[]): ICustomer[] {
+    return customers.map(customer => this.mapCustomerFromPrismaToCustomer(customer));
   }
 
   private mapCustomerFromPrismaToCustomer(customer: Customer): ICustomer {
