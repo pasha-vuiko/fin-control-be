@@ -2,7 +2,7 @@ import pino from 'pino';
 
 import { Inject, Injectable, Scope } from '@nestjs/common';
 
-import { FASTIFY_LOGGER_PLUGIN_OPTIONS } from '@shared/modules/logger/constants/logger-options-provider-token';
+import { LOGGER_MODULE_OPTIONS } from '@shared/modules/logger/constants/logger-options-provider-token';
 import { ILoggerOptions } from '@shared/modules/logger/interfaces/logger-options.interface';
 
 import { loggerAsyncContext } from '../utils/logger-async-context';
@@ -36,10 +36,9 @@ export class InternalPinoLogger implements PinoMethods {
   protected context = '';
   protected readonly contextName: string;
 
-  constructor(
-    @Inject(FASTIFY_LOGGER_PLUGIN_OPTIONS)
-    { pinoOptions, stream, renameContext }: ILoggerOptions,
-  ) {
+  constructor(@Inject(LOGGER_MODULE_OPTIONS) options: ILoggerOptions) {
+    const { pinoOptions, stream, renameContext } = options;
+
     if (!outOfContext) {
       if (stream && pinoOptions) {
         outOfContext = pino(pinoOptions, stream);

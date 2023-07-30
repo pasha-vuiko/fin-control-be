@@ -4,7 +4,7 @@ import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
 
-import { FASTIFY_LOGGER_PLUGIN_OPTIONS } from '@shared/modules/logger/constants/logger-options-provider-token';
+import { LOGGER_MODULE_OPTIONS } from '@shared/modules/logger/constants/logger-options-provider-token';
 import { loggerPlugin } from '@shared/modules/logger/fastify-plugins/logger-plugin';
 import { ILoggerOptions } from '@shared/modules/logger/interfaces/logger-options.interface';
 import { loggerAsyncContext } from '@shared/modules/logger/utils/logger-async-context';
@@ -12,7 +12,7 @@ import { loggerAsyncContext } from '@shared/modules/logger/utils/logger-async-co
 @Injectable()
 export class LoggerConfigService implements OnModuleInit {
   constructor(
-    @Inject(FASTIFY_LOGGER_PLUGIN_OPTIONS)
+    @Inject(LOGGER_MODULE_OPTIONS)
     private loggerModuleOptions: ILoggerOptions,
     private adapterHost: HttpAdapterHost<FastifyAdapter>,
   ) {}

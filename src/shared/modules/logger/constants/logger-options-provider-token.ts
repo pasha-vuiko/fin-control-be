@@ -1,1 +1,1 @@
-export const FASTIFY_LOGGER_PLUGIN_OPTIONS = 'pino-params';
+export const LOGGER_MODULE_OPTIONS = 'pino-params';

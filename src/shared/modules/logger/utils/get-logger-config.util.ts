@@ -5,7 +5,7 @@ import { ILoggerOptions } from '@shared/modules/logger/interfaces/logger-options
 import { ISerializedRequest } from '@shared/modules/logger/interfaces/serialized-request.interface';
 import pinoPrettyTransport from '@shared/modules/logger/utils/pino-pretty-transport';
 
-export function getFastifyLoggerPluginConfig(level: LevelWithSilent): ILoggerOptions {
+export function getDefaultLoggerConfig(level: LevelWithSilent): ILoggerOptions {
   const isPretty = process.env.LOG_FORMAT === 'pretty';
   const isDevelopment = process.env.NODE_ENV === 'development';
 

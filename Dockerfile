@@ -1,4 +1,4 @@
-FROM node:18.15.0-alpine
+FROM node:18.17.0-alpine
 
 RUN apk add --update \
     openssl

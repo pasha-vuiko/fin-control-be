@@ -2,7 +2,7 @@ import { Level } from 'pino';
 
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 
-import { FASTIFY_LOGGER_PLUGIN_OPTIONS } from '@shared/modules/logger/constants/logger-options-provider-token';
+import { LOGGER_MODULE_OPTIONS } from '@shared/modules/logger/constants/logger-options-provider-token';
 import { ILoggerOptions } from '@shared/modules/logger/interfaces/logger-options.interface';
 
 import { InternalPinoLogger } from './internal-pino-logger.service';
@@ -13,8 +13,10 @@ export class PinoLogger implements LoggerService {
 
   constructor(
     protected readonly logger: InternalPinoLogger,
-    @Inject(FASTIFY_LOGGER_PLUGIN_OPTIONS) { renameContext }: ILoggerOptions,
+    @Inject(LOGGER_MODULE_OPTIONS) options: ILoggerOptions,
   ) {
+    const { renameContext } = options;
+
     this.contextName = renameContext || 'context';
   }
 
