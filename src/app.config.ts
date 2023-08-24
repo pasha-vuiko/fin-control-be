@@ -2,6 +2,7 @@ import { resolve } from 'node:path';
 
 import dotenv from 'dotenv';
 import dotenvExpand from 'dotenv-expand';
+import { serverFactory } from 'fastify-uws';
 
 import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
 import { checkEnvVarsSet } from '@shared/utils/check-env-vars-set';
@@ -26,6 +27,7 @@ export const config = {
     },
     fastify: {
       genReqId: generateRequestId,
+      serverFactory,
     },
   },
   cache: {
