@@ -63,7 +63,7 @@ export class JsonCacheInterceptor implements NestInterceptor {
         ? await ttlValueOrFactory(context)
         : ttlValueOrFactory;
 
-      return next.handle().pipe(tap(async response => this.setCache(response, key, ttl)));
+      return next.handle().pipe(tap(response => this.setCache(response, key, ttl)));
     } catch {
       return next.handle();
     }

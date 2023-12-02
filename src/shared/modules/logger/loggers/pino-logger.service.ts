@@ -48,7 +48,7 @@ export class PinoLogger implements LoggerService {
     let params: any[] = [];
 
     if (optionalParams.length !== 0) {
-      objArg[this.contextName] = optionalParams[optionalParams.length - 1];
+      objArg[this.contextName] = optionalParams.at(-1);
 
       params = optionalParams.slice(0, -1);
     }

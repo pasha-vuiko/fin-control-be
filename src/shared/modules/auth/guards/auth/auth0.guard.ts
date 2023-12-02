@@ -12,7 +12,7 @@ import { Roles } from '@shared/modules/auth/enums/roles';
 import { getRolesFromAuth0User } from '@shared/modules/auth/utils/getRolesFromAuth0User';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class Auth0Guard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -20,7 +20,7 @@ export class AuthGuard implements CanActivate {
     const reply = context.switchToHttp().getResponse();
 
     await req.authenticate(req, reply).catch((e: Error | any) => {
-      throw new UnauthorizedException(`Failed to auth, ${e.message}`, e);
+      throw new UnauthorizedException(`Failed to auth, ${e.message}`, { cause: e });
     });
 
     const requiredRoles = this.getRequiredRoles(context);

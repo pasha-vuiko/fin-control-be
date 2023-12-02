@@ -1,4 +1,4 @@
-import { resolve } from 'node:path';
+import path from 'node:path';
 
 import dotenv from 'dotenv';
 import dotenvExpand from 'dotenv-expand';
@@ -8,11 +8,11 @@ import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-modu
 import { checkEnvVarsSet } from '@shared/utils/check-env-vars-set';
 import { generateRequestId } from '@shared/utils/generate-request-id.util';
 
-// Loading config and checking if all env vars are set
-const env = dotenv.config();
-dotenvExpand.expand(env);
-process.env.TZ = 'UTC';
-checkEnvVarsSet(resolve(__dirname, '../.env.example'));
+if (process.env.NODE_ENV === 'development') {
+  loadEnvVarsFromLocalFile();
+}
+checkEnvVarsSet(path.resolve(__dirname, '../.env.example'));
+setUtcTimezone();
 
 // TODO Add config validation
 export const config = {
@@ -62,4 +62,13 @@ function mapRedisSentinels(
       port: Number(sentinelPort),
     };
   });
+}
+
+function setUtcTimezone(): void {
+  process.env.TZ = 'UTC';
+}
+
+function loadEnvVarsFromLocalFile(): void {
+  const env = dotenv.config();
+  dotenvExpand.expand(env);
 }

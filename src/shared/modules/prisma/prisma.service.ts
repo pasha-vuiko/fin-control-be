@@ -28,7 +28,7 @@ export class PrismaService
       );
   }
 
-  async onApplicationShutdown(signal?: string): Promise<void> {
+  async onApplicationShutdown(): Promise<void> {
     await this.$disconnect();
     this.logger.log('Successfully disconnected from the DB');
   }

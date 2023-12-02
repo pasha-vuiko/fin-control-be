@@ -1,7 +1,7 @@
 import { DynamicModule, Module } from '@nestjs/common';
 
 import { AUTH_MODULE_OPTIONS } from '@shared/modules/auth/constants/auth-module-opts-injection-token';
-import { AuthGuard } from '@shared/modules/auth/guards/auth/auth.guard';
+import { Auth0Guard } from '@shared/modules/auth/guards/auth/auth0.guard';
 import { IAuthModuleOptions } from '@shared/modules/auth/interfaces/auth-module-options.interface';
 import { AuthConfigService } from '@shared/modules/auth/services/auth-config.service';
 
@@ -16,9 +16,9 @@ export class AuthModule {
           useValue: options,
         },
         AuthConfigService,
-        AuthGuard,
+        Auth0Guard,
       ],
-      exports: [AuthConfigService, AuthGuard],
+      exports: [AuthConfigService, Auth0Guard],
     };
   }
 }

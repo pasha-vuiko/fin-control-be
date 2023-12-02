@@ -29,7 +29,7 @@ type LoggerFn =
   | ((msg: string, ...args: any[]) => void)
   | ((obj: object, msg?: string, ...args: any[]) => void);
 
-let outOfContext: pino.Logger | undefined;
+let outOfContextLogger: pino.Logger | undefined;
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class InternalPinoLogger implements PinoMethods {
@@ -39,11 +39,11 @@ export class InternalPinoLogger implements PinoMethods {
   constructor(@Inject(LOGGER_MODULE_OPTIONS) options: ILoggerOptions) {
     const { pinoOptions, stream, renameContext } = options;
 
-    if (!outOfContext) {
+    if (!outOfContextLogger) {
       if (stream && pinoOptions) {
-        outOfContext = pino(pinoOptions, stream);
+        outOfContextLogger = pino(pinoOptions, stream);
       } else {
-        outOfContext = pino(pinoOptions);
+        outOfContextLogger = pino(pinoOptions);
       }
     }
 
@@ -103,7 +103,7 @@ export class InternalPinoLogger implements PinoMethods {
 
     if (!store) {
       // @ts-expect-error logger is not defined
-      return outOfContext;
+      return outOfContextLogger;
     }
 
     return store.pinoLogger;
@@ -111,11 +111,13 @@ export class InternalPinoLogger implements PinoMethods {
 
   public assign(fields: pino.Bindings): void {
     const store = loggerAsyncContext.getStore();
+
     if (!store) {
       throw new Error(
         `${InternalPinoLogger.name}: unable to assign extra fields out of request scope`,
       );
     }
+
     store.pinoLogger = store.pinoLogger.child(fields);
   }
 }

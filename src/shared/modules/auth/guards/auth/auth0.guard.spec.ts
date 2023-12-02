@@ -1,13 +1,13 @@
 import { Reflector } from '@nestjs/core';
 
-import { AuthGuard } from './auth.guard';
+import { Auth0Guard } from './auth0.guard';
 
-describe('AuthGuard', () => {
-  let authGuard: AuthGuard;
+describe('Auth0Guard', () => {
+  let authGuard: Auth0Guard;
 
   beforeEach(() => {
     const reflector = new Reflector();
-    authGuard = new AuthGuard(reflector);
+    authGuard = new Auth0Guard(reflector);
   });
 
   it('should be defined', () => {
