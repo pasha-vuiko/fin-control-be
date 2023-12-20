@@ -13,7 +13,7 @@ module.exports = {
       extends: [
         'plugin:@typescript-eslint/recommended',
         'plugin:prettier/recommended',
-        'plugin:security/recommended',
+        'plugin:security/recommended-legacy',
       ],
       env: {
         node: true,
@@ -42,7 +42,10 @@ module.exports = {
     // JavaScript
     {
       files: ['*.js'],
-      extends: ['plugin:prettier/recommended', 'plugin:security/recommended'],
+      extends: [
+        'plugin:prettier/recommended',
+        'plugin:security/recommended-legacy'
+      ],
       env: {
         node: true,
         jest: true,

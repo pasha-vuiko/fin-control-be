@@ -7,6 +7,7 @@ import { bootstrapPlugins } from '@shared/bootstrap/bootstrap-plugins';
 import { config } from './app.config';
 import { AppModule } from './app.module';
 
+// TODO Add prom-client for metrics
 async function bootstrap(): Promise<NestFastifyApplication> {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
