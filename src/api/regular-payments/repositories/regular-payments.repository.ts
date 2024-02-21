@@ -1,3 +1,5 @@
+import { RegularPayment } from '@prisma/client';
+
 import { Injectable } from '@nestjs/common';
 
 import { IPagePaginationInput } from '@shared/interfaces/page-pagination-input.interface';
@@ -14,8 +16,6 @@ import {
   IRegularPaymentsFilter,
   IRegularPaymentsRepository,
 } from '@api/regular-payments/interfaces/regular-payments-repository.interface';
-
-import { RegularPayment } from '../../../../prisma/client';
 
 @Injectable()
 export class RegularPaymentsRepository implements IRegularPaymentsRepository {

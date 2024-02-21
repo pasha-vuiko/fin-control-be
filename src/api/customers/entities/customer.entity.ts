@@ -1,8 +1,8 @@
+import { Sex } from '@prisma/client';
+
 import { ApiProperty } from '@nestjs/swagger';
 
 import { ICustomer } from '@api/customers/interfaces/customer.interface';
-
-import { Sex } from '../../../../prisma/client';
 
 export class CustomerEntity implements ICustomer {
   id: string;

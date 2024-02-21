@@ -1,8 +1,8 @@
+import { ExpenseCategory } from '@prisma/client';
+
 import { ApiProperty } from '@nestjs/swagger';
 
 import { IRegularPayment } from '@api/regular-payments/interfaces/regular-payment.interface';
-
-import { ExpenseCategory } from '../../../../prisma/client';
 
 export class RegularPaymentEntity implements Omit<IRegularPayment, 'amount'> {
   id: string;

@@ -16,8 +16,9 @@ export class Auth0Guard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req = context.switchToHttp().getRequest();
-    const reply = context.switchToHttp().getResponse();
+    const httpContext = context.switchToHttp();
+    const req = httpContext.getRequest();
+    const reply = httpContext.getResponse();
 
     await req.authenticate(req, reply).catch((e: Error | any) => {
       throw new UnauthorizedException(`Failed to auth, ${e.message}`, { cause: e });

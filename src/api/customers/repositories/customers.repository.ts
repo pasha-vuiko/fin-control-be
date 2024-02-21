@@ -1,3 +1,5 @@
+import { Customer } from '@prisma/client';
+
 import { Injectable } from '@nestjs/common';
 
 import { IPagePaginationInput } from '@shared/interfaces/page-pagination-input.interface';
@@ -11,8 +13,6 @@ import { ICustomerCreateInput } from '@api/customers/interfaces/customer-create-
 import { ICustomerUpdateInput } from '@api/customers/interfaces/customer-update-input.interface';
 import { ICustomer } from '@api/customers/interfaces/customer.interface';
 import { ICustomersRepository } from '@api/customers/interfaces/customers.repository.interface';
-
-import { Customer } from '../../../../prisma/client';
 
 @Injectable()
 export class CustomersRepository implements ICustomersRepository {

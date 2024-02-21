@@ -1,16 +1,11 @@
 import path from 'node:path';
 
-import dotenv from 'dotenv';
-import dotenvExpand from 'dotenv-expand';
 import { serverFactory } from 'fastify-uws';
 
 import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
 import { checkEnvVarsSet } from '@shared/utils/check-env-vars-set';
 import { generateRequestId } from '@shared/utils/generate-request-id.util';
 
-if (process.env.NODE_ENV === 'development') {
-  loadEnvVarsFromLocalFile();
-}
 checkEnvVarsSet(path.resolve(__dirname, '../.env.example'));
 setUtcTimezone();
 
@@ -66,9 +61,4 @@ function mapRedisSentinels(
 
 function setUtcTimezone(): void {
   process.env.TZ = 'UTC';
-}
-
-function loadEnvVarsFromLocalFile(): void {
-  const env = dotenv.config();
-  dotenvExpand.expand(env);
 }

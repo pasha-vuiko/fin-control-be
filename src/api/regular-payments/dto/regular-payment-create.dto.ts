@@ -1,10 +1,9 @@
+import { ExpenseCategory } from '@prisma/client';
 import { IsDateString, IsEnum, IsInt, IsNotEmpty, Min } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
 import { IRegularPaymentCreateInput } from '@api/regular-payments/interfaces/regular-payment-create-input.interface';
-
-import { ExpenseCategory } from '../../../../prisma/client';
 
 export class RegularPaymentCreateDto
   implements Omit<IRegularPaymentCreateInput, 'customerId'>

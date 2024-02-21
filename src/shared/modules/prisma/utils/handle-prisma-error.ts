@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { PrismaError } from 'prisma-error-enum';
 
 import {
@@ -12,8 +13,6 @@ import {
 import { TErrorHandler } from '@shared/modules/error/decorators/catch.decorator';
 import { Logger } from '@shared/modules/logger/loggers/logger';
 import { getLogContext } from '@shared/modules/logger/utils/get-log-context.util';
-
-import { Prisma } from '../../../../../prisma/client';
 
 import PrismaClientKnownRequestError = Prisma.PrismaClientKnownRequestError;
 

@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { PrismaModule } from '@shared/modules/prisma/prisma.module';
 import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
 import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 

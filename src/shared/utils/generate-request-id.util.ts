@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import crypto from 'node:crypto';
 
 import { FastifyRequest } from 'fastify';
 
@@ -12,5 +12,5 @@ export function generateRequestId(req: FastifyRequest): string {
     return existingTraceId as string;
   }
 
-  return randomUUID();
+  return crypto.randomUUID();
 }

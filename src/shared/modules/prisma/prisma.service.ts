@@ -1,10 +1,10 @@
+import { PrismaClient } from '@prisma/client';
+
 import { Inject, Injectable, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 
 import { Logger } from '@shared/modules/logger/loggers/logger';
 import { PRISMA_MODULE_OPTIONS } from '@shared/modules/prisma/constants/prisma-module-options-injection-token';
 import { TPrismaOptions } from '@shared/modules/prisma/types/prisma-options.type';
-
-import { PrismaClient } from '../../../../prisma/client';
 
 @Injectable()
 export class PrismaService

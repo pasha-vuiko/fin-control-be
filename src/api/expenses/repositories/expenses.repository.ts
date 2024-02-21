@@ -1,3 +1,5 @@
+import { Expense, Prisma } from '@prisma/client';
+
 import { Injectable } from '@nestjs/common';
 
 import { IPagePaginationInput } from '@shared/interfaces/page-pagination-input.interface';
@@ -12,8 +14,6 @@ import { IExpenseCreateInput } from '@api/expenses/interfaces/expense-create-inp
 import { IExpenseUpdateInput } from '@api/expenses/interfaces/expense-update-input.interface';
 import { IExpense } from '@api/expenses/interfaces/expense.interface';
 import { IExpensesRepository } from '@api/expenses/interfaces/expenses-repository.interface';
-
-import { Expense, Prisma } from '../../../../prisma/client';
 
 import SortOrder = Prisma.SortOrder;
 
