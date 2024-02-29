@@ -39,13 +39,12 @@ async function loggerPluginFn(
   fastify.addHook('onResponse', (req, res) => {
     const serializedReq = reqSerializer(req);
     const serializedRes = resSerializer(res);
-    const responseTime = res.getResponseTime();
 
     const responseLogLevel = customLogLevel(req, res);
 
     // eslint-disable-next-line security/detect-object-injection
     pinoLogger[responseLogLevel](
-      { req: serializedReq, res: serializedRes, responseTime },
+      { req: serializedReq, res: serializedRes, responseTime: res.elapsedTime },
       `request completed`,
     );
   });

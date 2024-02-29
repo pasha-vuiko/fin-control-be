@@ -40,10 +40,10 @@ export class RedisModule {
 function filterModuleOptions(options: IRedisModuleOptions): IRedisModuleOptions {
   const resultConfig = {};
 
-  for (const key in options) {
+  for (const key of Object.getOwnPropertyNames(options)) {
     // @ts-expect-error - we are sure that key exists in options
     // eslint-disable-next-line security/detect-object-injection
-    if (options[key]) {
+    if (options[key] !== undefined) {
       // @ts-expect-error - we are sure that key exists in options
       // eslint-disable-next-line security/detect-object-injection
       resultConfig[key] = options[key];

@@ -6,10 +6,8 @@ import { CACHE_KEY_METADATA, CACHE_TTL_METADATA } from '@nestjs/cache-manager';
 import {
   CallHandler,
   ExecutionContext,
-  Inject,
   Injectable,
   NestInterceptor,
-  Optional,
 } from '@nestjs/common';
 import { isFunction, isNil } from '@nestjs/common/utils/shared.utils';
 import { HttpAdapterHost, Reflector } from '@nestjs/core';
@@ -24,13 +22,12 @@ export class JsonCacheInterceptor implements NestInterceptor {
   private ioRedisInstance: IoredisWithDefaultTtl;
   private logger = new Logger(JsonCacheInterceptor.name);
 
-  @Optional()
-  @Inject()
-  protected readonly httpAdapterHost: HttpAdapterHost;
-
   protected allowedMethods = ['GET'];
 
-  constructor(protected readonly reflector: Reflector) {
+  constructor(
+    protected readonly reflector: Reflector,
+    protected readonly httpAdapterHost: HttpAdapterHost,
+  ) {
     this.ioRedisInstance = RedisConfigService.getIoRedisInstance();
   }
 

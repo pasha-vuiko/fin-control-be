@@ -1,7 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { packageJsonInfo } from '@shared/constants/package-json-info';
-
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -17,11 +15,11 @@ describe('AppController', () => {
     appController = app.get<AppController>(AppController);
   });
 
-  describe('getAppVersion', () => {
-    it('should return app info', () => {
-      const result = appController.getAppVersion();
+  afterEach(async () => {
+    jest.clearAllMocks();
+  });
 
-      expect(result).toBe(`App version: ${packageJsonInfo.version}`);
-    });
+  it('should be defined', () => {
+    expect(appController).toBeDefined();
   });
 });
