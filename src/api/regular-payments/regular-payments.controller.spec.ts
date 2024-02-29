@@ -28,6 +28,8 @@ describe('RegularPaymentsController', () => {
     controller = module.get<RegularPaymentsController>(RegularPaymentsController);
   });
 
+  afterEach(async () => jest.clearAllMocks());
+
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
