@@ -2,10 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { PrismaModule } from '@shared/modules/prisma/prisma.module';
 
+import { CustomersModule } from '@api/customers/customers.module';
 import { ExpensesRepository } from '@api/expenses/repositories/expenses.repository';
 
 import { ExpensesService } from './expenses.service';
-import { CustomersModule } from '@api/customers/customers.module';
 
 describe('ExpensesService', () => {
   let service: ExpensesService;
