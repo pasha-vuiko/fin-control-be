@@ -30,7 +30,9 @@ describe('RegularPaymentsController', () => {
     controller = module.get<RegularPaymentsController>(RegularPaymentsController);
   });
 
-  afterEach(async () => vitest.clearAllMocks());
+  afterEach(async () => {
+    vitest.clearAllMocks();
+  });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();

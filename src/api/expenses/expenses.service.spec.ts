@@ -27,7 +27,9 @@ describe('ExpensesService', () => {
     service = module.get<ExpensesService>(ExpensesService);
   });
 
-  afterEach(async () => vitest.clearAllMocks());
+  afterEach(async () => {
+    vitest.clearAllMocks();
+  });
 
   it('should be defined', () => {
     expect(service).toBeDefined();

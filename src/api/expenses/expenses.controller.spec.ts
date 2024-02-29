@@ -29,7 +29,9 @@ describe('ExpensesController', () => {
     controller = module.get<ExpensesController>(ExpensesController);
   });
 
-  afterEach(() => vitest.clearAllMocks());
+  afterEach(() => {
+    vitest.clearAllMocks();
+  });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();

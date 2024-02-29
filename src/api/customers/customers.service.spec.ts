@@ -26,7 +26,9 @@ describe('CustomerService', () => {
     service = module.get<CustomersService>(CustomersService);
   });
 
-  afterEach(() => vitest.clearAllMocks());
+  afterEach(() => {
+    vitest.clearAllMocks();
+  });
 
   it('should be defined', () => {
     expect(service).toBeDefined();

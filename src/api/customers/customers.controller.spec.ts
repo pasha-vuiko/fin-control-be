@@ -28,7 +28,9 @@ describe('CustomersController', () => {
     controller = module.get<CustomersController>(CustomersController);
   });
 
-  afterEach(() => vitest.clearAllMocks());
+  afterEach(() => {
+    vitest.clearAllMocks();
+  });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
