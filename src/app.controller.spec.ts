@@ -1,3 +1,5 @@
+import { vitest } from 'vitest';
+
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { AppController } from './app.controller';
@@ -16,7 +18,7 @@ describe('AppController', () => {
   });
 
   afterEach(async () => {
-    jest.clearAllMocks();
+    vitest.clearAllMocks();
   });
 
   it('should be defined', () => {

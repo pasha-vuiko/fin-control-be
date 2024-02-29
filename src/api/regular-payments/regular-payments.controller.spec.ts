@@ -1,3 +1,5 @@
+import { vitest } from 'vitest';
+
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { PrismaModule } from '@shared/modules/prisma/prisma.module';
@@ -15,7 +17,7 @@ describe('RegularPaymentsController', () => {
   let controller: RegularPaymentsController;
 
   beforeEach(async () => {
-    jest
+    vitest
       .spyOn(RedisConfigService, 'getIoRedisInstance')
       .mockReturnValue({} as IoredisWithDefaultTtl);
 
@@ -28,7 +30,7 @@ describe('RegularPaymentsController', () => {
     controller = module.get<RegularPaymentsController>(RegularPaymentsController);
   });
 
-  afterEach(async () => jest.clearAllMocks());
+  afterEach(async () => vitest.clearAllMocks());
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
