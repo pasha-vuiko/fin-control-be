@@ -3,6 +3,7 @@ import { vitest } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { PrismaModule } from '@shared/modules/prisma/prisma.module';
+import { PrismaService } from '@shared/modules/prisma/prisma.service';
 import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
 import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 
@@ -13,10 +14,13 @@ import { RegularPaymentsRepository } from '@api/regular-payments/repositories/re
 import { RegularPaymentsController } from './regular-payments.controller';
 import { RegularPaymentsService } from './regular-payments.service';
 
+class MockPrismaService {}
+
 describe('RegularPaymentsController', () => {
   let controller: RegularPaymentsController;
 
   beforeEach(async () => {
+    // Preventing connection to the Redis
     vitest
       .spyOn(RedisConfigService, 'getIoRedisInstance')
       .mockReturnValue({} as IoredisWithDefaultTtl);
@@ -25,7 +29,10 @@ describe('RegularPaymentsController', () => {
       imports: [PrismaModule.forRoot(), CustomersModule, ExpensesModule],
       controllers: [RegularPaymentsController],
       providers: [RegularPaymentsService, RegularPaymentsRepository],
-    }).compile();
+    })
+      .overrideProvider(PrismaService) // Preventing connection to the database
+      .useClass(MockPrismaService)
+      .compile();
 
     controller = module.get<RegularPaymentsController>(RegularPaymentsController);
   });

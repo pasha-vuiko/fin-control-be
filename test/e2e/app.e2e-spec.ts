@@ -5,8 +5,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { packageJsonInfo } from '@shared/constants/package-json-info';
 
-import { config } from '../src/app.config';
-import { AppModule } from '../src/app.module';
+import { config } from '../../src/app.config';
+import { AppModule } from '../../src/app.module';
 
 describe('AppController (e2e)', () => {
   let app: NestFastifyApplication;
