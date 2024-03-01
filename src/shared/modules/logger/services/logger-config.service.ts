@@ -18,14 +18,13 @@ export class LoggerConfigService implements OnModuleInit {
   ) {}
 
   async onModuleInit(): Promise<void> {
-    const pinoLogger = this.getPinoLogger();
-
     const isFastifyAdapter = this.adapterHost.httpAdapter instanceof FastifyAdapter;
 
     if (!isFastifyAdapter) {
       throw new Error('LoggerModule supports only FastifyAdapter');
     }
 
+    const pinoLogger = this.getPinoLogger();
     //@ts-expect-error type of the plugin is not compatible with the type of the register method
     await this.adapterHost.httpAdapter.register(loggerPlugin, { pinoLogger });
   }

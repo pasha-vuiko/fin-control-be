@@ -152,20 +152,20 @@ function pushTextFieldSchema(
   args: RedisCommandArguments,
   fieldOptions: CreateSchemaTextField,
 ): void {
-  // @ts-expect-error typescript bug
+  // @ts-expect-error typescript issue
   if (fieldOptions.NOSTEM) {
     args.push('NOSTEM');
   }
 
-  // @ts-expect-error typescript bug
+  // @ts-expect-error typescript issue
   if (fieldOptions.WEIGHT) {
-    // @ts-expect-error typescript bug
+    // @ts-expect-error typescript issue
     args.push('WEIGHT', fieldOptions.WEIGHT.toString());
   }
 
-  // @ts-expect-error typescript bug
+  // @ts-expect-error typescript issue
   if (fieldOptions.PHONETIC) {
-    // @ts-expect-error typescript bug
+    // @ts-expect-error typescript issue
     args.push('PHONETIC', fieldOptions.PHONETIC);
   }
 }
@@ -174,13 +174,13 @@ function pushTagFieldSchema(
   args: RedisCommandArguments,
   fieldOptions: CreateSchemaTagField,
 ): void {
-  // @ts-expect-error typescript bug
+  // @ts-expect-error typescript issue
   if (fieldOptions.SEPARATOR) {
-    // @ts-expect-error typescript bug
+    // @ts-expect-error typescript issue
     args.push('SEPARATOR', fieldOptions.SEPARATOR);
   }
 
-  // @ts-expect-error typescript bug
+  // @ts-expect-error typescript issue
   if (fieldOptions.CASESENSITIVE) {
     args.push('CASESENSITIVE');
   }

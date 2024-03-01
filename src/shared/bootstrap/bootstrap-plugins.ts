@@ -1,3 +1,5 @@
+import fastifyMetrics from 'fastify-metrics';
+
 import { ValidationPipe } from '@nestjs/common';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from '@nestjs/swagger';
@@ -19,6 +21,7 @@ export async function bootstrapPlugins(
   setupOpenApi(app);
   setupRequestsValidation(app, isDevelopment);
   await setupShutdownHooks(app);
+  await setupMetrics(app);
 }
 
 function setupExceptionFilters(app: NestFastifyApplication): void {
@@ -89,4 +92,12 @@ function setupOpenApi(app: NestFastifyApplication): void {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
 
   SwaggerModule.setup('api', app, document, customOptions);
+}
+
+async function setupMetrics(app: NestFastifyApplication): Promise<void> {
+  //@ts-expect-error types of fastify instances are not compatible
+  await app.register(fastifyMetrics, {
+    endpoint: '/metrics',
+    enableDefaultMetrics: true,
+  });
 }

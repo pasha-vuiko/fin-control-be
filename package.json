@@ -19,7 +19,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage",
-    "test:debug": "vitest --inspect-brk --inspect --logHeapUsage --threads=false",
+    "test:debug": "vitest --inspect-brk --inspect --logHeapUsage --no-file-parallelism",
     "test:e2e": "vitest run --config ./test/vitest.config.e2e.mjs"
   },
   "dependencies": {
@@ -39,6 +39,7 @@
     "dotenv": "^16.4.5",
     "fastify": "^4.26.1",
     "fastify-auth0-verify": "^2.0.0",
+    "fastify-metrics": "^8.0.0",
     "fastify-plugin": "^4.5.1",
     "fastify-uws": "^0.5.0",
     "ioredis": "^5.3.2",
