@@ -17,15 +17,14 @@ import { Auth } from '@shared/modules/auth/decorators/auth.decorator';
 import { User } from '@shared/modules/auth/decorators/user.decorator';
 import { Roles } from '@shared/modules/auth/enums/roles';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
-import { isAdmin } from '@shared/modules/auth/utils/is-admin.util';
 import { JsonCache } from '@shared/modules/redis/decorators/json-cache.decorator';
 
 import { ExpensesFindDto } from '@api/expenses/dto/expenses-find.dto';
 import { ExpenseEntity } from '@api/expenses/entities/expense.entity';
 
-import { ExpenseCreateDto } from './dto/expense-create.dto';
-import { ExpenseUpdateDto } from './dto/expense-update.dto';
-import { ExpensesService } from './expenses.service';
+import { ExpenseCreateDto } from '../dto/expense-create.dto';
+import { ExpenseUpdateDto } from '../dto/expense-update.dto';
+import { ExpensesService } from '../services/expenses.service';
 
 @ApiTags('Expenses')
 @Controller('expenses')
@@ -34,22 +33,13 @@ export class ExpensesController {
 
   @ApiPagePaginatedRes(ExpenseEntity)
   @JsonCache()
-  @Auth(Roles.CUSTOMER, Roles.ADMIN)
+  @Auth(Roles.CUSTOMER)
   @Get()
   async findMany(
     @Query() findDto: ExpensesFindDto,
     @User() user: IUser,
   ): Promise<PagePaginationResEntity<ExpenseEntity>> {
     const { page, numOfItems } = findDto;
-
-    if (isAdmin(user)) {
-      const { items, total } = await this.expensesService.findManyAsAdmin({
-        page,
-        numOfItems,
-      });
-
-      return { items, total, page, numOfItems };
-    }
 
     const { items, total } = await this.expensesService.findManyAsCustomer(user.id, {
       page,
@@ -60,13 +50,9 @@ export class ExpensesController {
   }
 
   @JsonCache()
-  @Auth(Roles.CUSTOMER, Roles.ADMIN)
+  @Auth(Roles.CUSTOMER)
   @Get(':id')
   findOne(@Param('id') id: string, @User() user: IUser): Promise<ExpenseEntity> {
-    if (isAdmin(user)) {
-      return this.expensesService.findOneAsAdmin(id);
-    }
-
     return this.expensesService.findOneAsCustomer(id, user.id);
   }
 

@@ -3,14 +3,14 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PagePaginationDto } from '@shared/dto/page-pagination.dto';
 import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-output.entity';
 
-import { CustomersService } from '@api/customers/customers.service';
+import { CustomersService } from '@api/customers/services/customers.service';
 import { ExpenseEntity } from '@api/expenses/entities/expense.entity';
 import { IExpenseCreateInput } from '@api/expenses/interfaces/expense-create-input.interface';
 import { IExpensesRepository } from '@api/expenses/interfaces/expenses-repository.interface';
 import { ExpensesRepository } from '@api/expenses/repositories/expenses.repository';
 
-import { ExpenseCreateDto } from './dto/expense-create.dto';
-import { ExpenseUpdateDto } from './dto/expense-update.dto';
+import { ExpenseCreateDto } from '../dto/expense-create.dto';
+import { ExpenseUpdateDto } from '../dto/expense-update.dto';
 
 @Injectable()
 export class ExpensesService {

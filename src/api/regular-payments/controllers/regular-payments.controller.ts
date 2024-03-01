@@ -8,16 +8,15 @@ import { Auth } from '@shared/modules/auth/decorators/auth.decorator';
 import { User } from '@shared/modules/auth/decorators/user.decorator';
 import { Roles } from '@shared/modules/auth/enums/roles';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
-import { isAdmin } from '@shared/modules/auth/utils/is-admin.util';
 import { Logger } from '@shared/modules/logger/loggers/logger';
 import { JsonCache } from '@shared/modules/redis/decorators/json-cache.decorator';
 
 import { RegularPaymentSearchDto } from '@api/regular-payments/dto/regular-payment-search.dto';
 import { RegularPaymentEntity } from '@api/regular-payments/entities/regular-payment.entity';
 
-import { RegularPaymentCreateDto } from './dto/regular-payment-create.dto';
-import { RegularPaymentUpdateDto } from './dto/regular-payment-update.dto';
-import { RegularPaymentsService } from './regular-payments.service';
+import { RegularPaymentCreateDto } from '../dto/regular-payment-create.dto';
+import { RegularPaymentUpdateDto } from '../dto/regular-payment-update.dto';
+import { RegularPaymentsService } from '../services/regular-payments.service';
 
 @ApiTags('Regular Payments')
 @Controller('regular-payments')
@@ -26,22 +25,13 @@ export class RegularPaymentsController {
 
   @ApiPagePaginatedRes(RegularPaymentEntity)
   @JsonCache()
-  @Auth(Roles.CUSTOMER, Roles.ADMIN)
+  @Auth(Roles.CUSTOMER)
   @Get()
   async findMany(
     @Query() findDto: RegularPaymentSearchDto,
     @User() user: IUser,
   ): Promise<PagePaginationResEntity<RegularPaymentEntity>> {
     const { numOfItems, page } = findDto;
-
-    if (isAdmin(user)) {
-      const { items, total } = await this.regularPaymentsService.findManyAsAdmin({
-        numOfItems,
-        page,
-      });
-
-      return { items, total, page, numOfItems };
-    }
 
     const { items, total } = await this.regularPaymentsService.findManyAsCustomer(
       user.id,
@@ -52,13 +42,9 @@ export class RegularPaymentsController {
   }
 
   @JsonCache()
-  @Auth(Roles.CUSTOMER, Roles.ADMIN)
+  @Auth(Roles.CUSTOMER)
   @Get(':id')
   findOne(@Param('id') id: string, @User() user: IUser): Promise<RegularPaymentEntity> {
-    if (isAdmin(user)) {
-      return this.regularPaymentsService.findOneAsAdmin(id);
-    }
-
     return this.regularPaymentsService.findOneAsCustomer(id, user.id);
   }
 

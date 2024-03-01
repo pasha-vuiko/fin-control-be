@@ -10,8 +10,8 @@ import { RedisConfigService } from '@shared/modules/redis/services/redis-config/
 import { CustomersModule } from '@api/customers/customers.module';
 import { ExpensesRepository } from '@api/expenses/repositories/expenses.repository';
 
+import { ExpensesService } from '../services/expenses.service';
 import { ExpensesController } from './expenses.controller';
-import { ExpensesService } from './expenses.service';
 
 class MockPrismaService {}
 

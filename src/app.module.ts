@@ -14,7 +14,6 @@ import { config } from './app.config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
-// TODO Split admin and customer permissions APIs
 @Module({
   imports: [
     // api

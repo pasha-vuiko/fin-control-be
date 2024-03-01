@@ -3,16 +3,16 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-output.entity';
 import { IPagePaginationInput } from '@shared/interfaces/page-pagination-input.interface';
 
-import { CustomersService } from '@api/customers/customers.service';
-import { ExpensesService } from '@api/expenses/expenses.service';
+import { CustomersService } from '@api/customers/services/customers.service';
 import { IExpenseCreateInput } from '@api/expenses/interfaces/expense-create-input.interface';
+import { ExpensesService } from '@api/expenses/services/expenses.service';
 import { RegularPaymentEntity } from '@api/regular-payments/entities/regular-payment.entity';
 import { IRegularPayment } from '@api/regular-payments/interfaces/regular-payment.interface';
 import { IRegularPaymentsRepository } from '@api/regular-payments/interfaces/regular-payments-repository.interface';
 import { RegularPaymentsRepository } from '@api/regular-payments/repositories/regular-payments.repository';
 
-import { RegularPaymentCreateDto } from './dto/regular-payment-create.dto';
-import { RegularPaymentUpdateDto } from './dto/regular-payment-update.dto';
+import { RegularPaymentCreateDto } from '../dto/regular-payment-create.dto';
+import { RegularPaymentUpdateDto } from '../dto/regular-payment-update.dto';
 
 @Injectable()
 export class RegularPaymentsService {
@@ -92,7 +92,7 @@ export class RegularPaymentsService {
     return this.regularPaymentsRepository.delete(id);
   }
 
-  async applyRegularPayments(monthYear: string): Promise<void> {
+  async applyRegularPayments(_monthYear: string): Promise<void> {
     const regularPayments = await this.regularPaymentsRepository.findAll();
 
     const expensesToCreate: IExpenseCreateInput[] = regularPayments.map(

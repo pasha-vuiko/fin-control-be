@@ -13,8 +13,8 @@ import { CustomerEntity } from '@api/customers/entities/customer.entity';
 import { ICustomersRepository } from '@api/customers/interfaces/customers.repository.interface';
 import { CustomersRepository } from '@api/customers/repositories/customers.repository';
 
-import { CustomerCreateDto } from './dto/customer-create.dto';
-import { CustomerUpdateDto } from './dto/customer-update.dto';
+import { CustomerCreateDto } from '../dto/customer-create.dto';
+import { CustomerUpdateDto } from '../dto/customer-update.dto';
 
 @Injectable()
 export class CustomersService {
