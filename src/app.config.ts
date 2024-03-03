@@ -19,6 +19,16 @@ export const config = {
     logger: {
       level: process.env.LOGGER_LEVEL,
       prettyPrint: process.env.LOG_FORMAT === 'pretty',
+      requestLoggerIgnorePaths: [
+        '/',
+        '/metrics',
+        '/docs',
+        '/docs/favicon-32x32.png',
+        '/docs/swagger-ui.css',
+        '/docs/swagger-ui-init.js',
+        '/docs/swagger-ui-bundle.js',
+        '/docs/swagger-ui-standalone-preset.js',
+      ] as string[],
     },
     fastify: {
       genReqId: generateRequestId,

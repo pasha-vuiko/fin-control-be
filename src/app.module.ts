@@ -29,7 +29,9 @@ import { AppService } from './app.service';
       secret: config.auth.auth0ClientSecret as string,
     }),
     RedisModule.forRoot(config.cache.redis),
-    LoggerModule.forRoot(config.app.logger.level as LogLevel),
+    LoggerModule.forRoot(config.app.logger.level as LogLevel, {
+      ignorePaths: config.app.logger.requestLoggerIgnorePaths,
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],

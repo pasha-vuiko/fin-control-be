@@ -91,7 +91,7 @@ function setupOpenApi(app: NestFastifyApplication): void {
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
 
-  SwaggerModule.setup('api', app, document, customOptions);
+  SwaggerModule.setup('docs', app, document, customOptions);
 }
 
 async function setupMetrics(app: NestFastifyApplication): Promise<void> {

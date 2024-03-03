@@ -1,11 +1,9 @@
 import fs from 'node:fs';
 
-import dotenv from 'dotenv';
-
 export function checkEnvVarsSet(exampleEnvFilePath: string): boolean {
   // eslint-disable-next-line security/detect-non-literal-fs-filename
   const exampleEnvFileContent = fs.readFileSync(exampleEnvFilePath, 'utf8');
-  const parsedEnvFileContent = dotenv.parse(exampleEnvFileContent);
+  const parsedEnvFileContent = parseEnvFileContent(exampleEnvFileContent);
 
   const missingEnvVars = Object.keys(parsedEnvFileContent).filter(
     envVarName => !Object.hasOwn(process.env, envVarName),
@@ -16,4 +14,15 @@ export function checkEnvVarsSet(exampleEnvFilePath: string): boolean {
   }
 
   return true;
+}
+
+function parseEnvFileContent(envFileContent: string): Record<string, string> {
+  const keyValuePairs = envFileContent
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .filter(line => line.trim())
+    .filter(line => !line.startsWith('#'))
+    .map(line => line.split('=') as [string, string]);
+
+  return Object.fromEntries(keyValuePairs);
 }
