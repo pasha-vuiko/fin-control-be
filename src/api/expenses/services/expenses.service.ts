@@ -40,7 +40,7 @@ export class ExpensesService {
       this.customersService.findOneByUserId(userId),
     ]);
 
-    if (!foundExpense || foundExpense.customerId === customer.id) {
+    if (!foundExpense || foundExpense.customerId !== customer.id) {
       throw new NotFoundException(`expense with ${id} is not found`);
     }
 
