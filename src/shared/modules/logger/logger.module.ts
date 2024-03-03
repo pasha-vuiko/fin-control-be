@@ -13,11 +13,11 @@ import { getPinoLoggerProviders } from '@shared/modules/logger/utils/inject-pino
 @Module({})
 export class LoggerModule {
   static forRoot(loggerLevel: LogLevel, options?: ILoggerOptions): DynamicModule {
-    const inputOrDefaultOptions = options ?? getDefaultLoggerConfig(loggerLevel);
+    const optionsWithDefault = this.getOptionsWithDefault(loggerLevel, options);
 
     const paramsProvider: Provider<ILoggerOptions> = {
       provide: LOGGER_MODULE_OPTIONS,
-      useValue: inputOrDefaultOptions,
+      useValue: optionsWithDefault,
     };
 
     const decorated = getPinoLoggerProviders();
@@ -33,5 +33,21 @@ export class LoggerModule {
       ],
       exports: [PinoLogger, ...decorated, InternalPinoLogger, paramsProvider],
     };
+  }
+
+  private static getOptionsWithDefault(
+    loggerLevel: LogLevel,
+    options?: ILoggerOptions,
+  ): ILoggerOptions {
+    const defaultOptions = getDefaultLoggerConfig(loggerLevel);
+
+    if (options) {
+      return {
+        ...defaultOptions,
+        ...options,
+      };
+    }
+
+    return defaultOptions;
   }
 }

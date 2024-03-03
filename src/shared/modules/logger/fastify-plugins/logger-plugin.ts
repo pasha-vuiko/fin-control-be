@@ -11,6 +11,7 @@ import {
 
 export interface ILoggerPluginOptions extends Omit<ILoggerOptions, 'pinoOptions'> {
   pinoLogger: Logger;
+  ignorePaths?: string[];
 }
 
 export const loggerPlugin = fastifyPlugin(loggerPluginFn);
@@ -22,7 +23,7 @@ async function loggerPluginFn(
   const {
     pinoLogger,
     reqResSerializers,
-    customLogLevel = getDefaultResLogLevel,
+    customLogLevel = getDefaultResLogLevelFactory(options),
   } = options;
 
   const {
@@ -65,16 +66,32 @@ function defaultResSerializer(res: FastifyReply): Record<string, any> {
   };
 }
 
-function getDefaultResLogLevel(_req: FastifyRequest, res: FastifyReply): LogLevel {
-  const { statusCode } = res;
+function getDefaultResLogLevelFactory(
+  loggerOptions: ILoggerPluginOptions,
+): TDefaultLevelPredicate {
+  const { ignorePaths = [] } = loggerOptions;
 
-  if (statusCode >= 400 && statusCode < 500) {
-    return 'warn';
-  }
+  return (req: FastifyRequest, res: FastifyReply): LogLevel => {
+    const { statusCode } = res;
 
-  if (statusCode >= 500) {
-    return 'error';
-  }
+    if (ignorePaths.includes(req.url)) {
+      return 'silent';
+    }
 
-  return 'debug';
+    if (statusCode >= 400 && statusCode < 500) {
+      return 'warn';
+    }
+
+    if (statusCode >= 500) {
+      return 'error';
+    }
+
+    if (ignorePaths.includes(req.url)) {
+      return 'trace';
+    }
+
+    return 'debug';
+  };
 }
+
+type TDefaultLevelPredicate = (req: FastifyRequest, res: FastifyReply) => LogLevel;

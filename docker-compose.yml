@@ -32,6 +32,28 @@ services:
       - '26257:26257'
       - '8081:8080'
     volumes:
-      - "./cockroach-data/crdb:/cockroach/cockroach-data"
+      - ./local-infrastructure/data/cockroach-data/crdb:/cockroach/cockroach-data
     restart: unless-stopped
     command: start-single-node --insecure
+
+  prometheus:
+    image: prom/prometheus:v2.50.0
+    container_name: prometheus
+    ports:
+      - '9090:9090'
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+    volumes:
+      - ./local-infrastructure/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
+      - ./local-infrastructure/data/prometheus-data:/prometheus
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana-oss:10.3.3
+    container_name: grafana
+    ports:
+      - '3001:3000'
+    volumes:
+      - ./local-infrastructure/data/grafana-data:/var/lib/grafana
+    restart: unless-stopped
+

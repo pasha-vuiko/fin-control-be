@@ -3,4 +3,4 @@ Dockerfile
 node_modules
 npm-debug.log
 /prisma/client/
-.env
+.env/local-infrastructure/data/

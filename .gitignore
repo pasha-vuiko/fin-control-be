@@ -44,3 +44,8 @@ lerna-debug.log*
 # ENV
 /postgres-data/
 .env
+
+# Local infrastructure data
+/local-infrastructure/data/cockroach-data
+/local-infrastructure/data/grafana-data
+/local-infrastructure/data/prometheus-data
