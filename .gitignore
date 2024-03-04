@@ -44,6 +44,7 @@ lerna-debug.log*
 # ENV
 /postgres-data/
 .env
+local-docker.env
 
 # Local infrastructure data
 /local-infrastructure/data/cockroach-data

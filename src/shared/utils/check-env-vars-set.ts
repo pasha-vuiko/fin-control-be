@@ -10,7 +10,7 @@ export function checkEnvVarsSet(exampleEnvFilePath: string): boolean {
   );
 
   if (missingEnvVars.length) {
-    throw new Error(`Missing environment variables: ${missingEnvVars.join(', ')}`);
+    throw new Error(`Missing environment variables: \n${missingEnvVars.join(', ')}`);
   }
 
   return true;

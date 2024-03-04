@@ -8,7 +8,6 @@ import { config } from './app.config';
 import { AppModule } from './app.module';
 
 // TODO Use nestia instead of class-validator?
-// TODO Setup git hooks
 async function bootstrap(): Promise<NestFastifyApplication> {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
