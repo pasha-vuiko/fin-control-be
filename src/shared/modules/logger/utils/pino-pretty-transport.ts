@@ -19,6 +19,7 @@ export default (): PinoPretty.PrettyStream =>
       caller: (caller: string | object) => cyanConsole(caller),
     },
     messageFormat: (log: Record<string, any>, messageKey: string) => {
+      // eslint-disable-next-line security/detect-object-injection
       const message = log[messageKey] as string;
 
       if (log.res) {

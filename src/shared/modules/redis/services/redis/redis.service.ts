@@ -178,6 +178,7 @@ export class RedisService {
     const parsedResults: any[] = [];
 
     for (let i = 1; i < rawResults.length; i += 2) {
+      // eslint-disable-next-line security/detect-object-injection
       const stringifiedValue = rawResults[i][1];
       const jsonValue = JSON.parse(stringifiedValue);
 
