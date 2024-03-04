@@ -1,5 +1,8 @@
-version: '3.4'
+version: '3.8'
 
+networks:
+  monitoring:
+    driver: bridge
 services:
   #  fin-control-be:
   #    build:
@@ -57,3 +60,11 @@ services:
       - ./local-infrastructure/data/grafana-data:/var/lib/grafana
     restart: unless-stopped
 
+  node_exporter:
+    image: quay.io/prometheus/node-exporter:v1.5.0
+    container_name: node_exporter
+    command: '--path.rootfs=/host'
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - /:/host:ro,rslave
