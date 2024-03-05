@@ -4,9 +4,9 @@ import {
   createParamDecorator,
 } from '@nestjs/common';
 
+import { Auth0Guard } from '@shared/modules/auth/guards/auth/auth0.guard';
 import { IAuth0User } from '@shared/modules/auth/interfaces/auth0-user.interface';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
-import { getRolesFromAuth0User } from '@shared/modules/auth/utils/getRolesFromAuth0User';
 
 export const User = createParamDecorator(
   (_data: unknown, ctx: ExecutionContext): IUser => {
@@ -27,7 +27,7 @@ export const User = createParamDecorator(
       nickname: nickname,
       email: email,
       emailVerified: email_verified,
-      roles: getRolesFromAuth0User(auth0User),
+      roles: Auth0Guard.getRolesFromAuth0User(auth0User),
     };
   },
 );

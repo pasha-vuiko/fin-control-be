@@ -9,7 +9,10 @@ import { Reflector } from '@nestjs/core';
 
 import { AUTH_ROLES_META } from '@shared/modules/auth/decorators/auth.decorator';
 import { Roles } from '@shared/modules/auth/enums/roles';
-import { getRolesFromAuth0User } from '@shared/modules/auth/utils/getRolesFromAuth0User';
+import {
+  AUTH0_ROLES_KEY,
+  IAuth0User,
+} from '@shared/modules/auth/interfaces/auth0-user.interface';
 
 @Injectable()
 export class Auth0Guard implements CanActivate {
@@ -25,7 +28,7 @@ export class Auth0Guard implements CanActivate {
     });
 
     const requiredRoles = this.getRequiredRoles(context);
-    const userRoles = getRolesFromAuth0User(req.user);
+    const userRoles = Auth0Guard.getRolesFromAuth0User(req.user);
 
     return this.checkRolesMatch(requiredRoles, userRoles);
   }
@@ -52,5 +55,15 @@ export class Auth0Guard implements CanActivate {
     }
 
     return rolesMatch;
+  }
+
+  public static getRolesFromAuth0User(user: IAuth0User): Roles[] {
+    // eslint-disable-next-line security/detect-object-injection
+    if (user[AUTH0_ROLES_KEY]?.length) {
+      // eslint-disable-next-line security/detect-object-injection
+      return user[AUTH0_ROLES_KEY].map(role => role.toUpperCase() as Roles);
+    }
+
+    return [Roles.CUSTOMER];
   }
 }
