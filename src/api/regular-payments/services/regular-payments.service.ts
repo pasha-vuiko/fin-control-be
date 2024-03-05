@@ -23,10 +23,18 @@ export class RegularPaymentsService {
     private expensesService: ExpensesService,
   ) {}
 
-  findManyAsAdmin(
+  async findManyAsAdmin(
     pagination: IPagePaginationInput,
   ): Promise<PagePaginationOutputEntity<RegularPaymentEntity>> {
-    return this.regularPaymentsRepository.findMany({}, pagination);
+    const { items, total } = await this.regularPaymentsRepository.findMany(
+      {},
+      pagination,
+    );
+
+    return new PagePaginationOutputEntity<RegularPaymentEntity>({
+      items: items.map(RegularPaymentEntity.fromPlainObj),
+      total,
+    });
   }
 
   async findManyAsCustomer(
@@ -35,10 +43,15 @@ export class RegularPaymentsService {
   ): Promise<PagePaginationOutputEntity<RegularPaymentEntity>> {
     const customer = await this.customersService.findOneByUserId(userId);
 
-    return this.regularPaymentsRepository.findMany(
+    const { items, total } = await this.regularPaymentsRepository.findMany(
       { customerId: customer.id },
       pagination,
     );
+
+    return new PagePaginationOutputEntity<RegularPaymentEntity>({
+      items: items.map(RegularPaymentEntity.fromPlainObj),
+      total,
+    });
   }
 
   async findOneAsAdmin(id: string): Promise<RegularPaymentEntity> {
@@ -48,7 +61,7 @@ export class RegularPaymentsService {
       throw new NotFoundException(`Regular payment with id ${id} not found`);
     }
 
-    return regularPayment;
+    return RegularPaymentEntity.fromPlainObj(regularPayment);
   }
 
   async findOneAsCustomer(id: string, userId: string): Promise<RegularPaymentEntity> {
@@ -61,7 +74,7 @@ export class RegularPaymentsService {
       throw new NotFoundException(`Regular payment with id ${id} not found`);
     }
 
-    return regularPayment;
+    return RegularPaymentEntity.fromPlainObj(regularPayment);
   }
 
   async create(
@@ -70,10 +83,12 @@ export class RegularPaymentsService {
   ): Promise<RegularPaymentEntity> {
     const customer = await this.customersService.findOneByUserId(userId);
 
-    return this.regularPaymentsRepository.create({
-      ...createRegularPaymentDto,
-      customerId: customer.id,
-    });
+    return this.regularPaymentsRepository
+      .create({
+        ...createRegularPaymentDto,
+        customerId: customer.id,
+      })
+      .then(RegularPaymentEntity.fromPlainObj);
   }
 
   async update(
@@ -83,16 +98,21 @@ export class RegularPaymentsService {
   ): Promise<IRegularPayment> {
     await this.findOneAsCustomer(id, userId); // check if regular payment exists
 
-    return this.regularPaymentsRepository.update(id, updateRegularPaymentDto);
+    return this.regularPaymentsRepository
+      .update(id, updateRegularPaymentDto)
+      .then(RegularPaymentEntity.fromPlainObj);
   }
 
   async delete(id: string, userId: string): Promise<IRegularPayment> {
     await this.findOneAsCustomer(id, userId); // check if regular payment exists
 
-    return this.regularPaymentsRepository.delete(id);
+    return this.regularPaymentsRepository
+      .delete(id)
+      .then(RegularPaymentEntity.fromPlainObj);
   }
 
   async applyRegularPayments(_monthYear: string): Promise<void> {
+    // TODO Fetch all regular payments in loop
     const regularPayments = await this.regularPaymentsRepository.findAll();
 
     const expensesToCreate: IExpenseCreateInput[] = regularPayments.map(

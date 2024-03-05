@@ -25,13 +25,26 @@ export class ExpensesService {
   ): Promise<PagePaginationOutputEntity<ExpenseEntity>> {
     const { id } = await this.customersService.findOneByUserId(userId);
 
-    return this.expensesRepository.findManyByCustomer(id, pagination);
+    const { total, items } = await this.expensesRepository.findManyByCustomer(
+      id,
+      pagination,
+    );
+
+    return new PagePaginationOutputEntity({
+      items: items.map(ExpenseEntity.fromExpenseObj),
+      total,
+    });
   }
 
   async findManyAsAdmin(
     pagination: PagePaginationDto,
   ): Promise<PagePaginationOutputEntity<ExpenseEntity>> {
-    return this.expensesRepository.findMany(pagination);
+    const { items, total } = await this.expensesRepository.findMany(pagination);
+
+    return new PagePaginationOutputEntity({
+      items: items.map(ExpenseEntity.fromExpenseObj),
+      total,
+    });
   }
 
   async findOneAsCustomer(id: string, userId: string): Promise<ExpenseEntity> {
@@ -44,7 +57,7 @@ export class ExpensesService {
       throw new NotFoundException(`expense with ${id} is not found`);
     }
 
-    return foundExpense;
+    return ExpenseEntity.fromExpenseObj(foundExpense);
   }
 
   async findOneAsAdmin(id: string): Promise<ExpenseEntity> {
@@ -54,7 +67,7 @@ export class ExpensesService {
       throw new NotFoundException(`expense with ${id} is not found`);
     }
 
-    return foundExpense;
+    return ExpenseEntity.fromExpenseObj(foundExpense);
   }
 
   async createMany(
@@ -69,16 +82,17 @@ export class ExpensesService {
       }),
     );
 
-    return this.expensesRepository.createMany(
-      createExpensesDataWithCustomerId,
-      customer.id,
-    );
+    return this.expensesRepository
+      .createMany(createExpensesDataWithCustomerId, customer.id)
+      .then(expenses => expenses.map(ExpenseEntity.fromExpenseObj));
   }
 
   async createManyViaTransaction(
     expensesToCreate: IExpenseCreateInput[],
   ): Promise<ExpenseEntity[]> {
-    return this.expensesRepository.createManyViaTransaction(expensesToCreate);
+    return this.expensesRepository
+      .createManyViaTransaction(expensesToCreate)
+      .then(expenses => expenses.map(ExpenseEntity.fromExpenseObj));
   }
 
   async update(
@@ -91,10 +105,12 @@ export class ExpensesService {
       this.findOneAsCustomer(id, userId),
     ]);
 
-    return this.expensesRepository.update(id, {
-      ...updateExpenseDto,
-      customerId: customer.id,
-    });
+    return this.expensesRepository
+      .update(id, {
+        ...updateExpenseDto,
+        customerId: customer.id,
+      })
+      .then(ExpenseEntity.fromExpenseObj);
   }
 
   async delete(id: string, userId: string): Promise<ExpenseEntity> {
@@ -109,6 +125,6 @@ export class ExpensesService {
       throw new NotFoundException(`expense with ${id} is not found`);
     }
 
-    return this.expensesRepository.delete(id);
+    return this.expensesRepository.delete(id).then(ExpenseEntity.fromExpenseObj);
   }
 }

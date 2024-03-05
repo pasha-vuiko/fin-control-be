@@ -22,10 +22,15 @@ export class CustomersService {
     @Inject(CustomersRepository) private customerRepository: ICustomersRepository,
   ) {}
 
-  findMany(
+  async findMany(
     pagination: PagePaginationDto,
   ): Promise<PagePaginationOutputEntity<CustomerEntity>> {
-    return this.customerRepository.findMany(pagination);
+    const { items, total } = await this.customerRepository.findMany(pagination);
+
+    return new PagePaginationOutputEntity<CustomerEntity>({
+      items: items.map(CustomerEntity.fromCustomerObj),
+      total,
+    });
   }
 
   async findOneByIdAsAdmin(id: string): Promise<CustomerEntity> {
@@ -35,7 +40,7 @@ export class CustomersService {
       throw new NotFoundException('The customer was not found');
     }
 
-    return foundCustomer;
+    return CustomerEntity.fromCustomerObj(foundCustomer);
   }
 
   async findOneByUserId(userId: string): Promise<CustomerEntity> {
@@ -45,18 +50,23 @@ export class CustomersService {
       throw new NotFoundException('The customer was not found');
     }
 
-    return foundCustomer;
+    return CustomerEntity.fromCustomerObj(foundCustomer);
   }
 
-  create(createCustomerDto: CustomerCreateDto, user: IUser): Promise<CustomerEntity> {
+  async create(
+    createCustomerDto: CustomerCreateDto,
+    user: IUser,
+  ): Promise<CustomerEntity> {
     const { id, email } = user;
 
-    return this.customerRepository.create({
+    const createdCustomer = await this.customerRepository.create({
       ...createCustomerDto,
       birthdate: new Date(createCustomerDto.birthdate),
       userId: id,
       email,
     });
+
+    return CustomerEntity.fromCustomerObj(createdCustomer);
   }
 
   async updateAsCustomer(
@@ -70,7 +80,9 @@ export class CustomersService {
       throw new NotFoundException('The customer not found');
     }
 
-    return this.customerRepository.update(id, updateCustomerDto);
+    return this.customerRepository
+      .update(id, updateCustomerDto)
+      .then(CustomerEntity.fromCustomerObj);
   }
 
   async updateAsAdmin(
@@ -83,7 +95,9 @@ export class CustomersService {
       throw new NotFoundException('The customer not found');
     }
 
-    return this.customerRepository.update(id, updateCustomerDto);
+    return this.customerRepository
+      .update(id, updateCustomerDto)
+      .then(CustomerEntity.fromCustomerObj);
   }
 
   async removeAsCustomer(id: string, userId: string): Promise<CustomerEntity> {
@@ -97,10 +111,10 @@ export class CustomersService {
       throw new ForbiddenException('You are not allowed to delete this customer');
     }
 
-    return this.customerRepository.remove(id);
+    return this.customerRepository.remove(id).then(CustomerEntity.fromCustomerObj);
   }
 
-  removeAsAdmin(id: string): Promise<CustomerEntity> {
-    return this.customerRepository.remove(id);
+  async removeAsAdmin(id: string): Promise<CustomerEntity> {
+    return this.customerRepository.remove(id).then(CustomerEntity.fromCustomerObj);
   }
 }

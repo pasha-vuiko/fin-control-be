@@ -6,6 +6,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { PagePaginationDto } from '@shared/dto/page-pagination.dto';
 import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-output.entity';
+import { IPagePaginationOutput } from '@shared/interfaces/page-pagination-output.interface';
 import { Roles } from '@shared/modules/auth/enums/roles';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
 import { PrismaModule } from '@shared/modules/prisma/prisma.module';
@@ -23,18 +24,6 @@ import { CustomersService } from './customers.service';
 
 class MockPrismaService {}
 
-const mockCustomerEntity: CustomerEntity = {
-  id: '1',
-  userId: '1',
-  firstName: 'test',
-  lastName: 'test',
-  email: 'test@gmail.com',
-  phone: '123456789',
-  birthdate: new Date(),
-  sex: Sex.MALE,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-};
 const mockCustomerCreateDto: CustomerCreateDto = {
   firstName: 'test',
   lastName: 'test',
@@ -101,37 +90,42 @@ describe('CustomerService', () => {
     expect(service).toBeDefined();
   });
 
-  describe('findMany', () => {
+  describe('findMany()', () => {
     it('should call findMany method of customersRepository', async () => {
-      // Mock pagination object
       const pagination: PagePaginationDto = {
         page: 1,
         numOfItems: 1,
       };
-      // Mock expected result
-      const expectedResult: PagePaginationOutputEntity<CustomerEntity> = {
-        items: [structuredClone(mockCustomerEntity)],
+      const customer = structuredClone(mockCustomer);
+      const dbResponse: IPagePaginationOutput<ICustomer> = {
+        items: [customer],
         total: 1,
       };
-      vitest.spyOn(customersRepository, 'findMany').mockResolvedValue(expectedResult);
+      vitest.spyOn(customersRepository, 'findMany').mockResolvedValue(dbResponse);
 
       const result = await service.findMany(pagination);
+      const expectedResult = new PagePaginationOutputEntity<CustomerEntity>({
+        items: [CustomerEntity.fromCustomerObj(customer)],
+        total: dbResponse.total,
+      });
 
-      expect(result).toBe(expectedResult);
+      expect(result).toStrictEqual(expectedResult);
       expect(customersRepository.findMany).toHaveBeenCalledWith(pagination);
     });
   });
 
-  describe('findOneByIdAsAdmin', () => {
+  describe('findOneByIdAsAdmin()', () => {
     it('should call findOneById method of customersRepository and return found customer', async () => {
       const id = '1';
-      // Mock found customer
-      const foundCustomer = structuredClone(mockCustomer);
-      vitest.spyOn(customersRepository, 'findOneById').mockResolvedValue(foundCustomer);
+      const mockCustomerFromDb = structuredClone(mockCustomer);
+      vitest
+        .spyOn(customersRepository, 'findOneById')
+        .mockResolvedValue(mockCustomerFromDb);
 
       const result = await service.findOneByIdAsAdmin(id);
+      const expectedResult = CustomerEntity.fromCustomerObj(mockCustomerFromDb);
 
-      expect(result).toBe(foundCustomer);
+      expect(result).toStrictEqual(expectedResult);
       expect(customersRepository.findOneById).toHaveBeenCalledWith(id);
     });
 
@@ -143,7 +137,7 @@ describe('CustomerService', () => {
     });
   });
 
-  describe('findOneByUserId', () => {
+  describe('findOneByUserId()', () => {
     it('should call findOneByUserId method of customersRepository and return found customer', async () => {
       const userId = '1';
       // Mock found customer
@@ -153,8 +147,9 @@ describe('CustomerService', () => {
         .mockResolvedValue(foundCustomer);
 
       const result = await service.findOneByUserId(userId);
+      const expectedResult = CustomerEntity.fromCustomerObj(foundCustomer);
 
-      expect(result).toBe(foundCustomer);
+      expect(result).toStrictEqual(expectedResult);
       expect(customersRepository.findOneByUserId).toHaveBeenCalledWith(userId);
     });
 
@@ -167,19 +162,20 @@ describe('CustomerService', () => {
   });
 
   // eslint-disable-next-line max-lines-per-function
-  describe('create', () => {
+  describe('create()', () => {
     it('should call create method of customersRepository with correct parameters', async () => {
       // Mock createCustomerDto
       const createCustomerDto = structuredClone(mockCustomerCreateDto);
       // Mock user
       const user = structuredClone(mockUser);
       // Mock expected result
-      const expectedResult = structuredClone(mockCustomer);
-      vitest.spyOn(customersRepository, 'create').mockResolvedValue(expectedResult);
+      const customer = structuredClone(mockCustomer);
+      vitest.spyOn(customersRepository, 'create').mockResolvedValue(customer);
 
       const result = await service.create(createCustomerDto, user);
+      const expectedResult = CustomerEntity.fromCustomerObj(customer);
 
-      expect(result).toBe(expectedResult);
+      expect(result).toStrictEqual(expectedResult);
       expect(customersRepository.create).toHaveBeenCalledWith({
         ...createCustomerDto,
         birthdate: expect.any(Date), // Assuming createCustomerDto contains birthdate
@@ -189,7 +185,7 @@ describe('CustomerService', () => {
     });
   });
 
-  describe('updateAsCustomer', () => {
+  describe('updateAsCustomer()', () => {
     it('should call findOneById method of customersRepository and update customer if found', async () => {
       const id = '1';
       const updateCustomerDto = structuredClone(mockCustomerUpdateDto);
@@ -204,8 +200,9 @@ describe('CustomerService', () => {
       vitest.spyOn(customersRepository, 'update').mockResolvedValue(updatedCustomer);
 
       const result = await service.updateAsCustomer(id, updateCustomerDto, userId);
+      const expectedReseult = CustomerEntity.fromCustomerObj(updatedCustomer);
 
-      expect(result).toBe(updatedCustomer);
+      expect(result).toStrictEqual(expectedReseult);
       expect(customersRepository.findOneById).toHaveBeenCalledWith(id);
       expect(customersRepository.update).toHaveBeenCalledWith(id, updateCustomerDto);
     });
@@ -222,7 +219,7 @@ describe('CustomerService', () => {
     });
   });
 
-  describe('updateAsAdmin', () => {
+  describe('updateAsAdmin()', () => {
     it('should call findOneById method of customersRepository and update customer if found', async () => {
       const id = '1';
       const updateCustomerDto: CustomerUpdateDto = {};
@@ -236,8 +233,9 @@ describe('CustomerService', () => {
       vitest.spyOn(customersRepository, 'update').mockResolvedValue(updatedCustomer);
 
       const result = await service.updateAsAdmin(id, updateCustomerDto);
+      const expectedResult = CustomerEntity.fromCustomerObj(updatedCustomer);
 
-      expect(result).toBe(updatedCustomer);
+      expect(result).toStrictEqual(expectedResult);
       expect(customersRepository.findOneById).toHaveBeenCalledWith(id);
       expect(customersRepository.update).toHaveBeenCalledWith(id, updateCustomerDto);
     });
@@ -253,7 +251,8 @@ describe('CustomerService', () => {
     });
   });
 
-  describe('removeAsCustomer', () => {
+  // eslint-disable-next-line max-lines-per-function
+  describe('removeAsCustomer()', () => {
     it('should call findOneById method of customersRepository and remove customer if found and user is authorized', async () => {
       const id = '1';
       const userId = '1';
@@ -263,8 +262,9 @@ describe('CustomerService', () => {
       vitest.spyOn(customersRepository, 'remove').mockResolvedValue(removedCustomer);
 
       const result = await service.removeAsCustomer(id, userId);
+      const expectedResult = CustomerEntity.fromCustomerObj(removedCustomer);
 
-      expect(result).toBe(removedCustomer);
+      expect(result).toStrictEqual(expectedResult);
       expect(customersRepository.findOneById).toHaveBeenCalledWith(id);
       expect(customersRepository.remove).toHaveBeenCalledWith(id);
     });
@@ -294,15 +294,16 @@ describe('CustomerService', () => {
     });
   });
 
-  describe('removeAsAdmin', () => {
+  describe('removeAsAdmin()', () => {
     it('should call remove method of customersRepository', async () => {
       const id = '1';
       const removedCustomer = structuredClone(mockCustomer);
       vitest.spyOn(customersRepository, 'remove').mockResolvedValue(removedCustomer);
 
       const result = await service.removeAsAdmin(id);
+      const expectedResult = CustomerEntity.fromCustomerObj(removedCustomer);
 
-      expect(result).toBe(removedCustomer);
+      expect(result).toStrictEqual(expectedResult);
       expect(customersRepository.remove).toHaveBeenCalledWith(id);
     });
   });

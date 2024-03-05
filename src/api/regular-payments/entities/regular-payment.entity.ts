@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { IRegularPayment } from '@api/regular-payments/interfaces/regular-payment.interface';
 
-export class RegularPaymentEntity implements Omit<IRegularPayment, 'amount'> {
+export class RegularPaymentEntity implements IRegularPayment {
   id: string;
 
   customerId: string;
@@ -19,4 +19,18 @@ export class RegularPaymentEntity implements Omit<IRegularPayment, 'amount'> {
   createdAt: Date;
 
   updatedAt: Date;
+
+  constructor(data: IRegularPayment) {
+    this.id = data.id;
+    this.customerId = data.customerId;
+    this.amount = data.amount;
+    this.category = data.category;
+    this.dateOfCharge = data.dateOfCharge;
+    this.createdAt = data.createdAt;
+    this.updatedAt = data.updatedAt;
+  }
+
+  public static fromPlainObj(data: IRegularPayment): RegularPaymentEntity {
+    return new RegularPaymentEntity(data);
+  }
 }

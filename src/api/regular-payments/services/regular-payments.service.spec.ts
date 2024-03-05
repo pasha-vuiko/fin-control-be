@@ -3,6 +3,7 @@ import { vitest } from 'vitest';
 
 import { Test, TestingModule } from '@nestjs/testing';
 
+import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-output.entity';
 import { IPagePaginationInput } from '@shared/interfaces/page-pagination-input.interface';
 import { IPagePaginationOutput } from '@shared/interfaces/page-pagination-output.interface';
 import { PrismaModule } from '@shared/modules/prisma/prisma.module';
@@ -17,13 +18,14 @@ import { ExpensesModule } from '@api/expenses/expenses.module';
 import { RegularPaymentCreateDto } from '@api/regular-payments/dto/regular-payment-create.dto';
 import { RegularPaymentUpdateDto } from '@api/regular-payments/dto/regular-payment-update.dto';
 import { RegularPaymentEntity } from '@api/regular-payments/entities/regular-payment.entity';
+import { IRegularPayment } from '@api/regular-payments/interfaces/regular-payment.interface';
 import { RegularPaymentsRepository } from '@api/regular-payments/repositories/regular-payments.repository';
 
 import { RegularPaymentsService } from './regular-payments.service';
 
 class MockPrismaService {}
 
-const mockCustomer: CustomerEntity = {
+const mockCustomer = CustomerEntity.fromCustomerObj({
   id: '1',
   userId: '2',
   firstName: 'John',
@@ -34,8 +36,8 @@ const mockCustomer: CustomerEntity = {
   sex: 'MALE',
   createdAt: new Date(),
   updatedAt: new Date(),
-};
-const mockRegularPayment: RegularPaymentEntity = {
+});
+const mockRegularPayment: IRegularPayment = {
   id: '1',
   customerId: '1',
   amount: 50,
@@ -80,55 +82,65 @@ describe('RegularPaymentsService', () => {
     expect(service).toBeDefined();
   });
 
-  describe('findManyAsAdmin', () => {
+  describe('findManyAsAdmin()', () => {
     it('should return all regular payments for admin with pagination', async () => {
-      const mockPagination: IPagePaginationInput = { page: 1, numOfItems: 10 };
-      const mockResult: IPagePaginationOutput<RegularPaymentEntity> = {
+      const pagination: IPagePaginationInput = { page: 1, numOfItems: 10 };
+      const regularPayment = structuredClone(mockRegularPayment);
+      const dbResponse: IPagePaginationOutput<IRegularPayment> = {
         total: 1,
-        items: [structuredClone(mockRegularPayment)],
+        items: [regularPayment],
       };
 
       vitest
         .spyOn(regularPaymentsRepository, 'findMany')
-        .mockResolvedValueOnce(mockResult);
+        .mockResolvedValueOnce(dbResponse);
 
-      const result = await service.findManyAsAdmin(mockPagination);
+      const result = await service.findManyAsAdmin(pagination);
+      const expectedResult = new PagePaginationOutputEntity<RegularPaymentEntity>({
+        items: [RegularPaymentEntity.fromPlainObj(regularPayment)],
+        total: dbResponse.total,
+      });
 
-      expect(result).toEqual(mockResult);
-      expect(regularPaymentsRepository.findMany).toHaveBeenCalledWith({}, mockPagination);
+      expect(result).toStrictEqual(expectedResult);
+      expect(regularPaymentsRepository.findMany).toHaveBeenCalledWith({}, pagination);
     });
   });
 
-  describe('findManyAsCustomer', () => {
+  describe('findManyAsCustomer()', () => {
     it('should return regular payments for a specific customer with pagination', async () => {
       const userId = '1';
       const customerId = '1';
       const customer = structuredClone(mockCustomer);
-      const mockPagination: IPagePaginationInput = { page: 1, numOfItems: 10 };
-      const mockResult: IPagePaginationOutput<RegularPaymentEntity> = {
+      const pagination: IPagePaginationInput = { page: 1, numOfItems: 10 };
+      const regularPayment = structuredClone(mockRegularPayment);
+      const dbResponse: IPagePaginationOutput<IRegularPayment> = {
         total: 1,
-        items: [structuredClone(mockRegularPayment)],
+        items: [regularPayment],
       };
 
       vitest.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
       vitest
         .spyOn(regularPaymentsRepository, 'findMany')
-        .mockResolvedValueOnce(mockResult);
+        .mockResolvedValueOnce(dbResponse);
 
-      const result = await service.findManyAsCustomer(userId, mockPagination);
+      const result = await service.findManyAsCustomer(userId, pagination);
+      const expectedResult = new PagePaginationOutputEntity<RegularPaymentEntity>({
+        items: [RegularPaymentEntity.fromPlainObj(regularPayment)],
+        total: dbResponse.total,
+      });
 
-      expect(result).toEqual(mockResult);
+      expect(result).toStrictEqual(expectedResult);
       expect(customersService.findOneByUserId).toHaveBeenCalledWith(userId);
       expect(regularPaymentsRepository.findMany).toHaveBeenCalledWith(
         { customerId: customerId },
-        mockPagination,
+        pagination,
       );
     });
   });
 
   // Skipping findOneAsAdmin and findOneAsCustomer for brevity. Follow the pattern above.
 
-  describe('create', () => {
+  describe('create()', () => {
     it('should create a new regular payment for a customer', async () => {
       const userId = '1';
       const customerId = '1';
@@ -138,16 +150,17 @@ describe('RegularPaymentsService', () => {
         category: ExpenseCategory.FOOD,
         dateOfCharge: new Date().toDateString(),
       }; // Mock create DTO
-      const createdEntity = structuredClone(mockRegularPayment); // Mocked created entity
+      const createdRegularPayment = structuredClone(mockRegularPayment); // Mocked created entity
 
       vitest.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
       vitest
         .spyOn(regularPaymentsRepository, 'create')
-        .mockResolvedValueOnce(createdEntity);
+        .mockResolvedValueOnce(createdRegularPayment);
 
       const result = await service.create(createDto, userId);
+      const expectedResult = RegularPaymentEntity.fromPlainObj(createdRegularPayment);
 
-      expect(result).toEqual(createdEntity);
+      expect(result).toStrictEqual(expectedResult);
       expect(customersService.findOneByUserId).toHaveBeenCalledWith(userId);
       expect(regularPaymentsRepository.create).toHaveBeenCalledWith({
         ...createDto,
@@ -156,14 +169,14 @@ describe('RegularPaymentsService', () => {
     });
   });
 
-  describe('update', () => {
+  describe('update()', () => {
     it('should update a regular payment for a customer', async () => {
       const id = 'payment-id';
       const userId = '1';
       const updateDto: RegularPaymentUpdateDto = {
         amount: 100,
       }; // Mock update DTO
-      const updatedEntity = {
+      const updatedRegularPayment = {
         ...structuredClone(mockRegularPayment),
         amount: updateDto.amount as number,
       }; // Mocked updated entity
@@ -173,31 +186,33 @@ describe('RegularPaymentsService', () => {
         .mockResolvedValueOnce({} as RegularPaymentEntity);
       vitest
         .spyOn(regularPaymentsRepository, 'update')
-        .mockResolvedValueOnce(updatedEntity);
+        .mockResolvedValueOnce(updatedRegularPayment);
 
       const result = await service.update(id, updateDto, userId);
+      const expectedResult = RegularPaymentEntity.fromPlainObj(updatedRegularPayment);
 
-      expect(result).toEqual(updatedEntity);
+      expect(result).toStrictEqual(expectedResult);
       expect(service.findOneAsCustomer).toHaveBeenCalledWith(id, userId);
       expect(regularPaymentsRepository.update).toHaveBeenCalledWith(id, updateDto);
     });
   });
 
-  describe('delete', () => {
+  describe('delete()', () => {
     it('should delete a regular payment for a customer', async () => {
       const id = 'payment-id';
       const userId = '1';
-      const deletedEntity = structuredClone(mockRegularPayment);
+      const deletedRegularPayment = structuredClone(mockRegularPayment);
       vitest
         .spyOn(service, 'findOneAsCustomer')
         .mockResolvedValueOnce({} as RegularPaymentEntity);
       vitest
         .spyOn(regularPaymentsRepository, 'delete')
-        .mockResolvedValueOnce(deletedEntity);
+        .mockResolvedValueOnce(deletedRegularPayment);
 
       const result = await service.delete(id, userId);
+      const expectedResult = RegularPaymentEntity.fromPlainObj(deletedRegularPayment);
 
-      expect(result).toEqual(deletedEntity);
+      expect(result).toStrictEqual(expectedResult);
       expect(service.findOneAsCustomer).toHaveBeenCalledWith(id, userId);
       expect(regularPaymentsRepository.delete).toHaveBeenCalledWith(id);
     });

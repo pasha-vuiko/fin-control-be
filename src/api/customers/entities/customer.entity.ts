@@ -25,4 +25,32 @@ export class CustomerEntity implements ICustomer {
   createdAt: Date;
 
   updatedAt: Date;
+
+  constructor(data: ICustomer) {
+    this.id = data.id;
+    this.userId = data.userId;
+    this.firstName = data.firstName;
+    this.lastName = data.lastName;
+    this.email = data.email;
+    this.birthdate = data.birthdate;
+    this.phone = data.phone;
+    this.sex = data.sex;
+    this.createdAt = data.createdAt;
+    this.updatedAt = data.updatedAt;
+  }
+
+  public static fromCustomerObj(data: ICustomer): CustomerEntity {
+    return new CustomerEntity({
+      id: data.id,
+      userId: data.userId,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      birthdate: data.birthdate,
+      phone: data.phone,
+      sex: data.sex,
+      updatedAt: data.updatedAt,
+      createdAt: data.createdAt,
+    });
+  }
 }
