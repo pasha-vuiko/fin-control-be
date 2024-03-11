@@ -29,7 +29,12 @@ function Factory(
   // eslint-disable-next-line @typescript-eslint/ban-types
   ErrorClassConstructor: Function | TErrorHandler,
   handler?: TErrorHandler,
-) {
+): MethodDecorator {
+  if (!handler) {
+    handler = ErrorClassConstructor as TErrorHandler;
+    ErrorClassConstructor = undefined as unknown as any;
+  }
+
   // eslint-disable-next-line max-lines-per-function
   return (
     _target: any,
@@ -37,11 +42,6 @@ function Factory(
     descriptor: PropertyDescriptor,
   ): PropertyDescriptor => {
     const { value: originalFn } = descriptor;
-
-    if (!handler) {
-      handler = ErrorClassConstructor as TErrorHandler;
-      ErrorClassConstructor = undefined as unknown as any;
-    }
 
     const handleError = (error: any, args: any): any => {
       if (
