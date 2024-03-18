@@ -47,8 +47,7 @@ async function setupShutdownHooks(app: NestFastifyApplication): Promise<void> {
   app.enableShutdownHooks();
   const logger = app.get(PinoLogger);
   // Accessing pino instance to have access to 'fatal' log level
-  // @ts-expect-error access to protected field
-  const pinoLogger = logger.logger;
+  const pinoLogger = logger.getInternalLogger();
 
   process.on('unhandledRejection', (reason): void => {
     pinoLogger.fatal(reason, 'Unhandled Rejection');
@@ -95,9 +94,10 @@ function setupOpenApi(app: NestFastifyApplication): void {
 }
 
 async function setupMetrics(app: NestFastifyApplication): Promise<void> {
-  //@ts-expect-error types of fastify instances are not compatible
   await app.register(fastifyMetrics, {
     endpoint: '/metrics',
-    enableDefaultMetrics: true,
+    defaultMetrics: {
+      enabled: true,
+    },
   });
 }

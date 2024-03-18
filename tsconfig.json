@@ -2,8 +2,8 @@
   "compilerOptions": {
     "strict": true,
     "strictPropertyInitialization": false,
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,

@@ -7,12 +7,11 @@ import { bootstrapPlugins } from '@shared/bootstrap/bootstrap-plugins';
 import { config } from './app.config';
 import { AppModule } from './app.module';
 
-// TODO Use nestia instead of class-validator?
 async function bootstrap(): Promise<NestFastifyApplication> {
+  const fastifyConfig = await config.app.fastify.getConfig();
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    //@ts-expect-error config is not compatible
-    new FastifyAdapter(config.app.fastify),
+    new FastifyAdapter(fastifyConfig),
     { bufferLogs: true },
   );
 

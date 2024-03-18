@@ -40,6 +40,10 @@ export class PinoLogger implements LoggerService {
     this.call('error', message, ...optionalParams);
   }
 
+  getInternalLogger(): InternalPinoLogger {
+    return this.logger;
+  }
+
   private call(level: Level, message: any, ...optionalParams: any[]): void {
     const objArg: Record<string, any> = {};
 

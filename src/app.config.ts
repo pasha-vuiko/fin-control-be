@@ -1,6 +1,6 @@
 import path from 'node:path';
 
-import { serverFactory } from 'fastify-uws';
+import { FastifyServerOptions } from 'fastify';
 
 import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
 import { checkEnvVarsSet } from '@shared/utils/check-env-vars-set';
@@ -31,8 +31,14 @@ export const config = {
       ] as string[],
     },
     fastify: {
-      genReqId: generateRequestId,
-      serverFactory,
+      getConfig: async (): Promise<FastifyServerOptions> => {
+        const { serverFactory } = await import('@geut/fastify-uws');
+
+        return {
+          genReqId: generateRequestId,
+          serverFactory,
+        };
+      },
     },
   },
   cache: {

@@ -69,12 +69,12 @@ function defaultResSerializer(res: FastifyReply): Record<string, any> {
 function getDefaultResLogLevelFactory(
   loggerOptions: ILoggerPluginOptions,
 ): TDefaultLevelPredicate {
-  const { ignorePaths = [] } = loggerOptions;
+  const ignorePaths = new Set(loggerOptions.ignorePaths);
 
   return (req: FastifyRequest, res: FastifyReply): LogLevel => {
     const { statusCode } = res;
 
-    if (ignorePaths.includes(req.url)) {
+    if (ignorePaths.has(req.url)) {
       return 'silent';
     }
 
@@ -84,10 +84,6 @@ function getDefaultResLogLevelFactory(
 
     if (statusCode >= 500) {
       return 'error';
-    }
-
-    if (ignorePaths.includes(req.url)) {
-      return 'trace';
     }
 
     return 'debug';
