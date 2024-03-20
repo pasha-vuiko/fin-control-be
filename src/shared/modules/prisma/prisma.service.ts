@@ -30,6 +30,6 @@ export class PrismaService
 
   async onApplicationShutdown(): Promise<void> {
     await this.$disconnect();
-    this.logger.log('Successfully disconnected from the DB');
+    this.logger.log('Successfully disconnected from the main DB');
   }
 }

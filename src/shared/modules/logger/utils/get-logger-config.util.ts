@@ -1,19 +1,27 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import pino, { LevelWithSilent } from 'pino';
 
-import { ILoggerOptions } from '@shared/modules/logger/interfaces/logger-options.interface';
+import {
+  ILoggerOptions,
+  LogFormat,
+} from '@shared/modules/logger/interfaces/logger-options.interface';
 import { ISerializedRequest } from '@shared/modules/logger/interfaces/serialized-request.interface';
 import pinoPrettyTransport from '@shared/modules/logger/utils/pino-pretty-transport';
 
-export function getDefaultLoggerConfig(level: LevelWithSilent): ILoggerOptions {
-  const isPretty = process.env.LOG_FORMAT === 'pretty';
+export function getDefaultLoggerConfig(
+  level: LevelWithSilent,
+  logFormat = LogFormat.JSON,
+): ILoggerOptions {
   const isDevelopment = process.env.NODE_ENV === 'development';
 
   return {
     pinoOptions: {
       level: level,
     },
-    stream: isPretty ? pinoPrettyTransport() : pino.destination({ sync: false }),
+    stream:
+      logFormat === LogFormat.PRETTY
+        ? pinoPrettyTransport()
+        : pino.destination({ sync: false }),
     customLogLevel: function (_req, res): LevelWithSilent {
       const { statusCode } = res;
 

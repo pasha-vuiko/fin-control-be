@@ -1,4 +1,5 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Version } from '@nestjs/common';
+import { VERSION_NEUTRAL } from '@nestjs/common/interfaces/version-options.interface';
 
 import { AppService } from './app.service';
 
@@ -6,6 +7,7 @@ import { AppService } from './app.service';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
+  @Version(VERSION_NEUTRAL)
   @Get()
   getAppVersion(): string {
     return this.appService.getVersion();

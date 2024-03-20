@@ -22,7 +22,7 @@ export class CustomersController {
   @JsonCache()
   @Auth(Roles.CUSTOMER)
   @Get('self')
-  findOneByUserId(@User() user: IUser): Promise<CustomerEntity> {
+  findSelf(@User() user: IUser): Promise<CustomerEntity> {
     return this.customerService.findOneByUserId(user.id);
   }
 

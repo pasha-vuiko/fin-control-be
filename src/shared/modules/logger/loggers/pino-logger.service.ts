@@ -1,4 +1,4 @@
-import { Level } from 'pino';
+import pino, { Level } from 'pino';
 
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 
@@ -40,8 +40,8 @@ export class PinoLogger implements LoggerService {
     this.call('error', message, ...optionalParams);
   }
 
-  getInternalLogger(): InternalPinoLogger {
-    return this.logger;
+  getInternalLogger(): pino.Logger {
+    return this.logger.logger;
   }
 
   private call(level: Level, message: any, ...optionalParams: any[]): void {

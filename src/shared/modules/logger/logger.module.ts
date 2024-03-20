@@ -13,7 +13,7 @@ import { getPinoLoggerProviders } from '@shared/modules/logger/utils/inject-pino
 @Module({})
 export class LoggerModule {
   static forRoot(loggerLevel: LogLevel, options?: ILoggerOptions): DynamicModule {
-    const optionsWithDefault = this.getOptionsWithDefault(loggerLevel, options);
+    const optionsWithDefault = this.getOptsMergedWithDefault(loggerLevel, options);
 
     const paramsProvider: Provider<ILoggerOptions> = {
       provide: LOGGER_MODULE_OPTIONS,
@@ -35,11 +35,11 @@ export class LoggerModule {
     };
   }
 
-  private static getOptionsWithDefault(
+  private static getOptsMergedWithDefault(
     loggerLevel: LogLevel,
     options?: ILoggerOptions,
   ): ILoggerOptions {
-    const defaultOptions = getDefaultLoggerConfig(loggerLevel);
+    const defaultOptions = getDefaultLoggerConfig(loggerLevel, options?.logFormat);
 
     if (options) {
       return {

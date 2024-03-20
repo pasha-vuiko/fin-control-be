@@ -16,8 +16,15 @@ export interface ILoggerOptions {
 
   ignorePaths?: string[];
 
+  logFormat?: LogFormat;
+
   reqResSerializers?: {
     req: (req: FastifyRequest) => Record<string, any>;
     res: (res: FastifyReply) => Record<string, any>;
   };
+}
+
+export enum LogFormat {
+  PRETTY = 'pretty',
+  JSON = 'json',
 }

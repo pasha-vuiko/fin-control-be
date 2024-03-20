@@ -36,16 +36,16 @@ export class RedisConfigService implements CacheOptionsFactory, OnApplicationShu
   }
 
   public static getIoRedisInstance(): IoredisWithDefaultTtl {
-    if (RedisConfigService.ioRedisInstance) {
-      return RedisConfigService.ioRedisInstance;
+    if (this.ioRedisInstance) {
+      return this.ioRedisInstance;
     }
 
-    RedisConfigService.ioRedisInstance = new IoredisWithDefaultTtl(this.moduleOptions);
+    this.ioRedisInstance = new IoredisWithDefaultTtl(this.moduleOptions);
 
-    this.listenToRedisConnection(RedisConfigService.ioRedisInstance);
-    this.listenToRedisError(RedisConfigService.ioRedisInstance);
+    this.listenToRedisConnection(this.ioRedisInstance);
+    this.listenToRedisError(this.ioRedisInstance);
 
-    return RedisConfigService.ioRedisInstance;
+    return this.ioRedisInstance;
   }
 
   private static listenToRedisError(redisClient: IoredisWithDefaultTtl): void {

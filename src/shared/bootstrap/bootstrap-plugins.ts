@@ -1,6 +1,6 @@
 import fastifyMetrics from 'fastify-metrics';
 
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from '@nestjs/swagger';
 
@@ -17,6 +17,7 @@ export async function bootstrapPlugins(
     app.enableCors();
   }
 
+  setupVersioning(app);
   setupExceptionFilters(app);
   setupOpenApi(app);
   setupRequestsValidation(app, isDevelopment);
@@ -41,37 +42,6 @@ function setupRequestsValidation(
       disableErrorMessages: !isDevelopment,
     }),
   );
-}
-
-async function setupShutdownHooks(app: NestFastifyApplication): Promise<void> {
-  app.enableShutdownHooks();
-  const logger = app.get(PinoLogger);
-  // Accessing pino instance to have access to 'fatal' log level
-  const pinoLogger = logger.getInternalLogger();
-
-  process.on('unhandledRejection', (reason): void => {
-    pinoLogger.fatal(reason, 'Unhandled Rejection');
-
-    process.exit(1);
-  });
-
-  process.on('uncaughtException', (err): void => {
-    pinoLogger.fatal(err, 'Unhandled Exception');
-
-    process.exit(1);
-  });
-
-  process.on('warning', (err): void => {
-    pinoLogger.error(err, 'Warning detected');
-  });
-
-  process.on('exit', (code): void => {
-    if (code === 0) {
-      pinoLogger.info('Stopped gracefully');
-    } else {
-      pinoLogger.fatal(`Stopped with code ${code}`);
-    }
-  });
 }
 
 function setupOpenApi(app: NestFastifyApplication): void {
@@ -99,5 +69,46 @@ async function setupMetrics(app: NestFastifyApplication): Promise<void> {
     defaultMetrics: {
       enabled: true,
     },
+  });
+}
+
+function setupVersioning(app: NestFastifyApplication): void {
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+  });
+}
+
+async function setupShutdownHooks(app: NestFastifyApplication): Promise<void> {
+  app.enableShutdownHooks();
+  // Accessing pino instance to have access to 'fatal' log level
+  const pinoLogger = app
+    .get(PinoLogger)
+    .getInternalLogger()
+    .child({ context: 'ShutdownHooks' });
+
+  process.on('unhandledRejection', (reason): void => {
+    pinoLogger.fatal(reason, 'Unhandled Rejection');
+
+    process.exit(1);
+  });
+
+  process.on('uncaughtException', (err): void => {
+    pinoLogger.fatal(err, 'Unhandled Exception');
+
+    process.exit(1);
+  });
+
+  process.on('warning', (err): void => {
+    pinoLogger.error(err, 'Warning detected');
+  });
+
+  process.on('exit', (code): void => {
+    if (code === 0) {
+      pinoLogger.info('Stopped gracefully');
+      return;
+    }
+
+    pinoLogger.fatal(`Stopped with code ${code}`);
   });
 }
