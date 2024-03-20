@@ -1,7 +1,8 @@
 FROM node:20.11.1-alpine
 
 RUN apk add --update \
-    openssl
+    openssl \
+    dumb-init
 
 ARG VERSION
 
@@ -20,8 +21,8 @@ ENV APP_PORT=3000 \
     APP_VERSION=${VERSION:-unknown} \
     NODE_ENV=production \
     NODE_OPTIONS="--enable-source-maps" \
-    LOG_FORMAT=gcp
+    LOG_FORMAT="json"
 
 EXPOSE 3000
 
-ENTRYPOINT ["node", "/opt/app/dist/main.js"]
+ENTRYPOINT ["dumb-init", "node", "/opt/app/dist/main.js"]
