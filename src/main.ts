@@ -24,4 +24,4 @@ async function bootstrap(): Promise<NestFastifyApplication> {
   return app;
 }
 
-bootstrap();
+void bootstrap();
