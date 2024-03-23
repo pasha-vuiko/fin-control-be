@@ -2,5 +2,10 @@
  * @type {import('semantic-release').GlobalConfig}
  */
 module.exports = {
-  branches: ["main"],
+  plugins: [
+    '@semantic-release/git',
+    '@semantic-release/commit-analyzer',
+    '@semantic-release/release-notes-generator',
+  ],
+  branches: ['main'],
 };
