@@ -3,10 +3,9 @@ import PinoPretty from 'pino-pretty';
 import {
   blueConsole,
   cyanConsole,
-  magentaBrightConsole,
-  yellowConsole,
 } from '@shared/modules/logger/utils/console-color.util';
 
+// eslint-disable-next-line max-lines-per-function
 export default (): PinoPretty.PrettyStream =>
   PinoPretty({
     colorize: !process.env.NO_COLOR,
@@ -18,24 +17,29 @@ export default (): PinoPretty.PrettyStream =>
       name: (name: string | object) => blueConsole(name),
       caller: (caller: string | object) => cyanConsole(caller),
     },
-    messageFormat: (log: Record<string, any>, messageKey: string) => {
+    messageFormat: (
+      log: Record<string, any>,
+      messageKey: string,
+      _levelLabel,
+      { colors },
+    ) => {
       // eslint-disable-next-line security/detect-object-injection
       const message = log[messageKey] as string;
 
       if (log.res) {
-        const logContext = log.context ? yellowConsole(`[${log.context}]`) : '';
+        const logContext = log.context ? colors.yellow(`[${log.context}]`) : '';
         const reqMethod = log.req.method;
         const statusCode = log.res?.statusCode;
-        const reqUrl = yellowConsole(log.req.url);
-        const responseTime = magentaBrightConsole(log.responseTime);
+        const reqUrl = colors.yellow(log.req.url);
+        const responseTime = colors.magentaBright(log.responseTime);
 
-        const methodAndStatus = magentaBrightConsole(`${reqMethod} ${statusCode}`);
+        const methodAndStatus = colors.magentaBright(`${reqMethod} ${statusCode}`);
 
         return `${logContext} ${methodAndStatus} ${reqUrl} - ${message} by ${responseTime} ms`;
       }
 
       if (log.context) {
-        return `|${yellowConsole(log.context)}| ${message}`;
+        return `|${colors.yellow(log.context)}| ${message}`;
       }
 
       return `${message}`;

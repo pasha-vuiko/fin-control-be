@@ -29,7 +29,7 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
     const { take, skip } = getPrismaPaginationParams(pagination);
     const { customerId } = filter;
 
-    return this.prismaService
+    return await this.prismaService
       .$transaction([
         this.prismaService.regularPayment.findMany({
           where: { customerId },

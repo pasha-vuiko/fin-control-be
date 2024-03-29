@@ -39,7 +39,7 @@ export class RedisService {
     cb: (...args: any[]) => Promise<T>,
     ttl = DEFAULT_CACHE_TTL,
   ): Promise<T> {
-    return this.cacheManager.wrap<T>(cacheKey, cb, ttl);
+    return await this.cacheManager.wrap<T>(cacheKey, cb, ttl);
   }
 
   @Catch(internalErrHandler)
@@ -83,12 +83,12 @@ export class RedisService {
 
   @Catch(internalErrHandler)
   public async get<T>(cacheKey: string): Promise<T | undefined> {
-    return this.cacheManager.get<T>(cacheKey);
+    return await this.cacheManager.get<T>(cacheKey);
   }
 
   @Catch(internalErrHandler)
   public async getRaw(cacheKey: string): Promise<string | null> {
-    return this.ioRedisInstance.get(cacheKey);
+    return await this.ioRedisInstance.get(cacheKey);
   }
 
   @Catch(internalErrHandler)
@@ -150,7 +150,7 @@ export class RedisService {
 
   @Catch(internalErrHandler)
   public async ttl(cacheKey: string): Promise<number> {
-    return this.ioRedisInstance.ttl(cacheKey);
+    return await this.ioRedisInstance.ttl(cacheKey);
   }
 
   /**
@@ -167,7 +167,7 @@ export class RedisService {
     const redisCommandArr = transformCreateSearchIndexArgs(index, schema, options);
     const [redisCommand, ...commandOpts] = redisCommandArr;
 
-    return this.sendCommand(redisCommand, ...commandOpts);
+    return await this.sendCommand(redisCommand, ...commandOpts);
   }
 
   private static parseSearchResult<T extends ArrayType>(
@@ -196,6 +196,6 @@ export class RedisService {
     const command = new Command(name as string, args);
     this.ioRedisInstance.sendCommand(command);
 
-    return command.promise;
+    return await command.promise;
   }
 }

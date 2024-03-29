@@ -82,7 +82,7 @@ export class ExpensesService {
       }),
     );
 
-    return this.expensesRepository
+    return await this.expensesRepository
       .createMany(createExpensesDataWithCustomerId, customer.id)
       .then(expenses => expenses.map(ExpenseEntity.fromExpenseObj));
   }
@@ -90,7 +90,7 @@ export class ExpensesService {
   async createManyViaTransaction(
     expensesToCreate: IExpenseCreateInput[],
   ): Promise<ExpenseEntity[]> {
-    return this.expensesRepository
+    return await this.expensesRepository
       .createManyViaTransaction(expensesToCreate)
       .then(expenses => expenses.map(ExpenseEntity.fromExpenseObj));
   }
@@ -105,7 +105,7 @@ export class ExpensesService {
       this.findOneAsCustomer(id, userId),
     ]);
 
-    return this.expensesRepository
+    return await this.expensesRepository
       .update(id, {
         ...updateExpenseDto,
         customerId: customer.id,
@@ -125,6 +125,6 @@ export class ExpensesService {
       throw new NotFoundException(`expense with ${id} is not found`);
     }
 
-    return this.expensesRepository.delete(id).then(ExpenseEntity.fromExpenseObj);
+    return await this.expensesRepository.delete(id).then(ExpenseEntity.fromExpenseObj);
   }
 }

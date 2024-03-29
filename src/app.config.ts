@@ -21,6 +21,7 @@ export const config = {
       prettyPrint: process.env.LOG_FORMAT === 'pretty',
       requestLoggerIgnorePaths: [
         '/',
+        '/favicon.ico',
         '/metrics',
         '/docs',
         '/docs/favicon-32x32.png',

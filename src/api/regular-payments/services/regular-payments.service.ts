@@ -83,7 +83,7 @@ export class RegularPaymentsService {
   ): Promise<RegularPaymentEntity> {
     const customer = await this.customersService.findOneByUserId(userId);
 
-    return this.regularPaymentsRepository
+    return await this.regularPaymentsRepository
       .create({
         ...createRegularPaymentDto,
         customerId: customer.id,
@@ -98,7 +98,7 @@ export class RegularPaymentsService {
   ): Promise<IRegularPayment> {
     await this.findOneAsCustomer(id, userId); // check if regular payment exists
 
-    return this.regularPaymentsRepository
+    return await this.regularPaymentsRepository
       .update(id, updateRegularPaymentDto)
       .then(RegularPaymentEntity.fromPlainObj);
   }
@@ -106,7 +106,7 @@ export class RegularPaymentsService {
   async delete(id: string, userId: string): Promise<IRegularPayment> {
     await this.findOneAsCustomer(id, userId); // check if regular payment exists
 
-    return this.regularPaymentsRepository
+    return await this.regularPaymentsRepository
       .delete(id)
       .then(RegularPaymentEntity.fromPlainObj);
   }

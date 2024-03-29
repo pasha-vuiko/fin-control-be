@@ -80,7 +80,7 @@ export class CustomersService {
       throw new NotFoundException('The customer not found');
     }
 
-    return this.customerRepository
+    return await this.customerRepository
       .update(id, updateCustomerDto)
       .then(CustomerEntity.fromCustomerObj);
   }
@@ -95,7 +95,7 @@ export class CustomersService {
       throw new NotFoundException('The customer not found');
     }
 
-    return this.customerRepository
+    return await this.customerRepository
       .update(id, updateCustomerDto)
       .then(CustomerEntity.fromCustomerObj);
   }
@@ -111,10 +111,10 @@ export class CustomersService {
       throw new ForbiddenException('You are not allowed to delete this customer');
     }
 
-    return this.customerRepository.remove(id).then(CustomerEntity.fromCustomerObj);
+    return await this.customerRepository.remove(id).then(CustomerEntity.fromCustomerObj);
   }
 
   async removeAsAdmin(id: string): Promise<CustomerEntity> {
-    return this.customerRepository.remove(id).then(CustomerEntity.fromCustomerObj);
+    return await this.customerRepository.remove(id).then(CustomerEntity.fromCustomerObj);
   }
 }

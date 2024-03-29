@@ -24,7 +24,7 @@ export class CustomersRepository implements ICustomersRepository {
   ): Promise<IPagePaginationOutput<ICustomer>> {
     const { skip, take } = getPrismaPaginationParams(pagination);
 
-    return this.prismaService
+    return await this.prismaService
       .$transaction([
         this.prismaService.customer.findMany({ skip, take }),
         this.prismaService.customer.count(),
@@ -62,21 +62,21 @@ export class CustomersRepository implements ICustomersRepository {
 
   @Catch(handlePrismaError)
   async create(data: ICustomerCreateInput): Promise<ICustomer> {
-    return this.prismaService.customer
+    return await this.prismaService.customer
       .create({ data })
       .then(createdCustomer => this.mapCustomerFromPrismaToCustomer(createdCustomer));
   }
 
   @Catch(handlePrismaError)
   async update(id: string, data: ICustomerUpdateInput): Promise<ICustomer> {
-    return this.prismaService.customer
+    return await this.prismaService.customer
       .update({ data, where: { id } })
       .then(updatedCustomer => this.mapCustomerFromPrismaToCustomer(updatedCustomer));
   }
 
   @Catch(handlePrismaError)
   async remove(id: string): Promise<ICustomer> {
-    return this.prismaService.customer
+    return await this.prismaService.customer
       .delete({ where: { id } })
       .then(removedCustomer => this.mapCustomerFromPrismaToCustomer(removedCustomer));
   }
