@@ -1,8 +1,8 @@
 -- CreateTable
 CREATE TABLE "UserData" (
-    "id" STRING NOT NULL,
-    "auth0Id" STRING NOT NULL,
-    "email" STRING NOT NULL,
+    "id" TEXT NOT NULL,
+    "auth0Id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
 
     CONSTRAINT "UserData_pkey" PRIMARY KEY ("id")
 );

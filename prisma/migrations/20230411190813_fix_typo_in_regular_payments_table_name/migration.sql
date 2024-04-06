@@ -12,8 +12,8 @@ DROP TABLE "RegulatPayment";
 
 -- CreateTable
 CREATE TABLE "RegularPayment" (
-    "id" STRING NOT NULL,
-    "customerId" STRING NOT NULL,
+    "id" TEXT NOT NULL,
+    "customerId" TEXT NOT NULL,
     "amount" DECIMAL(10,2) NOT NULL,
     "scheduledData" TIMESTAMPTZ(6) NOT NULL,
     "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,

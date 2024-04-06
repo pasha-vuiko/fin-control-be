@@ -15,9 +15,9 @@ CREATE TYPE "Sex" AS ENUM ('MALE', 'FEMALE');
 
 -- AlterTable
 ALTER TABLE "UserData" ADD COLUMN     "birthdate" TIMESTAMP(3) NOT NULL;
-ALTER TABLE "UserData" ADD COLUMN     "firstName" STRING NOT NULL;
-ALTER TABLE "UserData" ADD COLUMN     "lastName" STRING NOT NULL;
-ALTER TABLE "UserData" ADD COLUMN     "phone" STRING NOT NULL;
+ALTER TABLE "UserData" ADD COLUMN     "firstName" TEXT NOT NULL;
+ALTER TABLE "UserData" ADD COLUMN     "lastName" TEXT NOT NULL;
+ALTER TABLE "UserData" ADD COLUMN     "phone" TEXT NOT NULL;
 ALTER TABLE "UserData" ADD COLUMN     "sex" "Sex" NOT NULL;
 
 -- CreateIndex

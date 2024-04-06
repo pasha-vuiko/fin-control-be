@@ -9,12 +9,12 @@ DROP TABLE "UserData";
 
 -- CreateTable
 CREATE TABLE "Customer" (
-    "id" STRING NOT NULL,
-    "auth0Id" STRING NOT NULL,
-    "firstName" STRING NOT NULL,
-    "lastName" STRING NOT NULL,
-    "email" STRING NOT NULL,
-    "phone" STRING NOT NULL,
+    "id" TEXT NOT NULL,
+    "auth0Id" TEXT NOT NULL,
+    "firstName" TEXT NOT NULL,
+    "lastName" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "phone" TEXT NOT NULL,
     "birthdate" TIMESTAMP(3) NOT NULL,
     "sex" "Sex" NOT NULL,
 

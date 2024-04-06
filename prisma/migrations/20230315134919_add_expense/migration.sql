@@ -1,10 +1,10 @@
 -- CreateEnum
-CREATE TYPE "ExpenseType" AS ENUM ('FOOD', 'CLOTHES', 'HOBBIES', 'GAMES', 'SUBSCRIPTIONS', 'OTHER');
+CREATE TYPE "ExpenseType" AS ENUM ('FOOD', 'CLOTHES', 'SUBSCRIPTIONS', 'OTHER');
 
 -- CreateTable
 CREATE TABLE "Expense" (
-    "id" STRING NOT NULL,
-    "customerId" STRING NOT NULL,
+    "id" TEXT NOT NULL,
+    "customerId" TEXT NOT NULL,
     "amount" DECIMAL(10,2) NOT NULL,
     "date" TIMESTAMP(3) NOT NULL,
     "type" "ExpenseType" NOT NULL,

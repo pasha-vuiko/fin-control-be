@@ -1,4 +1,4 @@
-import { RegularPayment } from '@prisma/client';
+import { Prisma, RegularPayment } from '@prisma/client';
 
 import { Injectable } from '@nestjs/common';
 
@@ -17,6 +17,8 @@ import {
   IRegularPaymentsRepository,
 } from '@api/regular-payments/interfaces/regular-payments-repository.interface';
 
+import TransactionIsolationLevel = Prisma.TransactionIsolationLevel;
+
 @Injectable()
 export class RegularPaymentsRepository implements IRegularPaymentsRepository {
   constructor(private prismaService: PrismaService) {}
@@ -30,14 +32,17 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
     const { customerId } = filter;
 
     return await this.prismaService
-      .$transaction([
-        this.prismaService.regularPayment.findMany({
-          where: { customerId },
-          skip,
-          take,
-        }),
-        this.prismaService.regularPayment.count({ where: { customerId } }),
-      ])
+      .$transaction(
+        [
+          this.prismaService.regularPayment.findMany({
+            where: { customerId },
+            skip,
+            take,
+          }),
+          this.prismaService.regularPayment.count({ where: { customerId } }),
+        ],
+        { isolationLevel: TransactionIsolationLevel.RepeatableRead },
+      )
       .then(([regularPayments, total]) => ({
         items: this.mapPrismaRegularPaymentsToRegularPayments(regularPayments),
         total,

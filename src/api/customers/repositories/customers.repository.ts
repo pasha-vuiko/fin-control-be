@@ -1,4 +1,4 @@
-import { Customer } from '@prisma/client';
+import { Customer, Prisma } from '@prisma/client';
 
 import { Injectable } from '@nestjs/common';
 
@@ -14,6 +14,8 @@ import { ICustomerUpdateInput } from '@api/customers/interfaces/customer-update-
 import { ICustomer } from '@api/customers/interfaces/customer.interface';
 import { ICustomersRepository } from '@api/customers/interfaces/customers.repository.interface';
 
+import TransactionIsolationLevel = Prisma.TransactionIsolationLevel;
+
 @Injectable()
 export class CustomersRepository implements ICustomersRepository {
   constructor(private prismaService: PrismaService) {}
@@ -25,10 +27,13 @@ export class CustomersRepository implements ICustomersRepository {
     const { skip, take } = getPrismaPaginationParams(pagination);
 
     return await this.prismaService
-      .$transaction([
-        this.prismaService.customer.findMany({ skip, take }),
-        this.prismaService.customer.count(),
-      ])
+      .$transaction(
+        [
+          this.prismaService.customer.findMany({ skip, take }),
+          this.prismaService.customer.count(),
+        ],
+        { isolationLevel: TransactionIsolationLevel.RepeatableRead },
+      )
       .then(([customers, total]) => ({
         items: this.mapCustomersFromPrismaToCustomers(customers),
         total,

@@ -16,6 +16,7 @@ import { IExpense } from '@api/expenses/interfaces/expense.interface';
 import { IExpensesRepository } from '@api/expenses/interfaces/expenses-repository.interface';
 
 import SortOrder = Prisma.SortOrder;
+import TransactionIsolationLevel = Prisma.TransactionIsolationLevel;
 
 @Injectable()
 export class ExpensesRepository implements IExpensesRepository {
@@ -28,10 +29,13 @@ export class ExpensesRepository implements IExpensesRepository {
     const { take, skip } = getPrismaPaginationParams(pagination);
 
     return await this.prismaService
-      .$transaction([
-        this.prismaService.expense.findMany({ skip, take }),
-        this.prismaService.expense.count(),
-      ])
+      .$transaction(
+        [
+          this.prismaService.expense.findMany({ skip, take }),
+          this.prismaService.expense.count(),
+        ],
+        { isolationLevel: TransactionIsolationLevel.RepeatableRead },
+      )
       .then(([expenses, total]) => ({
         items: this.mapExpensesFromPrismaToExpenses(expenses),
         total,
@@ -46,14 +50,17 @@ export class ExpensesRepository implements IExpensesRepository {
     const { take, skip } = getPrismaPaginationParams(pagination);
 
     return await this.prismaService
-      .$transaction([
-        this.prismaService.expense.findMany({
-          where: { customerId },
-          skip,
-          take,
-        }),
-        this.prismaService.expense.count(),
-      ])
+      .$transaction(
+        [
+          this.prismaService.expense.findMany({
+            where: { customerId },
+            skip,
+            take,
+          }),
+          this.prismaService.expense.count(),
+        ],
+        { isolationLevel: TransactionIsolationLevel.RepeatableRead },
+      )
       .then(([expenses, total]) => ({
         items: this.mapExpensesFromPrismaToExpenses(expenses),
         total,
@@ -96,18 +103,21 @@ export class ExpensesRepository implements IExpensesRepository {
     createExpenseInputs: IExpenseCreateInput[],
   ): Promise<IExpense[]> {
     return await this.prismaService
-      .$transaction(async tx => {
-        const { count } = await tx.expense.createMany({
-          data: createExpenseInputs,
-        });
+      .$transaction(
+        async tx => {
+          const { count } = await tx.expense.createMany({
+            data: createExpenseInputs,
+          });
 
-        return await tx.expense.findMany({
-          orderBy: {
-            createdAt: SortOrder.desc,
-          },
-          take: count,
-        });
-      })
+          return await tx.expense.findMany({
+            orderBy: {
+              createdAt: SortOrder.desc,
+            },
+            take: count,
+          });
+        },
+        { isolationLevel: TransactionIsolationLevel.ReadCommitted },
+      )
       .then(createdExpenses => this.mapExpensesFromPrismaToExpenses(createdExpenses));
   }
 
