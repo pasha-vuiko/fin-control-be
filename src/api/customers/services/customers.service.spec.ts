@@ -161,7 +161,6 @@ describe('CustomerService', () => {
     });
   });
 
-  // eslint-disable-next-line max-lines-per-function
   describe('create()', () => {
     it('should call create method of customersRepository with correct parameters', async () => {
       // Mock createCustomerDto

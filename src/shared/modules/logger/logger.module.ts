@@ -8,7 +8,6 @@ import { PinoLogger } from '@shared/modules/logger/loggers/pino-logger.service';
 import { LoggerConfigService } from '@shared/modules/logger/services/logger-config.service';
 import { LogLevel } from '@shared/modules/logger/types';
 import { getDefaultLoggerConfig } from '@shared/modules/logger/utils/get-logger-config.util';
-import { getPinoLoggerProviders } from '@shared/modules/logger/utils/inject-pino-logger';
 
 @Module({})
 export class LoggerModule {
@@ -20,18 +19,10 @@ export class LoggerModule {
       useValue: optionsWithDefault,
     };
 
-    const decorated = getPinoLoggerProviders();
-
     return {
       module: LoggerModule,
-      providers: [
-        PinoLogger,
-        ...decorated,
-        InternalPinoLogger,
-        paramsProvider,
-        LoggerConfigService,
-      ],
-      exports: [PinoLogger, ...decorated, InternalPinoLogger, paramsProvider],
+      providers: [PinoLogger, InternalPinoLogger, paramsProvider, LoggerConfigService],
+      exports: [PinoLogger, InternalPinoLogger, paramsProvider],
     };
   }
 

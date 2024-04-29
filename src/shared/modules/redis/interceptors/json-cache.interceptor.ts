@@ -47,7 +47,7 @@ export class JsonCacheInterceptor implements NestInterceptor {
       const value = await this.ioRedisInstance.get(key);
 
       if (!isNil(value)) {
-        const reply: FastifyReply = context.switchToHttp().getResponse();
+        const reply: FastifyReply | null = context.switchToHttp().getResponse();
 
         if (reply) {
           reply.header('content-type', 'application/json; charset=utf-8');
@@ -60,7 +60,7 @@ export class JsonCacheInterceptor implements NestInterceptor {
         ? await ttlValueOrFactory(context)
         : ttlValueOrFactory;
 
-      return next.handle().pipe(tap(response => this.setCache(response, key, ttl)));
+      return next.handle().pipe(tap(response => void this.setCache(response, key, ttl)));
     } catch {
       return next.handle();
     }

@@ -9,19 +9,19 @@ export class IoredisWithDefaultTtl extends IoRedis {
   }
 
   //@ts-expect-error types are incompatible
-  set(
+  override set(
     key: RedisKey,
     value: string | number | Buffer,
-    secondsToken?: 'EX',
+    expiryMode?: 'EX',
     seconds?: string | number,
-    callback?: Callback<'OK'>,
+    callback?: Callback<string>,
   ): Promise<'OK'> {
-    if (secondsToken && seconds && callback) {
-      return super.set(key, value, secondsToken, seconds, callback);
+    if (expiryMode && seconds && callback) {
+      return super.set(key, value, expiryMode, seconds, callback);
     }
 
-    if (secondsToken && seconds) {
-      return super.set(key, value, secondsToken, seconds);
+    if (expiryMode && seconds) {
+      return super.set(key, value, expiryMode, seconds);
     }
 
     if (this.defaultTTL) {

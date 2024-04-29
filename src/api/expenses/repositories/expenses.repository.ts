@@ -8,7 +8,7 @@ import { Catch } from '@shared/modules/error/decorators/catch.decorator';
 import { PrismaService } from '@shared/modules/prisma/prisma.service';
 import { getPrismaPaginationParams } from '@shared/modules/prisma/utils/get-prisma-pagination-params';
 import { handlePrismaError } from '@shared/modules/prisma/utils/handle-prisma-error';
-import { omitObj } from '@shared/utils/omit-obj.util';
+import { omitObjKeys } from '@shared/utils/omit-obj-keys.util';
 
 import { IExpenseCreateInput } from '@api/expenses/interfaces/expense-create-input.interface';
 import { IExpenseUpdateInput } from '@api/expenses/interfaces/expense-update-input.interface';
@@ -123,7 +123,7 @@ export class ExpensesRepository implements IExpensesRepository {
 
   @Catch(handlePrismaError)
   async update(id: string, data: IExpenseUpdateInput): Promise<IExpense> {
-    const dataWithoutCustomerId = omitObj(data, 'customerId');
+    const dataWithoutCustomerId = omitObjKeys(data, 'customerId');
 
     return await this.prismaService.expense
       .update({
