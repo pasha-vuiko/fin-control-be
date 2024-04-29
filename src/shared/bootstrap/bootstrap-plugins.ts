@@ -52,15 +52,17 @@ function setupOpenApi(app: NestFastifyApplication): void {
     .addBearerAuth()
     .build();
 
+  const OPEN_API_URL = 'docs';
   const customOptions: SwaggerCustomOptions = {
     swaggerOptions: {
       persistAuthorization: true,
     },
+    jsonDocumentUrl: `${OPEN_API_URL}/swagger.json`,
   };
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
 
-  SwaggerModule.setup('docs', app, document, customOptions);
+  SwaggerModule.setup(OPEN_API_URL, app, document, customOptions);
 }
 
 async function setupMetrics(app: NestFastifyApplication): Promise<void> {
