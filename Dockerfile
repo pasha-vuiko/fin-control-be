@@ -1,6 +1,6 @@
-FROM node:20.12.0-alpine
+FROM node:20.12.2-alpine
 
-RUN apk add --update \
+RUN apk add --update --no-cache \
     openssl \
     dumb-init
 
@@ -8,10 +8,12 @@ ARG VERSION
 
 RUN mkdir -p /opt/app/
 COPY package.json package-lock.json nest-cli.json .env.example tsconfig.json tsconfig.build.json /opt/app/
+COPY prisma /opt/app/prisma/
 WORKDIR /opt/app/
 
 RUN npm ci
 COPY src /opt/app/src/
+RUN npm run prisma:generate
 RUN npm run build
 
 RUN rm -rf tsconfig.json tsconfig.build.json src

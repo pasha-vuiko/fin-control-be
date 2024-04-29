@@ -43,6 +43,7 @@ services:
   prometheus:
     image: prom/prometheus:v2.50.0
     container_name: prometheus
+    restart: unless-stopped
     ports:
       - '9090:9090'
     command:
@@ -50,22 +51,33 @@ services:
     volumes:
       - ./local-infrastructure/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
       - ./local-infrastructure/data/prometheus-data:/prometheus
-    restart: unless-stopped
 
   grafana:
     image: grafana/grafana-oss:10.3.3
     container_name: grafana
+    restart: unless-stopped
     ports:
       - '3001:3000'
     volumes:
       - ./local-infrastructure/data/grafana-data:/var/lib/grafana
-    restart: unless-stopped
 
   node_exporter:
     image: quay.io/prometheus/node-exporter:v1.5.0
     container_name: node_exporter
+    restart: unless-stopped
     command: '--path.rootfs=/host'
     pid: host
-    restart: unless-stopped
     volumes:
       - /:/host:ro,rslave
+
+  sonarqube:
+    image: sonarqube
+    restart: unless-stopped
+    ports:
+      - '9000:9000'
+    environment:
+      - SONARQUBE_JDBC_USERNAME=sonar
+      - SONARQUBE_JDBC_PASSWORD=sonar
+    volumes:
+      - ./local-infrastructure/data/sonarqube-data:/opt/sonarqube/data
+      - ./local-infrastructure/data/sonarqube-extensions:/opt/sonarqube/extensions

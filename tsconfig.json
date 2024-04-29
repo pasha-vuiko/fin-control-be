@@ -4,6 +4,7 @@
     "strictPropertyInitialization": false,
     "module": "nodenext",
     "moduleResolution": "nodenext",
+    "noImplicitOverride": true,
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
