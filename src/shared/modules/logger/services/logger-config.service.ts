@@ -7,7 +7,6 @@ import { FastifyAdapter } from '@nestjs/platform-fastify';
 import { LOGGER_MODULE_OPTIONS } from '@shared/modules/logger/constants/logger-options-provider-token';
 import { loggerPlugin } from '@shared/modules/logger/fastify-plugins/logger-plugin';
 import { ILoggerOptions } from '@shared/modules/logger/interfaces/logger-options.interface';
-import { loggerAsyncContext } from '@shared/modules/logger/utils/logger-async-context';
 
 @Injectable()
 export class LoggerConfigService implements OnModuleInit {
@@ -28,21 +27,12 @@ export class LoggerConfigService implements OnModuleInit {
     //@ts-expect-error type of the plugin is not compatible with the type of the register method
     await this.adapterHost.httpAdapter.register(loggerPlugin, {
       pinoLogger,
-      ignorePaths: this.loggerModuleOptions.ignorePaths,
+      ...this.loggerModuleOptions,
     });
   }
 
   private getPinoLogger(): pino.Logger {
-    const pinoOptions = {
-      ...(this.loggerModuleOptions.pinoOptions
-        ? this.loggerModuleOptions.pinoOptions
-        : {}),
-      mixin(): Record<string, any> {
-        return {
-          reqId: loggerAsyncContext.getStore()?.reqId,
-        };
-      },
-    };
+    const pinoOptions = this.loggerModuleOptions.pinoOptions || {};
 
     if (this.loggerModuleOptions.stream) {
       return pino(pinoOptions, this.loggerModuleOptions.stream);
