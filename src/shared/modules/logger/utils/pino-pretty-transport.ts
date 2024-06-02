@@ -5,7 +5,6 @@ import {
   cyanConsole,
 } from '@shared/modules/logger/utils/console-color.util';
 
-// eslint-disable-next-line max-lines-per-function
 export default (): PinoPretty.PrettyStream =>
   PinoPretty({
     colorize: !process.env.NO_COLOR,

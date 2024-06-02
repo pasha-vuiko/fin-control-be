@@ -66,6 +66,7 @@ function setupOpenApi(app: NestFastifyApplication): void {
 }
 
 async function setupMetrics(app: NestFastifyApplication): Promise<void> {
+  //@ts-expect-error not compatible types
   await app.register(fastifyMetrics, {
     endpoint: '/metrics',
     defaultMetrics: {
