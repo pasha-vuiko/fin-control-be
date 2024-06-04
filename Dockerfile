@@ -13,7 +13,6 @@ WORKDIR /opt/app/
 
 RUN npm ci
 COPY src /opt/app/src/
-RUN npm run prisma:generate
 RUN npm run build
 
 RUN rm -rf tsconfig.json tsconfig.build.json src
