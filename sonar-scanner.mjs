@@ -1,4 +1,4 @@
-import scanner from 'sonarqube-scanner';
+import { scan } from 'sonarqube-scanner';
 
 // The URL of the SonarQube server. Defaults to http://localhost:9000
 const serverUrl = process.env.SONARQUBE_URL;
@@ -40,12 +40,7 @@ const sonarScanner = async () => {
     return;
   }
 
-  //  Function Callback (the execution of the analysis is asynchronous).
-  const callback  = (result) => {
-    console.log('Sonarqube scanner result:', result);
-  }
-
-  scanner(params, callback);
+  await scan(params);
 }
 
 sonarScanner()
