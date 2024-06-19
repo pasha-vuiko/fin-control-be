@@ -25,7 +25,9 @@ describe('ExpensesController', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       imports: [
-        mockModuleWithProviders(DrizzleModule, [{ provide: DRIZZLE_CLIENT, useValue: {} }]),
+        mockModuleWithProviders(DrizzleModule, [
+          { provide: DRIZZLE_CLIENT, useValue: {} },
+        ]),
         CustomersModule,
       ],
       controllers: [ExpensesController],
