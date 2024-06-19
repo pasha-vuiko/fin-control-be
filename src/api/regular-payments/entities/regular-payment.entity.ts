@@ -1,7 +1,6 @@
-import { ExpenseCategory } from '@prisma/client';
-
 import { ApiProperty } from '@nestjs/swagger';
 
+import { ExpenseCategory } from '@api/expenses/enum/expense-category.enum';
 import { IRegularPayment } from '@api/regular-payments/interfaces/regular-payment.interface';
 
 export class RegularPaymentEntity implements IRegularPayment {

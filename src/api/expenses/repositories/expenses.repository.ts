@@ -1,158 +1,157 @@
-import { Expense, Prisma } from '@prisma/client';
+import crypto from 'node:crypto';
 
-import { Injectable } from '@nestjs/common';
+import { count, eq } from 'drizzle-orm';
+import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+
+import { Inject, Injectable } from '@nestjs/common';
 
 import { IPagePaginationInput } from '@shared/interfaces/page-pagination-input.interface';
 import { IPagePaginationOutput } from '@shared/interfaces/page-pagination-output.interface';
-import { Catch } from '@shared/modules/error/decorators/catch.decorator';
-import { PrismaService } from '@shared/modules/prisma/prisma.service';
-import { getPrismaPaginationParams } from '@shared/modules/prisma/utils/get-prisma-pagination-params';
-import { handlePrismaError } from '@shared/modules/prisma/utils/handle-prisma-error';
+import { DRIZZLE_CLIENT } from '@shared/modules/drizzle/providers/drizzle-client.provider';
+import { deleteUndefinedFieldsFromObj } from '@shared/utils/delete-undefined-fields-from-obj.util';
+import { getDbPaginationParams } from '@shared/utils/get-db-pagination-params';
 import { omitObjKeys } from '@shared/utils/omit-obj-keys.util';
 
+import { ExpenseCategory } from '@api/expenses/enum/expense-category.enum';
 import { IExpenseCreateInput } from '@api/expenses/interfaces/expense-create-input.interface';
 import { IExpenseUpdateInput } from '@api/expenses/interfaces/expense-update-input.interface';
 import { IExpense } from '@api/expenses/interfaces/expense.interface';
 import { IExpensesRepository } from '@api/expenses/interfaces/expenses-repository.interface';
 
-import SortOrder = Prisma.SortOrder;
-import TransactionIsolationLevel = Prisma.TransactionIsolationLevel;
+import * as schema from '../../../drizzle/schema';
+import { Expense } from '../../../drizzle/schema';
 
 @Injectable()
 export class ExpensesRepository implements IExpensesRepository {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    @Inject(DRIZZLE_CLIENT) private drizzle: PostgresJsDatabase<typeof schema>,
+  ) {}
 
-  @Catch(handlePrismaError)
   async findMany(
     pagination: IPagePaginationInput,
   ): Promise<IPagePaginationOutput<IExpense>> {
-    const { take, skip } = getPrismaPaginationParams(pagination);
+    const { take, skip } = getDbPaginationParams(pagination);
 
-    return await this.prismaService
-      .$transaction(
-        [
-          this.prismaService.expense.findMany({ skip, take }),
-          this.prismaService.expense.count(),
-        ],
-        { isolationLevel: TransactionIsolationLevel.RepeatableRead },
+    return await this.drizzle
+      .transaction(
+        async tx => {
+          const expenses = await tx.select().from(Expense).limit(take).offset(skip);
+          const [{ value: total }] = await tx.select({ value: count() }).from(Expense);
+
+          return { expenses, total };
+        },
+        { isolationLevel: 'repeatable read' },
       )
-      .then(([expenses, total]) => ({
-        items: this.mapExpensesFromPrismaToExpenses(expenses),
+      .then(({ expenses, total }) => ({
+        items: this.mapExpensesFromDrizzleToExpenses(expenses),
         total,
       }));
   }
 
-  @Catch(handlePrismaError)
   async findManyByCustomer(
     customerId: string,
     pagination: IPagePaginationInput,
   ): Promise<IPagePaginationOutput<IExpense>> {
-    const { take, skip } = getPrismaPaginationParams(pagination);
+    const { take, skip } = getDbPaginationParams(pagination);
 
-    return await this.prismaService
-      .$transaction(
-        [
-          this.prismaService.expense.findMany({
-            where: { customerId },
-            skip,
-            take,
-          }),
-          this.prismaService.expense.count(),
-        ],
-        { isolationLevel: TransactionIsolationLevel.RepeatableRead },
+    return await this.drizzle
+      .transaction(
+        async tx => {
+          const expenses = await tx
+            .select()
+            .from(Expense)
+            .limit(take)
+            .offset(skip)
+            .where(eq(Expense.customerId, customerId));
+          const [{ value: total }] = await tx
+            .select({ value: count() })
+            .from(Expense)
+            .where(eq(Expense.customerId, customerId));
+
+          return { expenses, total };
+        },
+        { isolationLevel: 'repeatable read' },
       )
-      .then(([expenses, total]) => ({
-        items: this.mapExpensesFromPrismaToExpenses(expenses),
+      .then(({ expenses, total }) => ({
+        items: this.mapExpensesFromDrizzleToExpenses(expenses),
         total,
       }));
   }
 
-  @Catch(handlePrismaError)
   async findOne(id: string): Promise<IExpense | null> {
-    const foundExpense = await this.prismaService.expense.findUnique({ where: { id } });
+    const [foundExpense] = await this.drizzle
+      .select()
+      .from(Expense)
+      .where(eq(Expense.id, id));
 
     if (!foundExpense) {
       return null;
     }
 
-    return this.mapExpenseFromPrismaToExpense(foundExpense);
+    return this.mapExpenseFromDrizzleToExpense(foundExpense);
   }
 
-  @Catch(handlePrismaError)
-  async createMany(
-    createExpenseInputs: IExpenseCreateInput[],
-    customerId: string,
-  ): Promise<IExpense[]> {
-    const { count } = await this.prismaService.expense.createMany({
-      data: createExpenseInputs,
-    });
+  async createMany(createExpenseInputs: IExpenseCreateInput[]): Promise<number> {
+    const { count } = await this.drizzle.insert(Expense).values(
+      createExpenseInputs.map(input => {
+        return {
+          ...input,
+          id: crypto.randomUUID(),
+          amount: input.amount.toString(),
+        };
+      }),
+    );
 
-    return await this.prismaService.expense
-      .findMany({
-        where: { customerId },
-        orderBy: {
-          createdAt: SortOrder.desc,
-        },
-        take: count,
-      })
-      .then(createdExpenses => this.mapExpensesFromPrismaToExpenses(createdExpenses));
+    return count;
   }
 
-  @Catch(handlePrismaError)
-  async createManyViaTransaction(
-    createExpenseInputs: IExpenseCreateInput[],
-  ): Promise<IExpense[]> {
-    return await this.prismaService
-      .$transaction(
-        async tx => {
-          const { count } = await tx.expense.createMany({
-            data: createExpenseInputs,
-          });
-
-          return await tx.expense.findMany({
-            orderBy: {
-              createdAt: SortOrder.desc,
-            },
-            take: count,
-          });
-        },
-        { isolationLevel: TransactionIsolationLevel.ReadCommitted },
-      )
-      .then(createdExpenses => this.mapExpensesFromPrismaToExpenses(createdExpenses));
-  }
-
-  @Catch(handlePrismaError)
-  async update(id: string, data: IExpenseUpdateInput): Promise<IExpense> {
+  async update(id: string, data: IExpenseUpdateInput): Promise<boolean> {
     const dataWithoutCustomerId = omitObjKeys(data, 'customerId');
+    const { amount, date } = dataWithoutCustomerId;
 
-    return await this.prismaService.expense
-      .update({
-        data: dataWithoutCustomerId,
-        where: { id },
-      })
-      .then(updatedExpense => this.mapExpenseFromPrismaToExpense(updatedExpense));
+    await this.drizzle
+      .update(Expense)
+      .set(
+        deleteUndefinedFieldsFromObj({
+          ...dataWithoutCustomerId,
+          amount: amount?.toString(),
+          date: date?.toString(),
+        }),
+      )
+      .where(eq(Expense.id, id));
+
+    return true;
   }
 
-  @Catch(handlePrismaError)
-  async delete(id: string): Promise<IExpense> {
-    return await this.prismaService.expense
-      .delete({ where: { id } })
-      .then(deletedExpense => this.mapExpenseFromPrismaToExpense(deletedExpense));
+  async delete(id: string): Promise<boolean> {
+    await this.drizzle.delete(Expense).where(eq(Expense.id, id));
+
+    return true;
   }
 
-  private mapExpensesFromPrismaToExpenses(expenses: Expense[]): IExpense[] {
-    return expenses.map(expense => this.mapExpenseFromPrismaToExpense(expense));
+  private mapExpensesFromDrizzleToExpenses(expenses: IDrizzleExpense[]): IExpense[] {
+    return expenses.map(expense => this.mapExpenseFromDrizzleToExpense(expense));
   }
 
-  private mapExpenseFromPrismaToExpense(expense: Expense): IExpense {
+  private mapExpenseFromDrizzleToExpense(expense: IDrizzleExpense): IExpense {
     return {
       id: expense.id,
       customerId: expense.customerId,
-      date: expense.date,
-      amount: expense.amount.toNumber(),
-      category: expense.category,
-      createdAt: expense.createdAt,
-      updatedAt: expense.updatedAt,
+      date: new Date(expense.date),
+      amount: parseFloat(expense.amount),
+      category: expense.category as ExpenseCategory,
+      createdAt: new Date(expense.createdAt),
+      updatedAt: new Date(expense.updatedAt),
     };
   }
+}
+
+interface IDrizzleExpense {
+  id: string;
+  customerId: string;
+  date: string;
+  amount: string;
+  category: string;
+  createdAt: string;
+  updatedAt: string;
 }

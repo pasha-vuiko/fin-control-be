@@ -1,14 +1,16 @@
-import { Prisma, RegularPayment } from '@prisma/client';
+import { count, eq } from 'drizzle-orm';
+import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 import { IPagePaginationInput } from '@shared/interfaces/page-pagination-input.interface';
 import { IPagePaginationOutput } from '@shared/interfaces/page-pagination-output.interface';
+import { DRIZZLE_CLIENT } from '@shared/modules/drizzle/providers/drizzle-client.provider';
 import { Catch } from '@shared/modules/error/decorators/catch.decorator';
-import { PrismaService } from '@shared/modules/prisma/prisma.service';
-import { getPrismaPaginationParams } from '@shared/modules/prisma/utils/get-prisma-pagination-params';
-import { handlePrismaError } from '@shared/modules/prisma/utils/handle-prisma-error';
+import { deleteUndefinedFieldsFromObj } from '@shared/utils/delete-undefined-fields-from-obj.util';
+import { getDbPaginationParams } from '@shared/utils/get-db-pagination-params';
 
+import { ExpenseCategory } from '@api/expenses/enum/expense-category.enum';
 import { IRegularPaymentCreateInput } from '@api/regular-payments/interfaces/regular-payment-create-input.interface';
 import { IRegularPaymentUpdateInput } from '@api/regular-payments/interfaces/regular-payment-update-input.interface';
 import { IRegularPayment } from '@api/regular-payments/interfaces/regular-payment.interface';
@@ -17,102 +19,130 @@ import {
   IRegularPaymentsRepository,
 } from '@api/regular-payments/interfaces/regular-payments-repository.interface';
 
-import TransactionIsolationLevel = Prisma.TransactionIsolationLevel;
+import * as schema from '../../../drizzle/schema';
+import { RegularPayment } from '../../../drizzle/schema';
 
 @Injectable()
 export class RegularPaymentsRepository implements IRegularPaymentsRepository {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    @Inject(DRIZZLE_CLIENT)
+    private drizzle: PostgresJsDatabase<typeof schema>,
+  ) {}
 
-  @Catch(handlePrismaError)
   async findMany(
     filter: IRegularPaymentsFilter,
     pagination: IPagePaginationInput,
   ): Promise<IPagePaginationOutput<IRegularPayment>> {
-    const { take, skip } = getPrismaPaginationParams(pagination);
-    const { customerId } = filter;
+    const { take, skip } = getDbPaginationParams(pagination);
+    const { customerId = '' } = filter;
 
-    return await this.prismaService
-      .$transaction(
-        [
-          this.prismaService.regularPayment.findMany({
-            where: { customerId },
-            skip,
-            take,
-          }),
-          this.prismaService.regularPayment.count({ where: { customerId } }),
-        ],
-        { isolationLevel: TransactionIsolationLevel.RepeatableRead },
+    return await this.drizzle
+      .transaction(
+        async tx => {
+          const items = await tx
+            .select()
+            .from(RegularPayment)
+            .where(eq(RegularPayment.customerId, customerId))
+            .limit(take)
+            .offset(skip);
+
+          const [{ value: total }] = await tx
+            .select({ value: count() })
+            .from(RegularPayment)
+            .where(eq(RegularPayment.customerId, customerId));
+
+          return { items, total };
+        },
+        { isolationLevel: 'repeatable read' },
       )
-      .then(([regularPayments, total]) => ({
-        items: this.mapPrismaRegularPaymentsToRegularPayments(regularPayments),
+      .then(({ items, total }) => ({
+        items: this.mapDrizzleRegularPaymentsToRegularPayments(items),
         total,
       }));
   }
 
-  @Catch(handlePrismaError)
   async findAll(): Promise<IRegularPayment[]> {
-    const regularPayments = await this.prismaService.regularPayment.findMany();
-
-    return regularPayments.map(regularPayment =>
-      this.mapPrismaRegularPaymentToRegularPayment(regularPayment),
-    );
+    return await this.drizzle
+      .select()
+      .from(RegularPayment)
+      .then(regularPayments =>
+        this.mapDrizzleRegularPaymentsToRegularPayments(regularPayments),
+      );
   }
 
-  @Catch(handlePrismaError)
   async findOne(id: string): Promise<IRegularPayment | null> {
-    const regularPayment = await this.prismaService.regularPayment.findUnique({
-      where: { id },
-    });
+    const [regularPayment] = await this.drizzle
+      .select()
+      .from(RegularPayment)
+      .where(eq(RegularPayment.id, id));
 
     if (!regularPayment) {
       return null;
     }
 
-    return this.mapPrismaRegularPaymentToRegularPayment(regularPayment);
+    return this.mapDrizzleRegularPaymentToRegularPayment(regularPayment);
   }
 
-  @Catch(handlePrismaError)
-  async create(data: IRegularPaymentCreateInput): Promise<IRegularPayment> {
-    const createdRegularPayment = await this.prismaService.regularPayment.create({
-      data,
-    });
+  async create(data: IRegularPaymentCreateInput): Promise<boolean> {
+    await this.drizzle.insert(RegularPayment).values([
+      {
+        ...data,
+        id: crypto.randomUUID(),
+        amount: data.amount.toString(),
+      },
+    ]);
 
-    return this.mapPrismaRegularPaymentToRegularPayment(createdRegularPayment);
+    return true;
   }
 
-  @Catch(handlePrismaError)
-  async update(id: string, data: IRegularPaymentUpdateInput): Promise<IRegularPayment> {
-    const updatedRegularPayment = await this.prismaService.regularPayment.update({
-      data,
-      where: { id },
-    });
+  async update(id: string, data: IRegularPaymentUpdateInput): Promise<boolean> {
+    await this.drizzle
+      .update(RegularPayment)
+      .set(
+        deleteUndefinedFieldsFromObj({
+          ...data,
+          amount: data.amount?.toString(),
+        }),
+      )
+      .where(eq(RegularPayment.id, id));
 
-    return this.mapPrismaRegularPaymentToRegularPayment(updatedRegularPayment);
+    return true;
   }
 
-  @Catch(handlePrismaError)
-  async delete(id: string): Promise<IRegularPayment> {
-    const deletedRegularPayment = await this.prismaService.regularPayment.delete({
-      where: { id },
-    });
+  async delete(id: string): Promise<boolean> {
+    await this.drizzle.delete(RegularPayment).where(eq(RegularPayment.id, id));
 
-    return this.mapPrismaRegularPaymentToRegularPayment(deletedRegularPayment);
+    return true;
   }
 
-  private mapPrismaRegularPaymentsToRegularPayments(
-    prismaRegularPayments: RegularPayment[],
+  private mapDrizzleRegularPaymentsToRegularPayments(
+    prismaRegularPayments: IDrizzleRegularPayment[],
   ): IRegularPayment[] {
     return prismaRegularPayments.map(prismaRegularPayment =>
-      this.mapPrismaRegularPaymentToRegularPayment(prismaRegularPayment),
+      this.mapDrizzleRegularPaymentToRegularPayment(prismaRegularPayment),
     );
   }
 
-  private mapPrismaRegularPaymentToRegularPayment(
-    prismaRegularPayment: RegularPayment,
+  private mapDrizzleRegularPaymentToRegularPayment(
+    drizzleRegularPayment: IDrizzleRegularPayment,
   ): IRegularPayment {
     return {
-      ...prismaRegularPayment,
-      amount: prismaRegularPayment.amount.toNumber(),
+      ...drizzleRegularPayment,
+      amount: parseFloat(drizzleRegularPayment.amount),
+      dateOfCharge: new Date(drizzleRegularPayment.dateOfCharge),
+      createdAt: new Date(drizzleRegularPayment.createdAt),
+      updatedAt: new Date(drizzleRegularPayment.updatedAt),
+      category: drizzleRegularPayment.category as ExpenseCategory,
     };
   }
+}
+
+interface IDrizzleRegularPayment {
+  id: string;
+  amount: string;
+  dateOfCharge: string;
+  createdAt: string;
+  updatedAt: string;
+  category: string;
+  customerId: string;
 }

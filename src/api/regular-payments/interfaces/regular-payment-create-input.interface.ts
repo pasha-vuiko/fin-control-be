@@ -1,8 +1,8 @@
-import { Prisma } from '@prisma/client';
+import { ExpenseCategory } from '@api/expenses/enum/expense-category.enum';
 
-import RegularPaymentCreateInput = Prisma.RegularPaymentCreateInput;
-
-export interface IRegularPaymentCreateInput
-  extends Omit<RegularPaymentCreateInput, 'id' | 'customer'> {
+export interface IRegularPaymentCreateInput {
   customerId: string;
+  amount: number;
+  category: ExpenseCategory;
+  dateOfCharge: string;
 }

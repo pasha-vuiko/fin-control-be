@@ -30,7 +30,7 @@ export class CustomersAdminController {
       items,
       total,
       page,
-      numOfItems,
+      numOfItems: items.length,
     };
   }
 
@@ -45,13 +45,13 @@ export class CustomersAdminController {
   update(
     @Param('id') id: string,
     @Body() updateCustomerDto: CustomerUpdateDto,
-  ): Promise<CustomerEntity> {
+  ): Promise<boolean> {
     return this.customersService.updateAsAdmin(id, updateCustomerDto);
   }
 
   @Auth(Roles.ADMIN)
   @Delete(':id')
-  remove(@Param('id') id: string): Promise<CustomerEntity> {
-    return this.customersService.removeAsAdmin(id);
+  async remove(@Param('id') id: string): Promise<boolean> {
+    return await this.customersService.removeAsAdmin(id);
   }
 }

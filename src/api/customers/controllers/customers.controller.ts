@@ -28,26 +28,26 @@ export class CustomersController {
 
   @Auth(Roles.CUSTOMER)
   @Post()
-  create(
+  async create(
     @Body() createCustomerDto: CustomerCreateDto,
     @User() user: IUser,
-  ): Promise<CustomerEntity> {
-    return this.customerService.create(createCustomerDto, user);
+  ): Promise<boolean> {
+    return await this.customerService.create(createCustomerDto, user);
   }
 
   @Auth(Roles.CUSTOMER)
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @User() user: IUser,
     @Body() updateCustomerDto: CustomerUpdateDto,
-  ): Promise<CustomerEntity> {
-    return this.customerService.updateAsCustomer(id, updateCustomerDto, user.id);
+  ): Promise<boolean> {
+    return await this.customerService.updateAsCustomer(id, updateCustomerDto, user.id);
   }
 
   @Auth(Roles.CUSTOMER)
   @Delete(':id')
-  remove(@Param('id') id: string, @User() user: IUser): Promise<CustomerEntity> {
+  remove(@Param('id') id: string, @User() user: IUser): Promise<boolean> {
     return this.customerService.removeAsCustomer(id, user.id);
   }
 }

@@ -11,6 +11,7 @@ import { PinoLogger } from '@shared/modules/logger/loggers/pino-logger.service';
 export async function bootstrapPlugins(
   app: NestFastifyApplication,
   isDevelopment: boolean,
+  openidConnectDomain: string,
 ): Promise<void> {
   // Enable CORS only for local development, CORS should be enabled in Reverse Proxy instead of the app
   if (isDevelopment) {
@@ -19,7 +20,7 @@ export async function bootstrapPlugins(
 
   setupVersioning(app);
   setupExceptionFilters(app);
-  setupOpenApi(app);
+  setupOpenApi(app, openidConnectDomain);
   setupRequestsValidation(app, isDevelopment);
   await setupShutdownHooks(app);
   await setupMetrics(app);
@@ -44,12 +45,16 @@ function setupRequestsValidation(
   );
 }
 
-function setupOpenApi(app: NestFastifyApplication): void {
+function setupOpenApi(app: NestFastifyApplication, openidConnectDomain: string): void {
   const swaggerConfig = new DocumentBuilder()
     .setTitle(packageJsonInfo.name)
     .setDescription(packageJsonInfo.description)
     .setVersion(packageJsonInfo.version)
-    .addBearerAuth()
+    .addBearerAuth({
+      type: 'openIdConnect',
+      openIdConnectUrl: `https://${openidConnectDomain}/.well-known/openid-configuration`,
+      'x-tokenName': 'id_token',
+    })
     .build();
 
   const OPEN_API_URL = 'docs';
@@ -59,6 +64,10 @@ function setupOpenApi(app: NestFastifyApplication): void {
     },
     jsonDocumentUrl: `${OPEN_API_URL}/swagger.json`,
   };
+
+  app.getHttpAdapter().get(`/oauth2-redirect.html`, (req, reply) => {
+    reply.redirect(308, `/${OPEN_API_URL}${req.raw.url}`);
+  });
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
 

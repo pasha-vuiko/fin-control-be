@@ -8,7 +8,7 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Version(VERSION_NEUTRAL)
-  @Get()
+  @Get('/version')
   getAppVersion(): string {
     return this.appService.getVersion();
   }

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { AuthModule } from '@shared/modules/auth/auth.module';
+import { DrizzleModule } from '@shared/modules/drizzle/drizzle.module';
 import { LogFormat } from '@shared/modules/logger/interfaces/logger-options.interface';
 import { LoggerModule } from '@shared/modules/logger/logger.module';
 import { LogLevel } from '@shared/modules/logger/types';
@@ -14,6 +15,7 @@ import { RegularPaymentsModule } from '@api/regular-payments/regular-payments.mo
 import { config } from './app.config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import * as drizzleSchema from './drizzle/schema';
 
 const loggerConfig = config.app.logger;
 
@@ -27,6 +29,7 @@ const loggerConfig = config.app.logger;
     PrismaModule.forRoot({
       errorFormat: config.app.isDevelopment ? 'pretty' : 'minimal',
     }),
+    DrizzleModule.forRoot(drizzleSchema),
     AuthModule.forRoot({
       domain: config.auth.auth0Domain as string,
       secret: config.auth.auth0ClientSecret as string,

@@ -55,7 +55,7 @@ export const config = {
     } satisfies IRedisModuleOptions,
   },
   auth: {
-    auth0Domain: process.env.AUTH_AUTH0_DOMAIN,
+    auth0Domain: process.env.AUTH_AUTH0_DOMAIN as string,
     auth0ClientId: process.env.AUTH_CLIENT_ID,
     auth0ClientSecret: process.env.AUTH_CLIENT_SECRET,
   },

@@ -1,4 +1,4 @@
-import { Sex } from '@prisma/client';
+import { plainToInstance } from 'class-transformer';
 import { vitest } from 'vitest';
 
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
@@ -9,33 +9,32 @@ import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-out
 import { IPagePaginationOutput } from '@shared/interfaces/page-pagination-output.interface';
 import { Roles } from '@shared/modules/auth/enums/roles';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
-import { PrismaModule } from '@shared/modules/prisma/prisma.module';
-import { PrismaService } from '@shared/modules/prisma/prisma.service';
+import { DRIZZLE_CLIENT } from '@shared/modules/drizzle/providers/drizzle-client.provider';
 import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
 import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 
 import { CustomerCreateDto } from '@api/customers/dto/customer-create.dto';
 import { CustomerUpdateDto } from '@api/customers/dto/customer-update.dto';
 import { CustomerEntity } from '@api/customers/entities/customer.entity';
+import { Sex } from '@api/customers/enums/sex.enum';
 import { ICustomer } from '@api/customers/interfaces/customer.interface';
 import { CustomersRepository } from '@api/customers/repositories/customers.repository';
 
+import { getMockedInstance } from '../../../../test/utils/get-mocked-instance.util';
 import { CustomersService } from './customers.service';
 
-class MockPrismaService {}
-
-const mockCustomerCreateDto: CustomerCreateDto = {
+const mockCustomerCreateDto = plainToInstance(CustomerCreateDto, {
   firstName: 'test',
   lastName: 'test',
   birthdate: new Date().toDateString(),
   phone: '123456789',
   sex: Sex.MALE,
-};
-const mockCustomerUpdateDto: CustomerUpdateDto = {
+});
+const mockCustomerUpdateDto = plainToInstance(CustomerUpdateDto, {
   firstName: 'test',
   lastName: 'test',
   phone: '+38234902834',
-};
+});
 const mockUser: IUser = {
   id: '1',
   email: 'test@example.com',
@@ -71,11 +70,14 @@ describe('CustomerService', () => {
       .mockReturnValue({} as IoredisWithDefaultTtl);
 
     const module: TestingModule = await Test.createTestingModule({
-      imports: [PrismaModule.forRoot()],
-      providers: [CustomersService, CustomersRepository],
+      providers: [
+        CustomersService,
+        CustomersRepository,
+        { provide: DRIZZLE_CLIENT, useValue: {} },
+      ],
     })
-      .overrideProvider(PrismaService) // Preventing connection to the database
-      .useClass(MockPrismaService)
+      .overrideProvider(CustomersRepository)
+      .useValue(getMockedInstance(CustomersRepository))
       .compile();
 
     service = module.get<CustomersService>(CustomersService);
@@ -168,16 +170,13 @@ describe('CustomerService', () => {
       // Mock user
       const user = structuredClone(mockUser);
       // Mock expected result
-      const customer = structuredClone(mockCustomer);
-      vitest.spyOn(customersRepository, 'create').mockResolvedValue(customer);
+      vitest.spyOn(customersRepository, 'create').mockResolvedValue(true);
 
       const result = await service.create(createCustomerDto, user);
-      const expectedResult = CustomerEntity.fromCustomerObj(customer);
 
-      expect(result).toStrictEqual(expectedResult);
+      expect(result).toEqual(true);
       expect(customersRepository.create).toHaveBeenCalledWith({
         ...createCustomerDto,
-        birthdate: expect.any(Date), // Assuming createCustomerDto contains birthdate
         userId: '1',
         email: 'test@example.com',
       });
@@ -190,18 +189,12 @@ describe('CustomerService', () => {
       const updateCustomerDto = structuredClone(mockCustomerUpdateDto);
       const userId = '1';
       const foundCustomer = structuredClone(mockCustomer);
-      // @ts-expect-error types of birthdate from foundCustomer and updateCustomerDto are not compatible (string to string|Date)
-      const updatedCustomer: ICustomer = {
-        ...foundCustomer,
-        ...updateCustomerDto,
-      };
       vitest.spyOn(customersRepository, 'findOneById').mockResolvedValue(foundCustomer);
-      vitest.spyOn(customersRepository, 'update').mockResolvedValue(updatedCustomer);
+      vitest.spyOn(customersRepository, 'update').mockResolvedValue(true);
 
       const result = await service.updateAsCustomer(id, updateCustomerDto, userId);
-      const expectedReseult = CustomerEntity.fromCustomerObj(updatedCustomer);
 
-      expect(result).toStrictEqual(expectedReseult);
+      expect(result).toStrictEqual(true);
       expect(customersRepository.findOneById).toHaveBeenCalledWith(id);
       expect(customersRepository.update).toHaveBeenCalledWith(id, updateCustomerDto);
     });
@@ -223,18 +216,12 @@ describe('CustomerService', () => {
       const id = '1';
       const updateCustomerDto: CustomerUpdateDto = {};
       const foundCustomer = structuredClone(mockCustomer);
-      // @ts-expect-error types of birthdate from foundCustomer and updateCustomerDto are not compatible (string to string|Date)
-      const updatedCustomer: ICustomer = {
-        ...foundCustomer,
-        ...updateCustomerDto,
-      };
       vitest.spyOn(customersRepository, 'findOneById').mockResolvedValue(foundCustomer);
-      vitest.spyOn(customersRepository, 'update').mockResolvedValue(updatedCustomer);
+      vitest.spyOn(customersRepository, 'update').mockResolvedValue(true);
 
       const result = await service.updateAsAdmin(id, updateCustomerDto);
-      const expectedResult = CustomerEntity.fromCustomerObj(updatedCustomer);
 
-      expect(result).toStrictEqual(expectedResult);
+      expect(result).toStrictEqual(true);
       expect(customersRepository.findOneById).toHaveBeenCalledWith(id);
       expect(customersRepository.update).toHaveBeenCalledWith(id, updateCustomerDto);
     });
@@ -250,20 +237,17 @@ describe('CustomerService', () => {
     });
   });
 
-  // eslint-disable-next-line max-lines-per-function
   describe('removeAsCustomer()', () => {
     it('should call findOneById method of customersRepository and remove customer if found and user is authorized', async () => {
       const id = '1';
       const userId = '1';
       const foundCustomer = structuredClone(mockCustomer); // Mock found customer
-      const removedCustomer = structuredClone(mockCustomer); // Mock removed customer
       vitest.spyOn(customersRepository, 'findOneById').mockResolvedValue(foundCustomer);
-      vitest.spyOn(customersRepository, 'remove').mockResolvedValue(removedCustomer);
+      vitest.spyOn(customersRepository, 'remove').mockResolvedValue(true);
 
       const result = await service.removeAsCustomer(id, userId);
-      const expectedResult = CustomerEntity.fromCustomerObj(removedCustomer);
 
-      expect(result).toStrictEqual(expectedResult);
+      expect(result).toStrictEqual(true);
       expect(customersRepository.findOneById).toHaveBeenCalledWith(id);
       expect(customersRepository.remove).toHaveBeenCalledWith(id);
     });
@@ -296,13 +280,11 @@ describe('CustomerService', () => {
   describe('removeAsAdmin()', () => {
     it('should call remove method of customersRepository', async () => {
       const id = '1';
-      const removedCustomer = structuredClone(mockCustomer);
-      vitest.spyOn(customersRepository, 'remove').mockResolvedValue(removedCustomer);
+      vitest.spyOn(customersRepository, 'remove').mockResolvedValue(true);
 
       const result = await service.removeAsAdmin(id);
-      const expectedResult = CustomerEntity.fromCustomerObj(removedCustomer);
 
-      expect(result).toStrictEqual(expectedResult);
+      expect(result).toEqual(true);
       expect(customersRepository.remove).toHaveBeenCalledWith(id);
     });
   });

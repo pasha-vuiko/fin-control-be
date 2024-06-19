@@ -53,54 +53,44 @@ export class CustomersService {
     return CustomerEntity.fromCustomerObj(foundCustomer);
   }
 
-  async create(
-    createCustomerDto: CustomerCreateDto,
-    user: IUser,
-  ): Promise<CustomerEntity> {
+  async create(createCustomerDto: CustomerCreateDto, user: IUser): Promise<boolean> {
     const { id, email } = user;
 
-    const createdCustomer = await this.customerRepository.create({
+    return await this.customerRepository.create({
       ...createCustomerDto,
-      birthdate: new Date(createCustomerDto.birthdate),
       userId: id,
       email,
     });
-
-    return CustomerEntity.fromCustomerObj(createdCustomer);
   }
 
   async updateAsCustomer(
     id: string,
     updateCustomerDto: CustomerUpdateDto,
     userId: string,
-  ): Promise<CustomerEntity> {
+  ): Promise<boolean> {
     const foundCustomer = await this.customerRepository.findOneById(id);
 
     if (!foundCustomer || foundCustomer.userId !== userId) {
       throw new NotFoundException('The customer not found');
     }
 
-    return await this.customerRepository
-      .update(id, updateCustomerDto)
-      .then(CustomerEntity.fromCustomerObj);
+    return await this.customerRepository.update(id, updateCustomerDto);
   }
 
   async updateAsAdmin(
     id: string,
     updateCustomerDto: CustomerUpdateDto,
-  ): Promise<CustomerEntity> {
+  ): Promise<boolean> {
     const foundCustomer = await this.customerRepository.findOneById(id);
 
     if (!foundCustomer) {
       throw new NotFoundException('The customer not found');
     }
 
-    return await this.customerRepository
-      .update(id, updateCustomerDto)
-      .then(CustomerEntity.fromCustomerObj);
+    return await this.customerRepository.update(id, updateCustomerDto);
   }
 
-  async removeAsCustomer(id: string, userId: string): Promise<CustomerEntity> {
+  async removeAsCustomer(id: string, userId: string): Promise<boolean> {
     const foundCustomer = await this.customerRepository.findOneById(id);
 
     if (!foundCustomer) {
@@ -111,10 +101,10 @@ export class CustomersService {
       throw new ForbiddenException('You are not allowed to delete this customer');
     }
 
-    return await this.customerRepository.remove(id).then(CustomerEntity.fromCustomerObj);
+    return await this.customerRepository.remove(id);
   }
 
-  async removeAsAdmin(id: string): Promise<CustomerEntity> {
-    return await this.customerRepository.remove(id).then(CustomerEntity.fromCustomerObj);
+  async removeAsAdmin(id: string): Promise<boolean> {
+    return await this.customerRepository.remove(id);
   }
 }

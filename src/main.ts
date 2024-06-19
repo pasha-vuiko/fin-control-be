@@ -15,11 +15,13 @@ async function bootstrap(): Promise<NestFastifyApplication> {
     { bufferLogs: true },
   );
 
-  await bootstrapPlugins(app, config.app.isDevelopment);
+  await bootstrapPlugins(app, config.app.isDevelopment, config.auth.auth0Domain);
   const logger = bootstrapLogger(app);
 
   await app.listen(config.app.port as string, '0.0.0.0');
-  logger.log(`App is running on: ${await app.getUrl()}`, 'main.ts');
+  const appUrl = (await app.getUrl()).replace('127.0.0.1', 'localhost');
+
+  logger.log(`App is running on: ${appUrl}`, 'main.ts');
 
   return app;
 }

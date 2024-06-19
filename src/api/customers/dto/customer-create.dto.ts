@@ -1,4 +1,3 @@
-import { Sex } from '@prisma/client';
 import {
   IsDateString,
   IsEnum,
@@ -11,10 +10,11 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { NotRequired } from '@shared/decorators/validation/not-required.decorator';
 
+import { Sex } from '@api/customers/enums/sex.enum';
 import { ICustomerCreateInput } from '@api/customers/interfaces/customer-create-input.interface';
 
 export class CustomerCreateDto
-  implements Omit<ICustomerCreateInput, 'id' | 'userId' | 'email'>
+  implements Omit<ICustomerCreateInput, 'id' | 'userId' | 'email' | 'birthdate'>
 {
   @IsNotEmpty()
   @IsString()

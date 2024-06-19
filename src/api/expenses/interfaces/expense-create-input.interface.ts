@@ -1,8 +1,8 @@
-import { Prisma } from '@prisma/client';
+import { ExpenseCategory } from '@api/expenses/enum/expense-category.enum';
 
-import ExpenseCreateInput = Prisma.ExpenseCreateInput;
-
-export interface IExpenseCreateInput
-  extends Omit<ExpenseCreateInput, 'id' | 'customer' | 'createdAt' | 'updatedAt'> {
+export interface IExpenseCreateInput {
   customerId: string;
+  amount: number;
+  date: string;
+  category: ExpenseCategory;
 }

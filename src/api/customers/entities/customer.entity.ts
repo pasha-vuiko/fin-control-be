@@ -1,7 +1,6 @@
-import { Sex } from '@prisma/client';
-
 import { ApiProperty } from '@nestjs/swagger';
 
+import { Sex } from '@api/customers/enums/sex.enum';
 import { ICustomer } from '@api/customers/interfaces/customer.interface';
 
 export class CustomerEntity implements ICustomer {
