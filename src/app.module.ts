@@ -5,7 +5,6 @@ import { DrizzleModule } from '@shared/modules/drizzle/drizzle.module';
 import { LogFormat } from '@shared/modules/logger/interfaces/logger-options.interface';
 import { LoggerModule } from '@shared/modules/logger/logger.module';
 import { LogLevel } from '@shared/modules/logger/types';
-import { PrismaModule } from '@shared/modules/prisma/prisma.module';
 import { RedisModule } from '@shared/modules/redis/redis.module';
 
 import { CustomersModule } from '@api/customers/customers.module';
@@ -26,9 +25,6 @@ const loggerConfig = config.app.logger;
     ExpensesModule,
     RegularPaymentsModule,
     // shared
-    PrismaModule.forRoot({
-      errorFormat: config.app.isDevelopment ? 'pretty' : 'minimal',
-    }),
     DrizzleModule.forRoot(drizzleSchema),
     AuthModule.forRoot({
       domain: config.auth.auth0Domain as string,

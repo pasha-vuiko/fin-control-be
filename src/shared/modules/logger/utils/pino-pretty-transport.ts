@@ -1,20 +1,15 @@
 import PinoPretty from 'pino-pretty';
 
-import {
-  blueConsole,
-  cyanConsole,
-} from '@shared/modules/logger/utils/console-color.util';
-
 export default (): PinoPretty.PrettyStream =>
   PinoPretty({
     colorize: !process.env.NO_COLOR,
     levelFirst: true,
     translateTime: 'yyyy-mm-dd HH:MM:ss o',
     customPrettifiers: {
-      hostname: (hostname: string | object) => blueConsole(hostname),
-      pid: (pid: string | object) => blueConsole(pid),
-      name: (name: string | object) => blueConsole(name),
-      caller: (caller: string | object) => cyanConsole(caller),
+      hostname: (hostname, _key, _level, { colors }) =>
+        colors.blue(stringOrObjToString(hostname)),
+      pid: (pid, _key, _level, { colors }) => colors.blue(stringOrObjToString(pid)),
+      name: (name, _key, _level, { colors }) => colors.blue(stringOrObjToString(name)),
     },
     messageFormat: (
       log: Record<string, any>,
@@ -44,3 +39,11 @@ export default (): PinoPretty.PrettyStream =>
       return `${message}`;
     },
   });
+
+function stringOrObjToString(strOrObj: string | object): string {
+  if (typeof strOrObj === 'object') {
+    return JSON.stringify(strOrObj);
+  }
+
+  return strOrObj;
+}

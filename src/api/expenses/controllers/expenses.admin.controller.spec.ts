@@ -12,7 +12,7 @@ import { ExpensesRepository } from '@api/expenses/repositories/expenses.reposito
 import { ExpensesService } from '@api/expenses/services/expenses.service';
 
 import { getMockedInstance } from '../../../../test/utils/get-mocked-instance.util';
-import { mockModuleWithProviders } from '../../../../test/utils/mock-module-providers.util';
+import { mockModuleWithProviders } from '../../../../test/utils/mock-module-with-providers.util';
 import { ExpensesAdminController } from './expenses.admin.controller';
 
 describe('ExpensesAdminController', () => {

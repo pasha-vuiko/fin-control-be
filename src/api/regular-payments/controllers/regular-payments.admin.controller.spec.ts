@@ -13,7 +13,7 @@ import { RegularPaymentsRepository } from '@api/regular-payments/repositories/re
 import { RegularPaymentsService } from '@api/regular-payments/services/regular-payments.service';
 
 import { getMockedInstance } from '../../../../test/utils/get-mocked-instance.util';
-import { mockModuleWithProviders } from '../../../../test/utils/mock-module-providers.util';
+import { mockModuleWithProviders } from '../../../../test/utils/mock-module-with-providers.util';
 import { RegularPaymentsAdminController } from './regular-payments.admin.controller';
 
 describe('RegularPaymentsAdminController', () => {

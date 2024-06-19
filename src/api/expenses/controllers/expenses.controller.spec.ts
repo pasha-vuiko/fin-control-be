@@ -10,7 +10,7 @@ import { RedisConfigService } from '@shared/modules/redis/services/redis-config/
 import { CustomersModule } from '@api/customers/customers.module';
 import { ExpensesRepository } from '@api/expenses/repositories/expenses.repository';
 
-import { mockModuleWithProviders } from '../../../../test/utils/mock-module-providers.util';
+import { mockModuleWithProviders } from '../../../../test/utils/mock-module-with-providers.util';
 import { ExpensesService } from '../services/expenses.service';
 import { ExpensesController } from './expenses.controller';
 

@@ -17,6 +17,8 @@ export function getDrizzleClientProvider<T extends Record<string, unknown>>(
       const queryClient = postgres(dbUrl);
       const logger = new Logger('DrizzleClient');
 
+      // TODO Try to connect to DB
+
       return drizzle(queryClient, {
         schema: drizzleSchema,
         logger: {

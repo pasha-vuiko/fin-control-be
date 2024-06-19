@@ -23,7 +23,7 @@ import { IExpense } from '@api/expenses/interfaces/expense.interface';
 import { ExpensesRepository } from '@api/expenses/repositories/expenses.repository';
 
 import { getMockedInstance } from '../../../../test/utils/get-mocked-instance.util';
-import { mockModuleWithProviders } from '../../../../test/utils/mock-module-providers.util';
+import { mockModuleWithProviders } from '../../../../test/utils/mock-module-with-providers.util';
 import { ExpensesService } from './expenses.service';
 
 const mockCustomer: ICustomer = {

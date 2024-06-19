@@ -75,6 +75,7 @@ function setupOpenApi(app: NestFastifyApplication, openidConnectDomain: string):
 }
 
 async function setupMetrics(app: NestFastifyApplication): Promise<void> {
+  //@ts-expect-error incompatible types
   await app.register(fastifyMetrics, {
     endpoint: '/metrics',
     defaultMetrics: {

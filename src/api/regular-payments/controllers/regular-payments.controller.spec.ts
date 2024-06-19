@@ -13,7 +13,7 @@ import { ExpensesModule } from '@api/expenses/expenses.module';
 import { RegularPaymentsRepository } from '@api/regular-payments/repositories/regular-payments.repository';
 
 import { getMockedInstance } from '../../../../test/utils/get-mocked-instance.util';
-import { mockModuleWithProviders } from '../../../../test/utils/mock-module-providers.util';
+import { mockModuleWithProviders } from '../../../../test/utils/mock-module-with-providers.util';
 import { RegularPaymentsService } from '../services/regular-payments.service';
 import { RegularPaymentsController } from './regular-payments.controller';
 
