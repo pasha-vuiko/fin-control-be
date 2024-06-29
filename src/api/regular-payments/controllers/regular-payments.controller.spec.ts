@@ -1,10 +1,10 @@
+import Redis from 'ioredis';
 import { vitest } from 'vitest';
 
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { DrizzleModule } from '@shared/modules/drizzle/drizzle.module';
 import { DRIZZLE_CLIENT } from '@shared/modules/drizzle/providers/drizzle-client.provider';
-import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
 import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 
 import { CustomersModule } from '@api/customers/customers.module';
@@ -17,7 +17,6 @@ import { mockModuleWithProviders } from '../../../../test/utils/mock-module-with
 import { RegularPaymentsService } from '../services/regular-payments.service';
 import { RegularPaymentsController } from './regular-payments.controller';
 
-// eslint-disable-next-line max-lines-per-function
 describe('RegularPaymentsController', () => {
   let controller: RegularPaymentsController;
 
@@ -25,7 +24,7 @@ describe('RegularPaymentsController', () => {
     // Preventing connection to the Redis
     vitest
       .spyOn(RedisConfigService, 'getIoRedisInstance')
-      .mockReturnValue({} as IoredisWithDefaultTtl);
+      .mockReturnValue(getMockedInstance(Redis));
 
     const module: TestingModule = await Test.createTestingModule({
       imports: [

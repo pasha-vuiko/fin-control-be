@@ -1,4 +1,4 @@
-import { TErrorHandler } from '@shared/modules/error/decorators/catch.decorator';
+import { TErrorHandler } from '@shared/modules/error/decorators/catch-errors/catch-errors.decorator';
 import { Logger } from '@shared/modules/logger/loggers/logger';
 import { getLogContext } from '@shared/modules/logger/utils/get-log-context.util';
 

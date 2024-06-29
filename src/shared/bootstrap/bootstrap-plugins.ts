@@ -5,7 +5,7 @@ import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from '@nestjs/swagger';
 
 import { packageJsonInfo } from '@shared/constants/package-json-info';
-import { AllExceptionsFilter } from '@shared/exception-filters/all-exceptions.filter';
+import { AllExceptionsFilter } from '@shared/modules/error/exception-filters/all-exceptions/all-exceptions.filter';
 import { PinoLogger } from '@shared/modules/logger/loggers/pino-logger.service';
 
 export async function bootstrapPlugins(

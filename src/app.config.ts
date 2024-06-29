@@ -50,7 +50,7 @@ export const config = {
       port: Number(process.env.REDIS_CONFIG_PORT),
       name: process.env.REDIS_CONFIG_NAME,
       sentinels: mapRedisSentinels(process.env.REDIS_CONFIG_SENTINELS),
-      defaultTTL: Number(process.env.REDIS_TTL), // seconds
+      ttl: Number(process.env.REDIS_TTL), // seconds
       enableAutoPipelining: true,
     } satisfies IRedisModuleOptions,
   },

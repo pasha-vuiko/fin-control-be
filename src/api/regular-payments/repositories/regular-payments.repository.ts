@@ -6,7 +6,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { IPagePaginationInput } from '@shared/interfaces/page-pagination-input.interface';
 import { IPagePaginationOutput } from '@shared/interfaces/page-pagination-output.interface';
 import { DRIZZLE_CLIENT } from '@shared/modules/drizzle/providers/drizzle-client.provider';
-import { Catch } from '@shared/modules/error/decorators/catch.decorator';
 import { deleteUndefinedFieldsFromObj } from '@shared/utils/delete-undefined-fields-from-obj.util';
 import { getDbPaginationParams } from '@shared/utils/get-db-pagination-params';
 

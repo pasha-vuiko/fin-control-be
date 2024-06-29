@@ -2,27 +2,28 @@ import { isPromise } from 'node:util/types';
 
 import { isFunction } from '@nestjs/common/utils/shared.utils';
 
+import { TConstructor } from '@shared/types/constructor.type';
 import { isAsyncFn } from '@shared/utils/is-async-fn';
 
 /**
  *
  * @param ErrorClassConstructor Class constructor of error to be handled
  * @param handler Error handler function
- * @description Catches method errors of specified error class constructor with
+ * @description Catches method exceptions of specified error class constructor with
  * handler function,
  * Turns entry method to async even if it wasn't async before
  */
 export const CatchTheError = (
-  ErrorClassConstructor: (...args: any[]) => any,
+  ErrorClassConstructor: TConstructor,
   handler: TErrorHandler,
 ): MethodDecorator => Factory(ErrorClassConstructor, handler);
 
 /**
  *
  * @param handler Error handler function
- * @description Catches method errors and handles them with handler function
+ * @description Catches method exceptions and handles them with handler function
  */
-export const Catch = (handler: TErrorHandler): MethodDecorator => Factory(handler);
+export const CatchErrors = (handler: TErrorHandler): MethodDecorator => Factory(handler);
 
 // eslint-disable-next-line max-lines-per-function
 function Factory(
@@ -37,7 +38,7 @@ function Factory(
 
   // eslint-disable-next-line max-lines-per-function
   return (
-    _target: any,
+    target: any,
     key: string | symbol,
     descriptor: PropertyDescriptor,
   ): PropertyDescriptor => {
@@ -48,8 +49,8 @@ function Factory(
         isFunction(handler) &&
         (ErrorClassConstructor === undefined || error instanceof ErrorClassConstructor)
       ) {
-        //@ts-expect-error handler is possibly undefined
-        return handler.call(null, error, this, key, args);
+        //@ts-expect-error not assignable type of key
+        return handler(error, target, key, args);
       }
 
       throw error;
@@ -60,7 +61,7 @@ function Factory(
         try {
           const result = originalFn.apply(this, args);
 
-          return isPromise(result) ? await result : await Promise.resolve(result);
+          return isPromise(result) ? await result : result;
         } catch (error) {
           handleError(error, args);
         }
@@ -71,7 +72,9 @@ function Factory(
 
     descriptor.value = function (...args: any[]): any {
       try {
-        return originalFn.apply(this, args);
+        const result = originalFn.apply(this, args);
+
+        return isPromise(result) ? result.catch(err => handleError(err, args)) : result;
       } catch (error) {
         handleError(error, args);
       }
