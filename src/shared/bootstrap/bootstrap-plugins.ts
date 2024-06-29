@@ -66,7 +66,7 @@ function setupOpenApi(app: NestFastifyApplication, openidConnectDomain: string):
   };
 
   app.getHttpAdapter().get(`/oauth2-redirect.html`, (req, reply) => {
-    reply.redirect(308, `/${OPEN_API_URL}${req.raw.url}`);
+    reply.redirect(`/${OPEN_API_URL}${req.raw.url}`, 308);
   });
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
@@ -75,7 +75,6 @@ function setupOpenApi(app: NestFastifyApplication, openidConnectDomain: string):
 }
 
 async function setupMetrics(app: NestFastifyApplication): Promise<void> {
-  //@ts-expect-error incompatible types
   await app.register(fastifyMetrics, {
     endpoint: '/metrics',
     defaultMetrics: {

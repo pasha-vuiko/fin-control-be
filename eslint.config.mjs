@@ -1,9 +1,8 @@
 import eslint from '@eslint/js';
-import tsEslint from 'typescript-eslint';
 import prettierRecommended from 'eslint-plugin-prettier/recommended';
 import securityPlugin from 'eslint-plugin-security';
 import globals from 'globals';
-
+import tsEslint from 'typescript-eslint';
 
 export default [
   securityPlugin.configs.recommended,

@@ -11,7 +11,6 @@ async function bootstrap(): Promise<NestFastifyApplication> {
   const fastifyConfig = await config.app.fastify.getConfig();
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    //@ts-expect-error incompatible types
     new FastifyAdapter(fastifyConfig),
     { bufferLogs: true },
   );
