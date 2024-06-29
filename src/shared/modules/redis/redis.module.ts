@@ -1,7 +1,7 @@
 import { CacheModule } from '@nestjs/cache-manager';
 import { DynamicModule, Module } from '@nestjs/common';
 
-import { JsonCacheInterceptor } from '@shared/modules/redis/interceptors/json-cache.interceptor';
+import { JsonCacheInterceptor } from '@shared/modules/redis/interceptors/json-cache/json-cache.interceptor';
 import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
 import { redisModuleOptionsProvider } from '@shared/modules/redis/providers/redis-module-options.provider';
 import { redisStoreProvider } from '@shared/modules/redis/providers/redis-store.provider';
@@ -14,21 +14,20 @@ import { RedisService } from '@shared/modules/redis/services/redis/redis.service
 export class RedisModule {
   static forRoot(opts: IRedisModuleOptions = {}): DynamicModule {
     const filteredOptions = filterModuleOptions(opts);
+    const moduleOptionsProvider = redisModuleOptionsProvider(filteredOptions);
 
     return {
+      global: true,
       module: RedisModule,
       imports: [
         CacheModule.registerAsync({
           useClass: RedisConfigService,
-          extraProviders: [
-            redisStoreProvider,
-            redisModuleOptionsProvider(filteredOptions),
-          ],
+          extraProviders: [redisStoreProvider, moduleOptionsProvider],
         }),
       ],
       providers: [
         redisStoreProvider,
-        redisModuleOptionsProvider(opts),
+        moduleOptionsProvider,
         RedisService,
         RedisConfigService,
         JsonCacheInterceptor,

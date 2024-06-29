@@ -1,4 +1,5 @@
 import { FastifyReply } from 'fastify';
+import Redis from 'ioredis';
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
@@ -14,12 +15,11 @@ import { HttpAdapterHost, Reflector } from '@nestjs/core';
 
 import { IAuth0User } from '@shared/modules/auth/interfaces/auth0-user.interface';
 import { Logger } from '@shared/modules/logger/loggers/logger';
-import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
 import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 
 @Injectable()
 export class JsonCacheInterceptor implements NestInterceptor {
-  private ioRedisInstance: IoredisWithDefaultTtl;
+  private ioRedisInstance: Redis;
   private logger = new Logger(JsonCacheInterceptor.name);
 
   protected allowedMethods = ['GET'];
@@ -56,7 +56,7 @@ export class JsonCacheInterceptor implements NestInterceptor {
         return of(value);
       }
 
-      const ttl = isFunction(ttlValueOrFactory)
+      const ttl: number = isFunction(ttlValueOrFactory)
         ? await ttlValueOrFactory(context)
         : ttlValueOrFactory;
 
@@ -83,7 +83,7 @@ export class JsonCacheInterceptor implements NestInterceptor {
       return cacheKeyPrefix + cacheMetadata;
     }
 
-    const request = context.getArgByIndex(0);
+    const request = context.switchToHttp().getRequest();
     const reqUrl = httpAdapter.getRequestUrl(request);
 
     return cacheKeyPrefix + reqUrl;
@@ -98,12 +98,13 @@ export class JsonCacheInterceptor implements NestInterceptor {
     const serializedResponseBody = this.serializeResponseBody(responseBody);
 
     try {
-      if (isNil(ttl)) {
-        await this.ioRedisInstance.set(key, serializedResponseBody);
+      if (typeof ttl === 'number') {
+        await this.ioRedisInstance.setex(key, ttl, serializedResponseBody);
+
         return;
       }
 
-      await this.ioRedisInstance.set(key, serializedResponseBody, 'EX', ttl);
+      await this.ioRedisInstance.set(key, serializedResponseBody);
     } catch (err) {
       this.logger.error(
         `An error has occurred when inserting "key: ${key}", "value: ${responseBody}"`,

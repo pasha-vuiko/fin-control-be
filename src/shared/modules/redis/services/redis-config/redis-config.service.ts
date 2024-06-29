@@ -1,24 +1,25 @@
+import Redis from 'ioredis';
+
 import { CacheModuleOptions, CacheOptionsFactory } from '@nestjs/cache-manager';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { CacheStoreFactory } from '@nestjs/common/cache/interfaces/cache-manager.interface';
 
 import { Logger } from '@shared/modules/logger/loggers/logger';
-import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
 import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
 import { REDIS_MODULE_OPTIONS } from '@shared/modules/redis/providers/redis-module-options.provider';
 import { REDIS_STORE } from '@shared/modules/redis/providers/redis-store.provider';
+import { omitObjKeys } from '@shared/utils/omit-obj-keys.util';
 
 @Injectable()
 export class RedisConfigService implements CacheOptionsFactory, OnApplicationShutdown {
   private static moduleOptions: IRedisModuleOptions;
-  private static ioRedisInstance: IoredisWithDefaultTtl;
+  private static ioRedisInstance: Redis;
   private static logger = new Logger('RedisConfigService');
 
   constructor(
     @Inject(REDIS_STORE)
     private redisStore: CacheStoreFactory,
-    @Inject(REDIS_MODULE_OPTIONS)
-    private moduleOptions: IRedisModuleOptions,
+    @Inject(REDIS_MODULE_OPTIONS) private moduleOptions: IRedisModuleOptions,
   ) {
     RedisConfigService.moduleOptions = moduleOptions;
   }
@@ -32,15 +33,23 @@ export class RedisConfigService implements CacheOptionsFactory, OnApplicationShu
     return {
       store: this.redisStore,
       redisInstance: RedisConfigService.getIoRedisInstance(),
+      ttl: this.moduleOptions.ttl,
     };
   }
 
-  public static getIoRedisInstance(): IoredisWithDefaultTtl {
+  public static getIoRedisInstance(): Redis {
     if (this.ioRedisInstance) {
       return this.ioRedisInstance;
     }
 
-    this.ioRedisInstance = new IoredisWithDefaultTtl(this.moduleOptions);
+    if (this.moduleOptions.url) {
+      this.ioRedisInstance = new Redis(
+        this.moduleOptions.url,
+        omitObjKeys(this.moduleOptions, 'url'),
+      );
+    } else {
+      this.ioRedisInstance = new Redis(this.moduleOptions);
+    }
 
     this.listenToRedisConnection(this.ioRedisInstance);
     this.listenToRedisError(this.ioRedisInstance);
@@ -48,13 +57,13 @@ export class RedisConfigService implements CacheOptionsFactory, OnApplicationShu
     return this.ioRedisInstance;
   }
 
-  private static listenToRedisError(redisClient: IoredisWithDefaultTtl): void {
+  private static listenToRedisError(redisClient: Redis): void {
     redisClient.on('error', err => {
       this.logger.error(`Redis error: ${err.message}`);
     });
   }
 
-  private static listenToRedisConnection(redisClient: IoredisWithDefaultTtl): void {
+  private static listenToRedisConnection(redisClient: Redis): void {
     redisClient.on('connect', () => {
       this.logger.log(`Successfully connected to the Redis`);
     });

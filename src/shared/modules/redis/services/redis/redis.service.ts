@@ -1,28 +1,23 @@
 import { Cache } from 'cache-manager';
-import { Command } from 'ioredis';
+import Redis from 'ioredis';
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 
-import { Catch } from '@shared/modules/error/decorators/catch.decorator';
+import { CatchErrors } from '@shared/modules/error/decorators/catch-errors/catch-errors.decorator';
 import { internalErrHandler } from '@shared/modules/error/handlers/internal-err-handler';
-import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
 import { DEFAULT_CACHE_TTL } from '@shared/modules/redis/constants/defaults';
-import { CacheIndexesEnum } from '@shared/modules/redis/enums/cache-indexes.enum';
-import { ICreateIndexOptions } from '@shared/modules/redis/interfaces/create-index-options.interface';
-import { ICreateSearchIndexSchema } from '@shared/modules/redis/interfaces/create-search-index-schema.interface';
-import { ISearchResults } from '@shared/modules/redis/interfaces/search-results.interface';
+import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
+import { REDIS_MODULE_OPTIONS } from '@shared/modules/redis/providers/redis-module-options.provider';
 import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
-import { transformCreateSearchIndexArgs } from '@shared/modules/redis/utils/transform-create-search-index-args.util';
-import { ArrayType } from '@shared/types/array.type';
 
 @Injectable()
 export class RedisService {
-  private ioRedisInstance: IoredisWithDefaultTtl;
+  private ioRedisInstance: Redis;
 
   constructor(
-    @Inject(CACHE_MANAGER)
-    private cacheManager: Cache,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @Inject(REDIS_MODULE_OPTIONS) private moduleOptions: IRedisModuleOptions,
   ) {
     this.ioRedisInstance = RedisConfigService.getIoRedisInstance();
   }
@@ -33,169 +28,87 @@ export class RedisService {
    * @description if exists value from cache returned,
    * @description if not exist function is being executed
    */
-  @Catch(internalErrHandler)
+  @CatchErrors(internalErrHandler)
   public async wrap<T>(
     cacheKey: string,
     cb: (...args: any[]) => Promise<T>,
-    ttl = DEFAULT_CACHE_TTL,
+    ttl = this.moduleOptions.ttl ?? DEFAULT_CACHE_TTL,
   ): Promise<T> {
     return await this.cacheManager.wrap<T>(cacheKey, cb, ttl);
   }
 
-  @Catch(internalErrHandler)
-  public async set<T>(cacheKey: string, value: T, ttl = DEFAULT_CACHE_TTL): Promise<T> {
-    await this.cacheManager.set(cacheKey, value, ttl);
+  @CatchErrors(internalErrHandler)
+  public async set<T>(
+    cacheKey: string,
+    value: T,
+    ttl = this.moduleOptions.ttl ?? DEFAULT_CACHE_TTL,
+  ): Promise<T> {
+    // @ts-expect-error incorrect typing for .set()
+    await this.cacheManager.set(cacheKey, value, { ttl });
 
     return value;
   }
 
-  @Catch(internalErrHandler)
+  @CatchErrors(internalErrHandler)
+  public async update<T extends TCacheable>(key: string, value: T): Promise<T> {
+    const isCachable = !(
+      typeof value === 'function' ||
+      value === undefined ||
+      value === null
+    );
+
+    if (!isCachable) {
+      throw new Error('The input value is not cachable');
+    }
+
+    if (typeof value === 'object' || typeof value === 'boolean') {
+      await this.ioRedisInstance.set(key, JSON.stringify(value), 'KEEPTTL');
+    } else {
+      await this.ioRedisInstance.set(key, value, 'KEEPTTL');
+    }
+
+    return value;
+  }
+
+  @CatchErrors(internalErrHandler)
   public async setRaw(
     cacheKey: string,
     value: string,
-    ttl = DEFAULT_CACHE_TTL,
+    ttl = this.moduleOptions.ttl ?? DEFAULT_CACHE_TTL,
   ): Promise<string> {
-    await this.ioRedisInstance.set(cacheKey, value, 'EX', ttl);
+    await this.ioRedisInstance.setex(cacheKey, ttl, value);
 
     return value;
   }
 
-  @Catch(internalErrHandler)
-  public async jSet<T extends Record<string, any>>(
-    cacheKey: string,
-    value: T,
-    ttl = DEFAULT_CACHE_TTL,
-  ): Promise<T> {
-    const stringifiedValue = JSON.stringify(value);
-
-    await this.sendCommand('JSON.SET', cacheKey, '$', stringifiedValue);
-    await this.ioRedisInstance.expire(cacheKey, ttl);
-
-    return value;
+  @CatchErrors(internalErrHandler)
+  public async get<T>(cacheKey: string): Promise<T | null> {
+    return (await this.cacheManager.get<T>(cacheKey)) ?? null;
   }
 
-  @Catch(internalErrHandler)
-  public async jGet<T extends Record<string, any>>(cacheKey: string): Promise<T | null> {
-    const stringifiedResult = await this.sendCommand('JSON.GET', cacheKey);
-
-    return JSON.parse(stringifiedResult);
-  }
-
-  @Catch(internalErrHandler)
-  public async get<T>(cacheKey: string): Promise<T | undefined> {
-    return await this.cacheManager.get<T>(cacheKey);
-  }
-
-  @Catch(internalErrHandler)
+  @CatchErrors(internalErrHandler)
   public async getRaw(cacheKey: string): Promise<string | null> {
     return await this.ioRedisInstance.get(cacheKey);
   }
 
-  @Catch(internalErrHandler)
-  public async searchByNumericRange<T extends ArrayType>(
-    index: CacheIndexesEnum,
-    searchKeyName: string,
-    limit: { from: number; to: number },
-  ): Promise<T> {
-    const { values } = await this.search<T>(
-      index,
-      `@${searchKeyName}:[${limit.from} ${limit.to}]`,
-    );
-
-    return values;
-  }
-
-  @Catch(internalErrHandler)
-  public async searchByNumeric<T extends ArrayType>(
-    index: CacheIndexesEnum,
-    searchKeyName: string,
-    searchValue: number,
-  ): Promise<T> {
-    const { values } = await this.search<T>(
-      index,
-      `@${searchKeyName}:[${searchValue} ${searchValue}]`,
-    );
-
-    return values;
-  }
-
-  @Catch(internalErrHandler)
-  public async searchByTag<T extends ArrayType>(
-    index: CacheIndexesEnum,
-    searchKeyName: string,
-    searchTag: string,
-  ): Promise<T> {
-    const { values } = await this.search<T>(index, `@${searchKeyName}:{${searchTag}}`);
-
-    return values;
-  }
-
-  @Catch(internalErrHandler)
-  public async search<T extends ArrayType>(
-    index: CacheIndexesEnum,
-    query: string,
-    maxSearchLimit = 100_000,
-  ): Promise<ISearchResults<T>> {
-    const rawSearchResults = await this.sendCommand(
-      'ft.search',
-      index,
-      query,
-      'LIMIT',
-      0,
-      maxSearchLimit,
-    );
-
-    return RedisService.parseSearchResult(rawSearchResults);
-  }
-
-  @Catch(internalErrHandler)
+  @CatchErrors(internalErrHandler)
   public async ttl(cacheKey: string): Promise<number> {
     return await this.ioRedisInstance.ttl(cacheKey);
   }
 
-  /**
-   * @description creates RediSearch index. Requires RediSearch to be installed in the Redis
-   * @param index
-   * @param schema
-   * @param options
-   */
-  public async createIndex(
-    index: CacheIndexesEnum,
-    schema: ICreateSearchIndexSchema,
-    options?: ICreateIndexOptions,
-  ): Promise<'OK'> {
-    const redisCommandArr = transformCreateSearchIndexArgs(index, schema, options);
-    const [redisCommand, ...commandOpts] = redisCommandArr;
+  @CatchErrors(internalErrHandler)
+  public async checkIfExists(cacheKey: string): Promise<boolean> {
+    const result = await this.ioRedisInstance.exists(cacheKey);
 
-    return await this.sendCommand(redisCommand, ...commandOpts);
+    return Boolean(result);
   }
 
-  private static parseSearchResult<T extends ArrayType>(
-    rawSearchResult: any[],
-  ): ISearchResults<T> {
-    const [total, ...rawResults] = rawSearchResult;
+  @CatchErrors(internalErrHandler)
+  public async delete(cacheKey: string): Promise<boolean> {
+    const result = await this.ioRedisInstance.del(cacheKey);
 
-    const parsedResults: any[] = [];
-
-    for (let i = 1; i < rawResults.length; i += 2) {
-      // eslint-disable-next-line security/detect-object-injection
-      const stringifiedValue = rawResults[i][1];
-      const jsonValue = JSON.parse(stringifiedValue);
-
-      parsedResults.push(jsonValue);
-    }
-
-    return {
-      total,
-      values: parsedResults as T,
-    };
-  }
-
-  private async sendCommand(...commandArgs: (string | number)[]): Promise<string | any> {
-    const [name, ...args] = commandArgs;
-    const command = new Command(name as string, args);
-    this.ioRedisInstance.sendCommand(command);
-
-    return await command.promise;
+    return Boolean(result);
   }
 }
+
+type TCacheable = string | number | boolean | Buffer | Record<string, any>;
