@@ -1,6 +1,11 @@
+import fastifyUnderPressure from '@fastify/under-pressure';
 import fastifyMetrics from 'fastify-metrics';
 
-import { ValidationPipe, VersioningType } from '@nestjs/common';
+import {
+  ServiceUnavailableException,
+  ValidationPipe,
+  VersioningType,
+} from '@nestjs/common';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from '@nestjs/swagger';
 
@@ -22,6 +27,7 @@ export async function bootstrapPlugins(
   setupExceptionFilters(app);
   setupOpenApi(app, openidConnectDomain);
   setupRequestsValidation(app, isDevelopment);
+  // await setupDdosProtection(app);
   await setupShutdownHooks(app);
   await setupMetrics(app);
 }
@@ -87,6 +93,15 @@ function setupVersioning(app: NestFastifyApplication): void {
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: '1',
+  });
+}
+
+async function setupDdosProtection(app: NestFastifyApplication): Promise<void> {
+  await app.register(fastifyUnderPressure, {
+    maxEventLoopDelay: 1000,
+    maxEventLoopUtilization: 0.98,
+    //@ts-expect-error incorrect typing
+    customError: ServiceUnavailableException,
   });
 }
 
