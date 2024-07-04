@@ -34,7 +34,7 @@ export const config = {
     fastify: {
       getConfig: async (): Promise<FastifyServerOptions> => {
         const ONE_KB = 1024;
-        const { serverFactory } = await import('@geut/fastify-uws');
+        const { serverFactory } = await import('fastify-uws');
 
         return {
           genReqId: generateRequestId,

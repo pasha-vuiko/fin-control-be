@@ -27,7 +27,7 @@ export async function bootstrapPlugins(
   setupExceptionFilters(app);
   setupOpenApi(app, openidConnectDomain);
   setupRequestsValidation(app, isDevelopment);
-  // await setupDdosProtection(app);
+  await setupDdosProtection(app);
   await setupShutdownHooks(app);
   await setupMetrics(app);
 }
@@ -100,6 +100,8 @@ async function setupDdosProtection(app: NestFastifyApplication): Promise<void> {
   await app.register(fastifyUnderPressure, {
     maxEventLoopDelay: 1000,
     maxEventLoopUtilization: 0.98,
+    retryAfter: 200,
+    exposeStatusRoute: true,
     //@ts-expect-error incorrect typing
     customError: ServiceUnavailableException,
   });
