@@ -1,4 +1,4 @@
-import { FastifyReply } from 'fastify';
+import { FastifyReply, FastifyRequest } from 'fastify';
 import Redis from 'ioredis';
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -7,6 +7,7 @@ import { CACHE_KEY_METADATA, CACHE_TTL_METADATA } from '@nestjs/cache-manager';
 import {
   CallHandler,
   ExecutionContext,
+  Inject,
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
@@ -15,20 +16,26 @@ import { HttpAdapterHost, Reflector } from '@nestjs/core';
 
 import { IAuth0User } from '@shared/modules/auth/interfaces/auth0-user.interface';
 import { Logger } from '@shared/modules/logger/loggers/logger';
+import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
+import { REDIS_MODULE_OPTIONS } from '@shared/modules/redis/providers/redis-module-options.provider';
 import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
+import { createAsyncCacheDedupe } from '@shared/utils/create-async-cache-dedupe';
 
 @Injectable()
 export class JsonCacheInterceptor implements NestInterceptor {
   private ioRedisInstance: Redis;
   private logger = new Logger(JsonCacheInterceptor.name);
+  private readonly getCachedResponse: (key: string) => Promise<string | null>;
 
   protected allowedMethods = ['GET'];
 
   constructor(
     protected readonly reflector: Reflector,
     protected readonly httpAdapterHost: HttpAdapterHost,
+    @Inject(REDIS_MODULE_OPTIONS) private moduleOptions: IRedisModuleOptions,
   ) {
     this.ioRedisInstance = RedisConfigService.getIoRedisInstance();
+    this.getCachedResponse = createAsyncCacheDedupe(key => this.ioRedisInstance.get(key));
   }
 
   async intercept(
@@ -36,15 +43,13 @@ export class JsonCacheInterceptor implements NestInterceptor {
     next: CallHandler,
   ): Promise<Observable<any>> {
     const key = this.getCacheKey(context);
-    const ttlValueOrFactory =
-      this.reflector.get(CACHE_TTL_METADATA, context.getHandler()) ?? null;
 
     if (!key) {
       return next.handle();
     }
 
     try {
-      const value = await this.ioRedisInstance.get(key);
+      const value = await this.getCachedResponse(key);
 
       if (!isNil(value)) {
         const reply: FastifyReply | null = context.switchToHttp().getResponse();
@@ -56,9 +61,13 @@ export class JsonCacheInterceptor implements NestInterceptor {
         return of(value);
       }
 
-      const ttl: number = isFunction(ttlValueOrFactory)
-        ? await ttlValueOrFactory(context)
-        : ttlValueOrFactory;
+      const ttlValueOrFactory =
+        this.reflector.get(CACHE_TTL_METADATA, context.getHandler()) ?? null;
+
+      const ttl: number =
+        (isFunction(ttlValueOrFactory)
+          ? await ttlValueOrFactory(context)
+          : ttlValueOrFactory) ?? this.moduleOptions.ttl;
 
       return next.handle().pipe(tap(response => void this.setCache(response, key, ttl)));
     } catch {
@@ -67,7 +76,9 @@ export class JsonCacheInterceptor implements NestInterceptor {
   }
 
   private getCacheKey(context: ExecutionContext): string | undefined {
-    if (!this.isRequestCacheable(context)) {
+    const request = context.switchToHttp().getRequest();
+
+    if (!this.isRequestCacheable(request)) {
       return undefined;
     }
 
@@ -75,7 +86,7 @@ export class JsonCacheInterceptor implements NestInterceptor {
     const isHttpApp = httpAdapter && !!httpAdapter.getRequestMethod;
     const cacheMetadata = this.reflector.get(CACHE_KEY_METADATA, context.getHandler());
 
-    const user: IAuth0User | undefined = context.switchToHttp().getRequest()?.user;
+    const user: IAuth0User | undefined = request?.user;
     const userId = user?.sub;
     const cacheKeyPrefix = userId ? `user_${userId}:` : 'publicUser:';
 
@@ -83,15 +94,13 @@ export class JsonCacheInterceptor implements NestInterceptor {
       return cacheKeyPrefix + cacheMetadata;
     }
 
-    const request = context.switchToHttp().getRequest();
     const reqUrl = httpAdapter.getRequestUrl(request);
 
     return cacheKeyPrefix + reqUrl;
   }
 
-  protected isRequestCacheable(context: ExecutionContext): boolean {
-    const req = context.switchToHttp().getRequest();
-    return this.allowedMethods.includes(req.method);
+  protected isRequestCacheable(request: FastifyRequest): boolean {
+    return this.allowedMethods.includes(request.method);
   }
 
   private async setCache(responseBody: any, key: string, ttl?: number): Promise<void> {

@@ -32,6 +32,7 @@ export class RedisModule {
         RedisConfigService,
         JsonCacheInterceptor,
       ],
+      exports: [moduleOptionsProvider],
     };
   }
 }
