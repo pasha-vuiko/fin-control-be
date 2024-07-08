@@ -1,36 +1,77 @@
+import { VerifierAsync, createVerifier } from 'fast-jwt';
+import { FastifyRequest } from 'fastify';
+import buildGetJwks from 'get-jwks';
+
 import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
+import { AUTH_MODULE_OPTIONS } from '@shared/modules/auth/constants/auth-module-opts-injection-token';
+import { USER_REQ_PROPERTY } from '@shared/modules/auth/constants/user-req-property';
 import { AUTH_ROLES_META } from '@shared/modules/auth/decorators/auth.decorator';
 import { Roles } from '@shared/modules/auth/enums/roles';
 import {
   AUTH0_ROLES_KEY,
   IAuth0User,
 } from '@shared/modules/auth/interfaces/auth0-user.interface';
+import { IAuthModuleOptions } from '@shared/modules/auth/interfaces/auth-module-options.interface';
 
 @Injectable()
 export class Auth0Guard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  private readonly jwtVerify: typeof VerifierAsync;
+
+  constructor(
+    private reflector: Reflector,
+    @Inject(AUTH_MODULE_OPTIONS) moduleOptions: IAuthModuleOptions,
+  ) {
+    const domain = `https://${moduleOptions.domain}`;
+    const getJwks = buildGetJwks({});
+
+    this.jwtVerify = createVerifier({
+      cache: true,
+      key: async function ({ header }: any) {
+        return await getJwks.getPublicKey({
+          kid: header.kid,
+          alg: header.alg,
+          domain,
+        });
+      },
+    });
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const httpContext = context.switchToHttp();
-    const req = httpContext.getRequest();
-    const reply = httpContext.getResponse();
+    const req: FastifyRequest = httpContext.getRequest();
+    const authToken = this.getToken(req.headers.authorization);
 
-    await req.authenticate(req, reply).catch((e: Error | any) => {
+    const tokenPayload = await this.jwtVerify(authToken).catch((e: Error | any) => {
       throw new UnauthorizedException(`Failed to auth, ${e.message}`, { cause: e });
     });
 
     const requiredRoles = this.getRequiredRoles(context);
-    const userRoles = Auth0Guard.getRolesFromAuth0User(req.user);
+    const userRoles = Auth0Guard.getRolesFromAuth0User(tokenPayload);
+
+    //@ts-expect-error req[userReqProperty] implicitly has any type
+    // eslint-disable-next-line security/detect-object-injection
+    req[USER_REQ_PROPERTY] = tokenPayload;
 
     return this.checkRolesMatch(requiredRoles, userRoles);
+  }
+
+  private getToken(authorizationHeader: string | undefined): string {
+    const token = authorizationHeader?.split(' ').at(1);
+
+    if (!token) {
+      throw new UnauthorizedException('No auth token');
+    }
+
+    return token;
   }
 
   private getRequiredRoles(context: ExecutionContext): Roles[] {

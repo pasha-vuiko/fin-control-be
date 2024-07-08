@@ -3,7 +3,7 @@ import { HttpAdapterHost } from '@nestjs/core';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
 
 import { AUTH_MODULE_OPTIONS } from '@shared/modules/auth/constants/auth-module-opts-injection-token';
-import auth0Authenticate from '@shared/modules/auth/fastify-plugins/auth0-authenticate.plugin';
+import userReqPropertyPlugin from '@shared/modules/auth/fastify-plugins/user-req-property.plugin';
 import { IAuthModuleOptions } from '@shared/modules/auth/interfaces/auth-module-options.interface';
 
 @Injectable()
@@ -16,8 +16,7 @@ export class AuthConfigService implements OnModuleInit {
   async onModuleInit(): Promise<void> {
     await this.adapterHost.httpAdapter.register(
       //@ts-expect-error type of the plugin is not compatible with the type of the register method
-      auth0Authenticate,
-      this.authModuleOptions,
+      userReqPropertyPlugin,
     );
   }
 }

@@ -4,13 +4,15 @@ import {
   createParamDecorator,
 } from '@nestjs/common';
 
+import { USER_REQ_PROPERTY } from '@shared/modules/auth/constants/user-req-property';
 import { Auth0Guard } from '@shared/modules/auth/guards/auth/auth0.guard';
 import { IAuth0User } from '@shared/modules/auth/interfaces/auth0-user.interface';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
 
 export const User = createParamDecorator(
   (_data: unknown, ctx: ExecutionContext): IUser => {
-    const { user: auth0User } = ctx.switchToHttp().getRequest();
+    // eslint-disable-next-line security/detect-object-injection
+    const auth0User = ctx.switchToHttp().getRequest()[USER_REQ_PROPERTY];
 
     if (!auth0User) {
       throw new UnauthorizedException('Failed to get user from request');
