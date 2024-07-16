@@ -1,9 +1,10 @@
+import { ExpenseCategory } from '@prisma/client';
+
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ExpenseCategory } from '@api/expenses/enum/expense-category.enum';
 import { IExpense } from '@api/expenses/interfaces/expense.interface';
 
-export class ExpenseEntity {
+export class ExpenseEntity implements IExpense {
   id: string;
 
   customerId: string;

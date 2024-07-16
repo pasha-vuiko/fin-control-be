@@ -1,127 +1,107 @@
-import crypto from 'node:crypto';
+import { Customer, Prisma } from '@prisma/client';
 
-import { count, eq } from 'drizzle-orm';
-import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { IPagePaginationInput } from '@shared/interfaces/page-pagination-input.interface';
 import { IPagePaginationOutput } from '@shared/interfaces/page-pagination-output.interface';
-import { DRIZZLE_CLIENT } from '@shared/modules/drizzle/providers/drizzle-client.provider';
-import { getDbPaginationParams } from '@shared/utils/get-db-pagination-params';
+import { CatchErrors } from '@shared/modules/error/decorators/catch-errors/catch-errors.decorator';
+import { PrismaService } from '@shared/modules/prisma/prisma.service';
+import { getPrismaPaginationParams } from '@shared/modules/prisma/utils/get-prisma-pagination-params';
+import { handlePrismaError } from '@shared/modules/prisma/utils/handle-prisma-error';
 
-import { Sex } from '@api/customers/enums/sex.enum';
 import { ICustomerCreateInput } from '@api/customers/interfaces/customer-create-input.interface';
 import { ICustomerUpdateInput } from '@api/customers/interfaces/customer-update-input.interface';
 import { ICustomer } from '@api/customers/interfaces/customer.interface';
 import { ICustomersRepository } from '@api/customers/interfaces/customers.repository.interface';
 
-import * as schema from '../../../drizzle/schema';
-import { Customer } from '../../../drizzle/schema';
+import TransactionIsolationLevel = Prisma.TransactionIsolationLevel;
 
 @Injectable()
 export class CustomersRepository implements ICustomersRepository {
-  constructor(
-    @Inject(DRIZZLE_CLIENT) private drizzle: PostgresJsDatabase<typeof schema>,
-  ) {}
+  constructor(private prismaService: PrismaService) {}
 
+  @CatchErrors(handlePrismaError)
   async findMany(
     pagination: IPagePaginationInput,
   ): Promise<IPagePaginationOutput<ICustomer>> {
-    const { skip, take } = getDbPaginationParams(pagination);
+    const { skip, take } = getPrismaPaginationParams(pagination);
 
-    return await this.drizzle
-      .transaction(
-        async tx => {
-          const customers = await tx.select().from(Customer).limit(take).offset(skip);
-          const [{ value: total }] = await tx.select({ value: count() }).from(Customer);
-
-          return { customers, total };
-        },
-        { isolationLevel: 'repeatable read' },
+    return await this.prismaService
+      .$transaction(
+        [
+          this.prismaService.customer.findMany({ skip, take }),
+          this.prismaService.customer.count(),
+        ],
+        { isolationLevel: TransactionIsolationLevel.RepeatableRead },
       )
-      .then(({ customers, total }) => ({
-        items: this.mapCustomersFromDrizzleToCustomers(customers),
+      .then(([customers, total]) => ({
+        items: this.mapCustomersFromPrismaToCustomers(customers),
         total,
       }));
   }
 
+  @CatchErrors(handlePrismaError)
   async findOneById(id: string): Promise<ICustomer | null> {
-    const [foundCustomer] = await this.drizzle
-      .select()
-      .from(Customer)
-      .where(eq(Customer.id, id));
+    const foundCustomer = await this.prismaService.customer.findUnique({ where: { id } });
 
     if (!foundCustomer) {
       return null;
     }
 
-    return this.mapCustomerFromDrizzleToCustomer(foundCustomer);
+    return this.mapCustomerFromPrismaToCustomer(foundCustomer);
   }
 
+  @CatchErrors(handlePrismaError)
   async findOneByUserId(userId: string): Promise<ICustomer | null> {
-    const [foundCustomer] = await this.drizzle
-      .select()
-      .from(Customer)
-      .where(eq(Customer.userId, userId));
-
-    if (!foundCustomer) {
-      return null;
-    }
-
-    return this.mapCustomerFromDrizzleToCustomer(foundCustomer);
-  }
-
-  async create(data: ICustomerCreateInput): Promise<boolean> {
-    await this.drizzle.insert(Customer).values({
-      id: crypto.randomUUID(),
-      ...data,
+    const foundCustomer = await this.prismaService.customer.findUnique({
+      where: { userId },
+      include: { expense: true },
     });
 
-    return true;
+    if (!foundCustomer) {
+      return null;
+    }
+
+    return this.mapCustomerFromPrismaToCustomer(foundCustomer);
   }
 
-  async update(id: string, data: ICustomerUpdateInput): Promise<boolean> {
-    await this.drizzle.update(Customer).set(data).where(eq(Customer.id, id));
-
-    return true;
+  @CatchErrors(handlePrismaError)
+  async create(data: ICustomerCreateInput): Promise<ICustomer> {
+    return await this.prismaService.customer
+      .create({ data })
+      .then(createdCustomer => this.mapCustomerFromPrismaToCustomer(createdCustomer));
   }
 
-  async remove(id: string): Promise<boolean> {
-    await this.drizzle.delete(Customer).where(eq(Customer.id, id));
-
-    return true;
+  @CatchErrors(handlePrismaError)
+  async update(id: string, data: ICustomerUpdateInput): Promise<ICustomer> {
+    return await this.prismaService.customer
+      .update({ data, where: { id } })
+      .then(updatedCustomer => this.mapCustomerFromPrismaToCustomer(updatedCustomer));
   }
 
-  private mapCustomersFromDrizzleToCustomers(customers: IDrizzleCustomer[]): ICustomer[] {
-    return customers.map(customer => this.mapCustomerFromDrizzleToCustomer(customer));
+  @CatchErrors(handlePrismaError)
+  async remove(id: string): Promise<ICustomer> {
+    return await this.prismaService.customer
+      .delete({ where: { id } })
+      .then(removedCustomer => this.mapCustomerFromPrismaToCustomer(removedCustomer));
   }
 
-  private mapCustomerFromDrizzleToCustomer(customer: IDrizzleCustomer): ICustomer {
+  private mapCustomersFromPrismaToCustomers(customers: Customer[]): ICustomer[] {
+    return customers.map(customer => this.mapCustomerFromPrismaToCustomer(customer));
+  }
+
+  private mapCustomerFromPrismaToCustomer(customer: Customer): ICustomer {
     return {
       id: customer.id,
       userId: customer.userId,
       firstName: customer.firstName,
       lastName: customer.lastName,
-      birthdate: new Date(customer.birthdate),
+      birthdate: customer.birthdate,
       email: customer.email,
       phone: customer.phone,
-      sex: customer.sex as Sex,
-      createdAt: new Date(customer.createdAt),
-      updatedAt: new Date(customer.updatedAt),
+      sex: customer.sex,
+      createdAt: customer.createdAt,
+      updatedAt: customer.updatedAt,
     };
   }
-}
-
-interface IDrizzleCustomer {
-  id: string;
-  userId: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string | null;
-  birthdate: string;
-  sex: 'MALE' | 'FEMALE';
-  createdAt: string;
-  updatedAt: string;
 }

@@ -15,9 +15,16 @@ export interface IExpensesRepository {
 
   findOne(id: string): Promise<IExpense | null>;
 
-  createMany(createExpenseInputs: IExpenseCreateInput[]): Promise<number>;
+  createMany(
+    createExpenseInputs: IExpenseCreateInput[],
+    customerId: string,
+  ): Promise<IExpense[]>;
 
-  update(id: string, data: IExpenseUpdateInput): Promise<boolean>;
+  createManyViaTransaction(
+    createExpenseInputs: IExpenseCreateInput[],
+  ): Promise<IExpense[]>;
 
-  delete(id: string): Promise<boolean>;
+  update(id: string, data: IExpenseUpdateInput): Promise<IExpense>;
+
+  delete(id: string): Promise<IExpense>;
 }

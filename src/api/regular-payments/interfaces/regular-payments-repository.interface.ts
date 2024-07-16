@@ -15,11 +15,11 @@ export interface IRegularPaymentsRepository {
 
   findOne(id: string): Promise<IRegularPayment | null>;
 
-  create(data: IRegularPaymentCreateInput): Promise<boolean>;
+  create(data: IRegularPaymentCreateInput): Promise<IRegularPayment>;
 
-  update(id: string, data: IRegularPaymentUpdateInput): Promise<boolean>;
+  update(id: string, data: IRegularPaymentUpdateInput): Promise<IRegularPayment>;
 
-  delete(id: string): Promise<boolean>;
+  delete(id: string): Promise<IRegularPayment>;
 }
 
 export interface IRegularPaymentsFilter {

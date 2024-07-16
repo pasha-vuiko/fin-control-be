@@ -1,11 +1,8 @@
-import { Sex } from '@api/customers/enums/sex.enum';
+import { Prisma } from '@prisma/client';
 
-export interface ICustomerCreateInput {
+import CustomerCreateInput = Prisma.CustomerCreateInput;
+
+export interface ICustomerCreateInput
+  extends Omit<CustomerCreateInput, 'id' | 'auth0Id'> {
   userId: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone?: string | null;
-  birthdate: string;
-  sex: Sex;
 }

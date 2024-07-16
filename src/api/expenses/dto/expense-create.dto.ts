@@ -1,12 +1,13 @@
+import { ExpenseCategory } from '@prisma/client';
 import { IsDateString, IsEnum, IsNotEmpty } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
 import { IsDecimalNum } from '@shared/decorators/validation/is-decimal-num.decorator';
 
-import { ExpenseCategory } from '@api/expenses/enum/expense-category.enum';
+import { IExpenseCreateInput } from '@api/expenses/interfaces/expense-create-input.interface';
 
-export class ExpenseCreateDto {
+export class ExpenseCreateDto implements Omit<IExpenseCreateInput, 'customerId'> {
   @IsDecimalNum()
   @IsNotEmpty()
   amount: number;

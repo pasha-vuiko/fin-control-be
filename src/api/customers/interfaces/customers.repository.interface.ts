@@ -12,9 +12,9 @@ export interface ICustomersRepository {
 
   findOneByUserId(id: string): Promise<ICustomer | null>;
 
-  create(data: ICustomerCreateInput): Promise<boolean>;
+  create(data: ICustomerCreateInput): Promise<ICustomer>;
 
-  update(id: string, data: ICustomerUpdateInput): Promise<boolean>;
+  update(id: string, data: ICustomerUpdateInput): Promise<ICustomer>;
 
-  remove(id: string): Promise<boolean>;
+  remove(id: string): Promise<ICustomer>;
 }

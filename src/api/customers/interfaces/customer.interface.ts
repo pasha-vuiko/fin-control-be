@@ -1,14 +1,5 @@
-import { Sex } from '@api/customers/enums/sex.enum';
+import { Customer } from '@prisma/client';
 
-export interface ICustomer {
-  id: string;
+export interface ICustomer extends Omit<Customer, 'auth0Id'> {
   userId: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string | null;
-  birthdate: Date;
-  sex: Sex;
-  createdAt: Date;
-  updatedAt: Date;
 }

@@ -2,8 +2,8 @@ import { vitest } from 'vitest';
 
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { DrizzleModule } from '@shared/modules/drizzle/drizzle.module';
-import { DRIZZLE_CLIENT } from '@shared/modules/drizzle/providers/drizzle-client.provider';
+import { PrismaModule } from '@shared/modules/prisma/prisma.module';
+import { PrismaService } from '@shared/modules/prisma/prisma.service';
 import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
 import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 
@@ -12,9 +12,9 @@ import { ExpensesModule } from '@api/expenses/expenses.module';
 import { RegularPaymentsRepository } from '@api/regular-payments/repositories/regular-payments.repository';
 import { RegularPaymentsService } from '@api/regular-payments/services/regular-payments.service';
 
-import { getMockedInstance } from '../../../../test/utils/get-mocked-instance.util';
-import { mockModuleWithProviders } from '../../../../test/utils/mock-module-with-providers.util';
 import { RegularPaymentsAdminController } from './regular-payments.admin.controller';
+
+class MockPrismaService {}
 
 describe('RegularPaymentsAdminController', () => {
   let controller: RegularPaymentsAdminController;
@@ -26,18 +26,12 @@ describe('RegularPaymentsAdminController', () => {
       .mockReturnValue({} as IoredisWithDefaultTtl);
 
     const module: TestingModule = await Test.createTestingModule({
-      imports: [
-        mockModuleWithProviders(DrizzleModule, [
-          { provide: DRIZZLE_CLIENT, useValue: {} },
-        ]),
-        CustomersModule,
-        ExpensesModule,
-      ],
+      imports: [PrismaModule.forRoot(), CustomersModule, ExpensesModule],
       controllers: [RegularPaymentsAdminController],
       providers: [RegularPaymentsService, RegularPaymentsRepository],
     })
-      .overrideProvider(RegularPaymentsRepository) // Preventing connection to the database
-      .useValue(getMockedInstance(RegularPaymentsRepository))
+      .overrideProvider(PrismaService) // Preventing connection to the database
+      .useClass(MockPrismaService)
       .compile();
     controller = module.get<RegularPaymentsAdminController>(
       RegularPaymentsAdminController,

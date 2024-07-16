@@ -38,7 +38,7 @@ export class RegularPaymentsController {
       { numOfItems, page },
     );
 
-    return { items, total, page, numOfItems: items.length };
+    return { items, total, page, numOfItems };
   }
 
   @JsonCache()
@@ -50,27 +50,27 @@ export class RegularPaymentsController {
 
   @Auth(Roles.CUSTOMER)
   @Post()
-  async create(
+  create(
     @Body() createRegularPaymentDto: RegularPaymentCreateDto,
     @User() user: IUser,
-  ): Promise<boolean> {
-    return await this.regularPaymentsService.create(createRegularPaymentDto, user.id);
+  ): Promise<RegularPaymentEntity> {
+    return this.regularPaymentsService.create(createRegularPaymentDto, user.id);
   }
 
   @Auth(Roles.CUSTOMER)
   @Patch(':id')
-  async update(
+  update(
     @Param('id') id: string,
     @Body() updateRegularPaymentDto: RegularPaymentUpdateDto,
     @User() user: IUser,
-  ): Promise<boolean> {
-    return await this.regularPaymentsService.update(id, updateRegularPaymentDto, user.id);
+  ): Promise<RegularPaymentEntity> {
+    return this.regularPaymentsService.update(id, updateRegularPaymentDto, user.id);
   }
 
   @Auth(Roles.CUSTOMER)
   @Delete(':id')
-  async delete(@Param('id') id: string, @User() user: IUser): Promise<boolean> {
-    return await this.regularPaymentsService.delete(id, user.id);
+  delete(@Param('id') id: string, @User() user: IUser): Promise<RegularPaymentEntity> {
+    return this.regularPaymentsService.delete(id, user.id);
   }
 
   // TODO Run in a separate service

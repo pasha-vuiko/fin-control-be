@@ -2,15 +2,17 @@ import { vitest } from 'vitest';
 
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { DrizzleModule } from '@shared/modules/drizzle/drizzle.module';
+import { PrismaModule } from '@shared/modules/prisma/prisma.module';
+import { PrismaService } from '@shared/modules/prisma/prisma.service';
 import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
 import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 
 import { CustomersRepository } from '@api/customers/repositories/customers.repository';
 
-import { getMockedInstance } from '../../../../test/utils/get-mocked-instance.util';
 import { CustomersService } from '../services/customers.service';
 import { CustomersController } from './customers.controller';
+
+class MockPrismaService {}
 
 describe('CustomersController', () => {
   let controller: CustomersController;
@@ -22,12 +24,12 @@ describe('CustomersController', () => {
       .mockReturnValue({} as IoredisWithDefaultTtl);
 
     const module: TestingModule = await Test.createTestingModule({
-      imports: [DrizzleModule.forRoot('', {} as any)],
+      imports: [PrismaModule.forRoot()],
       controllers: [CustomersController],
       providers: [CustomersService, CustomersRepository],
     })
-      .overrideProvider(CustomersRepository)
-      .useValue(getMockedInstance(CustomersRepository))
+      .overrideProvider(PrismaService) // Preventing connection to the database
+      .useClass(MockPrismaService)
       .compile();
 
     controller = module.get<CustomersController>(CustomersController);

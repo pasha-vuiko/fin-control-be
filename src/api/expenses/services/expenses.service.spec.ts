@@ -1,3 +1,4 @@
+import { ExpenseCategory } from '@prisma/client';
 import { vitest } from 'vitest';
 
 import { NotFoundException } from '@nestjs/common';
@@ -6,25 +7,24 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PagePaginationDto } from '@shared/dto/page-pagination.dto';
 import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-output.entity';
 import { IPagePaginationOutput } from '@shared/interfaces/page-pagination-output.interface';
-import { DrizzleModule } from '@shared/modules/drizzle/drizzle.module';
-import { DRIZZLE_CLIENT } from '@shared/modules/drizzle/providers/drizzle-client.provider';
+import { PrismaModule } from '@shared/modules/prisma/prisma.module';
+import { PrismaService } from '@shared/modules/prisma/prisma.service';
 import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
 import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 
 import { CustomersModule } from '@api/customers/customers.module';
 import { CustomerEntity } from '@api/customers/entities/customer.entity';
-import { Sex } from '@api/customers/enums/sex.enum';
 import { ICustomer } from '@api/customers/interfaces/customer.interface';
 import { CustomersService } from '@api/customers/services/customers.service';
 import { ExpenseCreateDto } from '@api/expenses/dto/expense-create.dto';
 import { ExpenseEntity } from '@api/expenses/entities/expense.entity';
-import { ExpenseCategory } from '@api/expenses/enum/expense-category.enum';
+import { IExpenseCreateInput } from '@api/expenses/interfaces/expense-create-input.interface';
 import { IExpense } from '@api/expenses/interfaces/expense.interface';
 import { ExpensesRepository } from '@api/expenses/repositories/expenses.repository';
 
-import { getMockedInstance } from '../../../../test/utils/get-mocked-instance.util';
-import { mockModuleWithProviders } from '../../../../test/utils/mock-module-with-providers.util';
 import { ExpensesService } from './expenses.service';
+
+class MockPrismaService {}
 
 const mockCustomer: ICustomer = {
   id: '1',
@@ -34,7 +34,7 @@ const mockCustomer: ICustomer = {
   email: 'test@gmail.com',
   birthdate: new Date(),
   phone: '+380989898989',
-  sex: Sex.MALE,
+  sex: 'MALE',
   createdAt: new Date(),
   updatedAt: new Date(),
 };
@@ -75,18 +75,11 @@ describe('ExpensesService', () => {
       .mockReturnValue({} as IoredisWithDefaultTtl);
 
     const module: TestingModule = await Test.createTestingModule({
-      imports: [
-        mockModuleWithProviders(DrizzleModule, [
-          { provide: DRIZZLE_CLIENT, useValue: {} },
-        ]),
-        CustomersModule,
-      ],
+      imports: [PrismaModule.forRoot(), CustomersModule],
       providers: [ExpensesService, ExpensesRepository],
     })
-      .overrideProvider(ExpensesRepository)
-      .useValue(getMockedInstance(ExpensesRepository))
-      .overrideProvider(CustomersService)
-      .useValue(getMockedInstance(CustomersService))
+      .overrideProvider(PrismaService) // Preventing connection to the database
+      .useClass(MockPrismaService)
       .compile();
 
     service = module.get<ExpensesService>(ExpensesService);
@@ -222,13 +215,41 @@ describe('ExpensesService', () => {
       vitest.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
       vitest
         .spyOn(expensesRepository, 'createMany')
-        .mockResolvedValueOnce(createdExpenses.length);
+        .mockResolvedValueOnce(createdExpenses);
 
       const result = await service.createMany(expensesToCreate, userId);
+      const expectedResult = createdExpenses.map(ExpenseEntity.fromExpenseObj);
 
-      expect(result).toEqual(createdExpenses.length);
+      expect(result).toStrictEqual(expectedResult);
       expect(customersService.findOneByUserId).toHaveBeenCalledWith(userId);
-      expect(expensesRepository.createMany).toHaveBeenCalledWith(expect.anything());
+      expect(expensesRepository.createMany).toHaveBeenCalledWith(
+        expect.anything(),
+        customer.id,
+      );
+    });
+  });
+
+  describe('createManyViaTransaction()', () => {
+    it('should create and return multiple expenses via transaction', async () => {
+      const expensesToCreate: IExpenseCreateInput[] = [
+        {
+          ...structuredClone(mockExpenseToCreate),
+          customerId: '1',
+        },
+      ]; // Mock array of expenses to create
+      const createdExpenses = [structuredClone(mockExpense)]; // Mock array of created expenses
+
+      vitest
+        .spyOn(expensesRepository, 'createManyViaTransaction')
+        .mockResolvedValueOnce(createdExpenses);
+
+      const result = await service.createManyViaTransaction(expensesToCreate);
+      const expectedResult = createdExpenses.map(ExpenseEntity.fromExpenseObj);
+
+      expect(result).toStrictEqual(expectedResult);
+      expect(expensesRepository.createManyViaTransaction).toHaveBeenCalledWith(
+        expensesToCreate,
+      );
     });
   });
 
@@ -239,16 +260,22 @@ describe('ExpensesService', () => {
       const userId = '1';
       const customer = structuredClone(mockCustomer);
       const updateExpenseDto = structuredClone(mockExpenseToUpdate); // Mock update object
+      const updatedExpense: ExpenseEntity = {
+        ...structuredClone(mockExpense),
+        ...updateExpenseDto,
+        date: new Date(updateExpenseDto.date),
+      }; // Mock updated expense
 
       vitest.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
       vitest
         .spyOn(service, 'findOneAsCustomer')
         .mockResolvedValueOnce({ customerId: customer } as any);
-      vitest.spyOn(expensesRepository, 'update').mockResolvedValueOnce(true);
+      vitest.spyOn(expensesRepository, 'update').mockResolvedValueOnce(updatedExpense);
 
       const result = await service.update(id, updateExpenseDto, userId);
+      const expectedResult = ExpenseEntity.fromExpenseObj(updatedExpense);
 
-      expect(result).toEqual(true);
+      expect(result).toStrictEqual(expectedResult);
       expect(expensesRepository.update).toHaveBeenCalledWith(id, expect.anything());
     });
 
@@ -260,6 +287,9 @@ describe('ExpensesService', () => {
       vitest
         .spyOn(customersService, 'findOneByUserId')
         .mockRejectedValueOnce(new NotFoundException());
+      vitest
+        .spyOn(expensesRepository, 'update')
+        .mockResolvedValueOnce(structuredClone(mockExpense));
 
       await expect(service.update(id, updateExpenseDto, userId)).rejects.toThrow(
         NotFoundException,
@@ -279,6 +309,9 @@ describe('ExpensesService', () => {
       vitest
         .spyOn(service, 'findOneAsCustomer')
         .mockRejectedValueOnce(new NotFoundException());
+      vitest
+        .spyOn(expensesRepository, 'update')
+        .mockResolvedValueOnce(structuredClone(mockExpense));
 
       await expect(service.update(id, updateExpenseDto, userId)).rejects.toThrow(
         NotFoundException,
@@ -299,11 +332,12 @@ describe('ExpensesService', () => {
 
       vitest.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
       vitest.spyOn(service, 'findOneAsCustomer').mockResolvedValueOnce(expense as any);
-      vitest.spyOn(expensesRepository, 'delete').mockResolvedValueOnce(true);
+      vitest.spyOn(expensesRepository, 'delete').mockResolvedValueOnce(expense);
 
       const result = await service.delete(id, userId);
+      const expectedResult = ExpenseEntity.fromExpenseObj(expense);
 
-      expect(result).toEqual(true);
+      expect(result).toStrictEqual(expectedResult);
       expect(expensesRepository.delete).toHaveBeenCalledWith(id);
     });
 
@@ -318,6 +352,9 @@ describe('ExpensesService', () => {
 
       vitest.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
       vitest.spyOn(service, 'findOneAsCustomer').mockResolvedValueOnce(expense);
+      vitest
+        .spyOn(expensesRepository, 'delete')
+        .mockResolvedValueOnce(structuredClone(mockExpense));
 
       await expect(service.delete(id, userId)).rejects.toThrow(NotFoundException);
       expect(expensesRepository.delete).not.toHaveBeenCalled();

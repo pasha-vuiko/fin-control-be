@@ -4,10 +4,10 @@ import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-out
 import { IPagePaginationInput } from '@shared/interfaces/page-pagination-input.interface';
 
 import { CustomersService } from '@api/customers/services/customers.service';
-import { ExpenseCategory } from '@api/expenses/enum/expense-category.enum';
 import { IExpenseCreateInput } from '@api/expenses/interfaces/expense-create-input.interface';
 import { ExpensesService } from '@api/expenses/services/expenses.service';
 import { RegularPaymentEntity } from '@api/regular-payments/entities/regular-payment.entity';
+import { IRegularPayment } from '@api/regular-payments/interfaces/regular-payment.interface';
 import { IRegularPaymentsRepository } from '@api/regular-payments/interfaces/regular-payments-repository.interface';
 import { RegularPaymentsRepository } from '@api/regular-payments/repositories/regular-payments.repository';
 
@@ -80,29 +80,35 @@ export class RegularPaymentsService {
   async create(
     createRegularPaymentDto: RegularPaymentCreateDto,
     userId: string,
-  ): Promise<boolean> {
+  ): Promise<RegularPaymentEntity> {
     const customer = await this.customersService.findOneByUserId(userId);
 
-    return await this.regularPaymentsRepository.create({
-      ...createRegularPaymentDto,
-      customerId: customer.id,
-    });
+    return await this.regularPaymentsRepository
+      .create({
+        ...createRegularPaymentDto,
+        customerId: customer.id,
+      })
+      .then(RegularPaymentEntity.fromPlainObj);
   }
 
   async update(
     id: string,
     updateRegularPaymentDto: RegularPaymentUpdateDto,
     userId: string,
-  ): Promise<boolean> {
+  ): Promise<IRegularPayment> {
     await this.findOneAsCustomer(id, userId); // check if regular payment exists
 
-    return await this.regularPaymentsRepository.update(id, updateRegularPaymentDto);
+    return await this.regularPaymentsRepository
+      .update(id, updateRegularPaymentDto)
+      .then(RegularPaymentEntity.fromPlainObj);
   }
 
-  async delete(id: string, userId: string): Promise<boolean> {
+  async delete(id: string, userId: string): Promise<IRegularPayment> {
     await this.findOneAsCustomer(id, userId); // check if regular payment exists
 
-    return await this.regularPaymentsRepository.delete(id);
+    return await this.regularPaymentsRepository
+      .delete(id)
+      .then(RegularPaymentEntity.fromPlainObj);
   }
 
   async applyRegularPayments(_monthYear: string): Promise<void> {
@@ -112,9 +118,9 @@ export class RegularPaymentsService {
     const expensesToCreate: IExpenseCreateInput[] = regularPayments.map(
       regularPayment => ({
         customerId: regularPayment.customerId,
-        date: regularPayment.dateOfCharge.toISOString(),
+        date: regularPayment.dateOfCharge,
         amount: regularPayment.amount,
-        category: regularPayment.category as ExpenseCategory,
+        category: regularPayment.category,
       }),
     );
 

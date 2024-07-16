@@ -46,43 +46,43 @@ export class ExpensesController {
       numOfItems,
     });
 
-    return { items, total, page, numOfItems: items.length };
+    return { items, total, page, numOfItems };
   }
 
   @JsonCache()
   @Auth(Roles.CUSTOMER)
   @Get(':id')
-  async findOne(@Param('id') id: string, @User() user: IUser): Promise<ExpenseEntity> {
-    return await this.expensesService.findOneAsCustomer(id, user.id);
+  findOne(@Param('id') id: string, @User() user: IUser): Promise<ExpenseEntity> {
+    return this.expensesService.findOneAsCustomer(id, user.id);
   }
 
   @Auth(Roles.CUSTOMER)
   @ApiBody({ type: [ExpenseCreateDto] })
   @Post()
-  async create(
+  create(
     @Body() expensesToCreate: ExpenseCreateDto[],
     @User() user: IUser,
-  ): Promise<number> {
+  ): Promise<ExpenseEntity[]> {
     if (!Array.isArray(expensesToCreate)) {
       throw new BadRequestException('body should be an array');
     }
 
-    return await this.expensesService.createMany(expensesToCreate, user.id);
+    return this.expensesService.createMany(expensesToCreate, user.id);
   }
 
   @Auth(Roles.CUSTOMER)
   @Patch(':id')
-  async update(
+  update(
     @Param('id') id: string,
     @Body() updateExpenseDto: ExpenseUpdateDto,
     @User() user: IUser,
-  ): Promise<boolean> {
-    return await this.expensesService.update(id, updateExpenseDto, user.id);
+  ): Promise<ExpenseEntity> {
+    return this.expensesService.update(id, updateExpenseDto, user.id);
   }
 
   @Auth(Roles.CUSTOMER)
   @Delete(':id')
-  async remove(@Param('id') id: string, @User() user: IUser): Promise<boolean> {
-    return await this.expensesService.delete(id, user.id);
+  remove(@Param('id') id: string, @User() user: IUser): Promise<ExpenseEntity> {
+    return this.expensesService.delete(id, user.id);
   }
 }

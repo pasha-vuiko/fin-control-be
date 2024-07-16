@@ -73,7 +73,7 @@ export class ExpensesService {
   async createMany(
     expensesToCreate: ExpenseCreateDto[],
     userId: string,
-  ): Promise<number> {
+  ): Promise<ExpenseEntity[]> {
     const customer = await this.customersService.findOneByUserId(userId);
     const createExpensesDataWithCustomerId: IExpenseCreateInput[] = expensesToCreate.map(
       dto => ({
@@ -82,32 +82,38 @@ export class ExpensesService {
       }),
     );
 
-    return await this.expensesRepository.createMany(createExpensesDataWithCustomerId);
+    return await this.expensesRepository
+      .createMany(createExpensesDataWithCustomerId, customer.id)
+      .then(expenses => expenses.map(ExpenseEntity.fromExpenseObj));
   }
 
   async createManyViaTransaction(
     expensesToCreate: IExpenseCreateInput[],
-  ): Promise<number> {
-    return await this.expensesRepository.createMany(expensesToCreate);
+  ): Promise<ExpenseEntity[]> {
+    return await this.expensesRepository
+      .createManyViaTransaction(expensesToCreate)
+      .then(expenses => expenses.map(ExpenseEntity.fromExpenseObj));
   }
 
   async update(
     id: string,
     updateExpenseDto: ExpenseUpdateDto,
     userId: string,
-  ): Promise<boolean> {
+  ): Promise<ExpenseEntity> {
     const [customer] = await Promise.all([
       this.customersService.findOneByUserId(userId),
       this.findOneAsCustomer(id, userId),
     ]);
 
-    return await this.expensesRepository.update(id, {
-      ...updateExpenseDto,
-      customerId: customer.id,
-    });
+    return await this.expensesRepository
+      .update(id, {
+        ...updateExpenseDto,
+        customerId: customer.id,
+      })
+      .then(ExpenseEntity.fromExpenseObj);
   }
 
-  async delete(id: string, userId: string): Promise<boolean> {
+  async delete(id: string, userId: string): Promise<ExpenseEntity> {
     const [customer, expense] = await Promise.all([
       this.customersService.findOneByUserId(userId),
       this.findOneAsCustomer(id, userId),
@@ -119,6 +125,6 @@ export class ExpensesService {
       throw new NotFoundException(`expense with ${id} is not found`);
     }
 
-    return await this.expensesRepository.delete(id);
+    return await this.expensesRepository.delete(id).then(ExpenseEntity.fromExpenseObj);
   }
 }

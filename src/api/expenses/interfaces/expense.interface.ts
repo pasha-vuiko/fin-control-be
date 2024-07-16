@@ -1,11 +1,5 @@
-import { ExpenseCategory } from '@api/expenses/enum/expense-category.enum';
+import { Expense } from '@prisma/client';
 
-export interface IExpense {
-  id: string;
-  customerId: string;
-  date: Date;
+export interface IExpense extends Omit<Expense, 'amount'> {
   amount: number;
-  category: ExpenseCategory;
-  createdAt: Date;
-  updatedAt: Date;
 }

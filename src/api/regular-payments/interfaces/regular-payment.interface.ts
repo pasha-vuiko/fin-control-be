@@ -1,11 +1,5 @@
-import { ExpenseCategory } from '@api/expenses/enum/expense-category.enum';
+import { RegularPayment } from '@prisma/client';
 
-export interface IRegularPayment {
-  id: string;
+export interface IRegularPayment extends Omit<RegularPayment, 'amount'> {
   amount: number;
-  customerId: string;
-  dateOfCharge: Date;
-  category: ExpenseCategory;
-  createdAt: Date;
-  updatedAt: Date;
 }

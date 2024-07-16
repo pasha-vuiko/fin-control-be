@@ -28,7 +28,7 @@ export class ExpensesAdminController {
       numOfItems,
     });
 
-    return { items, total, page, numOfItems: items.length };
+    return { items, total, page, numOfItems };
   }
 
   @Auth(Roles.ADMIN)
