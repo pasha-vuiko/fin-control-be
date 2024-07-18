@@ -1,10 +1,10 @@
+import Redis from 'ioredis';
 import { vitest } from 'vitest';
 
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { PrismaModule } from '@shared/modules/prisma/prisma.module';
 import { PrismaService } from '@shared/modules/prisma/prisma.service';
-import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
 import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 
 import { CustomersModule } from '@api/customers/customers.module';
@@ -21,9 +21,7 @@ describe('RegularPaymentsController', () => {
 
   beforeEach(async () => {
     // Preventing connection to the Redis
-    vitest
-      .spyOn(RedisConfigService, 'getIoRedisInstance')
-      .mockReturnValue({} as IoredisWithDefaultTtl);
+    vitest.spyOn(RedisConfigService, 'getIoRedisInstance').mockReturnValue({} as Redis);
 
     const module: TestingModule = await Test.createTestingModule({
       imports: [PrismaModule.forRoot(), CustomersModule, ExpensesModule],

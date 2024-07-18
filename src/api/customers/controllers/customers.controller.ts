@@ -5,7 +5,6 @@ import { Auth } from '@shared/modules/auth/decorators/auth.decorator';
 import { User } from '@shared/modules/auth/decorators/user.decorator';
 import { Roles } from '@shared/modules/auth/enums/roles';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
-import { JsonCache } from '@shared/modules/redis/decorators/json-cache.decorator';
 
 import { CustomerEntity } from '@api/customers/entities/customer.entity';
 
@@ -19,7 +18,6 @@ import { CustomersService } from '../services/customers.service';
 export class CustomersController {
   constructor(private readonly customerService: CustomersService) {}
 
-  @JsonCache()
   @Auth(Roles.CUSTOMER)
   @Get('self')
   findSelf(@User() user: IUser): Promise<CustomerEntity> {

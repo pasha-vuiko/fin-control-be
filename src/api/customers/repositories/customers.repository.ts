@@ -1,4 +1,6 @@
-import { Customer, Prisma } from '@prisma/client';
+import { Prisma, Customer as PrismaCustomer } from '@prisma/client';
+import { eq } from 'drizzle-orm';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres/driver';
 
 import { Injectable } from '@nestjs/common';
 
@@ -14,11 +16,18 @@ import { ICustomerUpdateInput } from '@api/customers/interfaces/customer-update-
 import { ICustomer } from '@api/customers/interfaces/customer.interface';
 import { ICustomersRepository } from '@api/customers/interfaces/customers.repository.interface';
 
+import { Customer } from '../../../../prisma/drizzle/schema';
+import * as drizzleSchema from '../../../../prisma/drizzle/schema';
+
 import TransactionIsolationLevel = Prisma.TransactionIsolationLevel;
 
 @Injectable()
 export class CustomersRepository implements ICustomersRepository {
-  constructor(private prismaService: PrismaService) {}
+  private readonly drizzle: NodePgDatabase<typeof drizzleSchema>;
+
+  constructor(private prismaService: PrismaService) {
+    this.drizzle = prismaService.getDrizzleWithSchema(drizzleSchema);
+  }
 
   @CatchErrors(handlePrismaError)
   async findMany(
@@ -53,9 +62,9 @@ export class CustomersRepository implements ICustomersRepository {
 
   @CatchErrors(handlePrismaError)
   async findOneByUserId(userId: string): Promise<ICustomer | null> {
-    const foundCustomer = await this.prismaService.customer.findUnique({
-      where: { userId },
-      include: { expense: true },
+    const foundCustomer = await this.drizzle.query.Customer.findFirst({
+      where: eq(Customer.userId, userId),
+      with: { expense: true },
     });
 
     if (!foundCustomer) {
@@ -86,11 +95,11 @@ export class CustomersRepository implements ICustomersRepository {
       .then(removedCustomer => this.mapCustomerFromPrismaToCustomer(removedCustomer));
   }
 
-  private mapCustomersFromPrismaToCustomers(customers: Customer[]): ICustomer[] {
+  private mapCustomersFromPrismaToCustomers(customers: PrismaCustomer[]): ICustomer[] {
     return customers.map(customer => this.mapCustomerFromPrismaToCustomer(customer));
   }
 
-  private mapCustomerFromPrismaToCustomer(customer: Customer): ICustomer {
+  private mapCustomerFromPrismaToCustomer(customer: PrismaCustomer): ICustomer {
     return {
       id: customer.id,
       userId: customer.userId,

@@ -1,6 +1,11 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["relationJoins"]
+  previewFeatures = ["relationJoins", "driverAdapters"]
+}
+
+generator drizzle {
+  provider = "drizzle-prisma-generator"
+  output   = "./drizzle" // Where to put generated Drizle tables
 }
 
 datasource db {

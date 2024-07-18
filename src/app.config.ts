@@ -6,7 +6,7 @@ import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-modu
 import { checkEnvVarsSet } from '@shared/utils/check-env-vars-set';
 import { generateRequestId } from '@shared/utils/generate-request-id.util';
 
-checkEnvVarsSet(path.resolve(__dirname, '../.env.example'));
+checkEnvVarsSet(path.resolve(__dirname, '..', '..', '.env.example'));
 setUtcTimezone();
 
 // TODO Add config validation

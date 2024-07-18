@@ -48,6 +48,8 @@ function handlePrismaClientKnownRequestError(
       );
     case PrismaError.RecordDoesNotExist:
       throw new NotFoundException('Record does not exist', { cause: err });
+    case PrismaError.RecordsNotFound:
+      throw new NotFoundException('Record is not found', { cause: err });
     case PrismaError.ConnectionTimedOut:
       throw new RequestTimeoutException('Connection to DB is timed out', { cause: err });
     case PrismaError.OperationsTimedOut:
