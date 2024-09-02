@@ -1,22 +1,24 @@
-FROM node:20.15.0-alpine
+FROM node:20.17.0-alpine
 
-RUN apk add --update --no-cache \
-    openssl \
-    dumb-init
+RUN apk add --update \
+    openssl --no-cache \
+    dumb-init --no-cache && apk cache clean
 
 ARG VERSION
 
 RUN mkdir -p /opt/app/
 COPY package.json package-lock.json nest-cli.json .env.example tsconfig.json tsconfig.build.json /opt/app/
-COPY prisma /opt/app/prisma/
 WORKDIR /opt/app/
 
-RUN npm ci
-COPY src /opt/app/src/
-RUN npm run build
+COPY ./src /opt/app/src/
+COPY ./prisma /opt/app/prisma/
 
-RUN rm -rf tsconfig.json tsconfig.build.json src
-RUN npm prune --production
+RUN npm ci --ignore-scripts \
+    && npm run prisma:generate \
+    && npm run build \
+    && rm -rf tsconfig.json tsconfig.build.json src \
+    && npm prune --production \
+    && npm cache clean --force
 
 ENV APP_PORT=3000 \
     APP_VERSION=${VERSION:-unknown} \
@@ -26,4 +28,5 @@ ENV APP_PORT=3000 \
 
 EXPOSE 3000
 
-ENTRYPOINT ["dumb-init", "node", "/opt/app/dist/main.js"]
+USER node
+CMD ["dumb-init", "node", "/opt/app/dist/src/main.js"]
