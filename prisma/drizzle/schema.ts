@@ -1,5 +1,12 @@
 import { relations, sql } from 'drizzle-orm';
-import { decimal, pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import {
+  decimal,
+  foreignKey,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+} from 'drizzle-orm/pg-core';
 
 export const Sex = pgEnum('Sex', ['MALE', 'FEMALE']);
 
@@ -42,35 +49,55 @@ export const Customer = pgTable('Customer', {
   updatedAt: timestamp('updatedAt', { precision: 3 }).notNull().defaultNow(),
 });
 
-export const Expense = pgTable('Expense', {
-  id: text('id')
-    .notNull()
-    .primaryKey()
-    .default(sql`uuid()`),
-  customerId: text('customerId')
-    .notNull()
-    .references(() => Customer.id),
-  amount: decimal('amount', { precision: 65, scale: 30 }).notNull(),
-  date: timestamp('date', { precision: 3 }).notNull(),
-  createdAt: timestamp('createdAt', { precision: 3 }).notNull().defaultNow(),
-  updatedAt: timestamp('updatedAt', { precision: 3 }).notNull().defaultNow(),
-  category: ExpenseCategory('category').notNull(),
-});
+export const Expense = pgTable(
+  'Expense',
+  {
+    id: text('id')
+      .notNull()
+      .primaryKey()
+      .default(sql`uuid()`),
+    customerId: text('customerId').notNull(),
+    amount: decimal('amount', { precision: 65, scale: 30 }).notNull(),
+    date: timestamp('date', { precision: 3 }).notNull(),
+    createdAt: timestamp('createdAt', { precision: 3 }).notNull().defaultNow(),
+    updatedAt: timestamp('updatedAt', { precision: 3 }).notNull().defaultNow(),
+    category: ExpenseCategory('category').notNull(),
+  },
+  Expense => ({
+    Expense_customer_fkey: foreignKey({
+      name: 'Expense_customer_fkey',
+      columns: [Expense.customerId],
+      foreignColumns: [Customer.id],
+    })
+      .onDelete('cascade')
+      .onUpdate('cascade'),
+  }),
+);
 
-export const RegularPayment = pgTable('RegularPayment', {
-  id: text('id')
-    .notNull()
-    .primaryKey()
-    .default(sql`uuid()`),
-  customerId: text('customerId')
-    .notNull()
-    .references(() => Customer.id),
-  amount: decimal('amount', { precision: 65, scale: 30 }).notNull(),
-  dateOfCharge: timestamp('dateOfCharge', { precision: 3 }).notNull(),
-  createdAt: timestamp('createdAt', { precision: 3 }).notNull().defaultNow(),
-  updatedAt: timestamp('updatedAt', { precision: 3 }).notNull().defaultNow(),
-  category: ExpenseCategory('category').notNull(),
-});
+export const RegularPayment = pgTable(
+  'RegularPayment',
+  {
+    id: text('id')
+      .notNull()
+      .primaryKey()
+      .default(sql`uuid()`),
+    customerId: text('customerId').notNull(),
+    amount: decimal('amount', { precision: 65, scale: 30 }).notNull(),
+    dateOfCharge: timestamp('dateOfCharge', { precision: 3 }).notNull(),
+    createdAt: timestamp('createdAt', { precision: 3 }).notNull().defaultNow(),
+    updatedAt: timestamp('updatedAt', { precision: 3 }).notNull().defaultNow(),
+    category: ExpenseCategory('category').notNull(),
+  },
+  RegularPayment => ({
+    RegularPayment_customer_fkey: foreignKey({
+      name: 'RegularPayment_customer_fkey',
+      columns: [RegularPayment.customerId],
+      foreignColumns: [Customer.id],
+    })
+      .onDelete('cascade')
+      .onUpdate('cascade'),
+  }),
+);
 
 export const CustomerRelations = relations(Customer, ({ many }) => ({
   expense: many(Expense, {

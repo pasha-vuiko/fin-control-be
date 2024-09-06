@@ -14,7 +14,7 @@ COPY ./src /opt/app/src/
 COPY ./prisma /opt/app/prisma/
 
 RUN npm ci --ignore-scripts \
-    && npm run prisma:generate \
+    && npx prisma generate \
     && npm run build \
     && rm -rf tsconfig.json tsconfig.build.json src \
     && npm prune --production \
