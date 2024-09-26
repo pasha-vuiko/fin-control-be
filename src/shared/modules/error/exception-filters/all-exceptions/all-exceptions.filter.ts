@@ -1,6 +1,12 @@
 import { FastifyError, type FastifyReply, type FastifyRequest } from 'fastify';
 
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { AppException } from '@shared/modules/error/exceptions/exception-classes/app.exception';
@@ -17,23 +23,23 @@ export class AllExceptionsFilter implements ExceptionFilter {
     exception: AppException | HttpException | FastifyError | Error,
     host: ArgumentsHost,
   ): void {
-    const trackException = this.config?.trackException;
-
-    if (trackException) {
-      trackException(exception);
-    }
-
     const ctx = host.switchToHttp();
     const request = ctx.getRequest<FastifyRequest>();
     const response = ctx.getResponse<FastifyReply>();
 
     const { payload, httpCode } = this.getResponsePayload(exception, request.id);
 
+    const trackException = this.config?.trackException;
+
+    if (trackException) {
+      trackException(exception, request, httpCode);
+    }
+
     response.status(httpCode).send(payload);
   }
 
   // eslint-disable-next-line max-lines-per-function
-  private getResponsePayload(
+  public getResponsePayload(
     exception: AppException | HttpException | FastifyError | Error,
     reqId: string,
   ): { payload: ErrorResponse; httpCode: number } {
@@ -62,7 +68,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }
 
       return {
-        payload: this.mapNestExceptionToErrorResponse(exception, reqId),
+        payload: this.mapNestExceptionToErrorResponse(exception, httpStatus, reqId),
         httpCode: httpStatus,
       };
     }
@@ -78,13 +84,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
       return {
         payload: this.mapFastifyErrorToErrorResponse(exception, reqId),
-        httpCode: exception.statusCode ?? 500,
+        httpCode: exception.statusCode ?? HttpStatus.INTERNAL_SERVER_ERROR,
       };
     }
 
     this.logger.error(`Request failed with error`, exception);
 
-    const httpStatusCode = 500;
+    const httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR;
 
     return {
       payload: new ErrorResponse(
@@ -128,9 +134,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
   private mapNestExceptionToErrorResponse(
     exception: HttpException,
+    httpStatusCode: number,
     reqId: string,
   ): ErrorResponse {
-    const httpStatusCode = exception.getStatus();
     const exceptionResponse = this.getExceptionResponse(exception);
 
     return {
@@ -161,7 +167,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
 }
 
 export interface IAllExceptionsFilterConfig {
-  trackException?: (exception: Error) => void;
+  trackException?(
+    exception: AppException | HttpException | FastifyError | Error,
+    request: FastifyRequest,
+    httpCode: number,
+  ): void;
 }
 
 interface IExceptionResponse {
@@ -205,7 +215,7 @@ export class ErrorResponse {
   ): ErrorResponse {
     return new ErrorResponse({
       reqId: '84ad6c47-4dd0-4b31-987d-1f45e093ec92',
-      code: code,
+      code,
       message,
       description,
     });

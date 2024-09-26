@@ -114,9 +114,10 @@ export class JsonCacheInterceptor implements NestInterceptor {
       }
 
       await this.ioRedisInstance.set(key, serializedResponseBody);
-    } catch (err) {
+    } catch (err: Error | any) {
       this.logger.error(
         `An error has occurred when inserting "key: ${key}", "value: ${responseBody}"`,
+        err,
       );
     }
   }

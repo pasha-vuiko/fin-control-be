@@ -2,8 +2,10 @@ import { HttpStatus } from '@nestjs/common';
 
 import { TAppErrorCode } from '@shared/modules/error/exceptions/exception-classes/app.exception';
 
-export function mapHttpStatusCodeToCommonAppErrorCode(
-  httpCode: HttpStatus | number,
+export function createErrCode(
+  flowId: number,
+  httpStatus: HttpStatus | number,
+  codeNumber: number,
 ): TAppErrorCode {
-  return `0.${httpCode}.0`;
+  return `${flowId}.${httpStatus}.${codeNumber}`;
 }

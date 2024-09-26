@@ -48,7 +48,7 @@ function shortArg(arg: any): any {
 function shortObject(object: any, strLength: number): string {
   try {
     return shortString(JSON.stringify(object), strLength);
-  } catch (e) {
+  } catch {
     return '[object Object]';
   }
 }

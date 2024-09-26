@@ -1,6 +1,7 @@
 import { appExceptionsRegistry } from '@shared/modules/error/exceptions/app-exceptions-registry';
 import {
   AppException,
+  ERR_CODE_HTTP_STATUS_INDEX,
   IAppExceptionsOptions,
   IOptionsWithCause,
   TAppErrorCode,
@@ -13,7 +14,8 @@ export const RegisterAppException = <T extends TConstructor<AppException>>(
   code: TAppErrorCode,
   message: string,
 ): ClassDecorator => {
-  const httpStatusFromCodeStr = code.split('.').at(0) ?? 'undefined';
+  const httpStatusFromCodeStr =
+    code.split('.').at(ERR_CODE_HTTP_STATUS_INDEX) ?? 'undefined';
   const httpStatusFromCode = parseInt(httpStatusFromCodeStr);
 
   if (isNaN(httpStatusFromCode)) {
@@ -27,34 +29,40 @@ export const RegisterAppException = <T extends TConstructor<AppException>>(
 
   //@ts-expect-error wrong type of target, TConstructor used as more convenient
   // eslint-disable-next-line max-lines-per-function
-  return (constructor: T): T | void => {
+  return (Constructor: T): T | void => {
+    const instanceForValidation: unknown = new Constructor();
+    if (!(instanceForValidation instanceof AppException)) {
+      throw new Error('Decorated class should be child of AppException');
+    }
+
     //@ts-expect-error mixing class constructor should have one argument which is any[]
-    const GeneratedClass = class extends constructor {
+    const GeneratedClass = class extends Constructor {
       constructor(options: IOptionsWithCause);
       constructor(message?: string, options?: IAppExceptionsOptions);
       constructor(
         messageOrCause: string | IOptionsWithCause | undefined,
         options?: IAppExceptionsOptions,
       ) {
-        if (typeof messageOrCause === 'string') {
+        if (typeof messageOrCause === 'string' && typeof options === 'object') {
+          super(message, {
+            cause: options.cause,
+            name: Constructor.name,
+            errorCode: code,
+          });
+        } else if (typeof messageOrCause === 'string') {
           super(messageOrCause, {
-            name: constructor.name,
+            name: Constructor.name,
             errorCode: code,
           });
-        } else if (typeof messageOrCause === 'undefined') {
+        } else if (messageOrCause?.cause) {
           super(message, {
-            name: constructor.name,
-            errorCode: code,
-          });
-        } else if (messageOrCause.cause) {
-          super(message, {
-            cause: options?.cause,
-            name: constructor.name,
+            cause: messageOrCause?.cause,
+            name: Constructor.name,
             errorCode: code,
           });
         } else {
           super(message, {
-            name: constructor.name,
+            name: Constructor.name,
             errorCode: code,
           });
         }
@@ -62,7 +70,7 @@ export const RegisterAppException = <T extends TConstructor<AppException>>(
     };
     // Renaming generated class
     Object.defineProperty(GeneratedClass, 'name', {
-      get: () => `${constructor.name}Generated`,
+      get: () => `${Constructor.name}Generated`,
     });
 
     appExceptionsRegistry.registerException(GeneratedClass);

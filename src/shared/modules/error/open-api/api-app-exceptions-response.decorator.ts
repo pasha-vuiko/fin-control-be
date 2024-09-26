@@ -72,7 +72,7 @@ function getContent(appExceptions: AppException[]): ContentObject {
           const exampleDescription = exception.message;
 
           return [
-            exception.name,
+            `[${errorCode}]: ${exception.message}`,
             {
               value: ErrorResponse.getExample(errorCode, message, exampleDescription),
             },

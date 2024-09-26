@@ -42,7 +42,7 @@ export class AppException extends Error {
   }
 
   getHttpStatusCode(): HttpStatus | number {
-    return Number(this.errorCode.split('.').at(0));
+    return Number(this.errorCode.split('.').at(ERR_CODE_HTTP_STATUS_INDEX));
   }
 
   static fromHttpException(exception: HttpException): AppException {
@@ -57,7 +57,11 @@ export class AppException extends Error {
   }
 }
 
-export type TAppErrorCode = `${HttpStatus | number}.${number}.${number}`;
+export const ERR_CODE_FLOW_ID_INDEX = 0;
+export const ERR_CODE_HTTP_STATUS_INDEX = 1;
+export const ERR_CODE_ERR_ID_INDEX = 2;
+
+export type TAppErrorCode = `${number}.${HttpStatus | number}.${number}`;
 
 export interface IAppExceptionsOptions {
   cause?: Error | any;

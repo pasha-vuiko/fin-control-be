@@ -27,7 +27,7 @@ export const CatchErrors = (handler: TErrorHandler): MethodDecorator => Factory(
 
 // eslint-disable-next-line max-lines-per-function
 function Factory(
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   ErrorClassConstructor: Function | TErrorHandler,
   handler?: TErrorHandler,
 ): MethodDecorator {

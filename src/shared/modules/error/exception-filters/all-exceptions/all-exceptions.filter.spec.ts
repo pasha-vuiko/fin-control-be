@@ -9,6 +9,7 @@ import {
   AllExceptionsFilter,
   ErrorResponse,
 } from '@shared/modules/error/exception-filters/all-exceptions/all-exceptions.filter';
+import { mapHttpStatusCodeToCommonAppErrorCode } from '@shared/modules/error/utils/map-http-status-code-to-common-app-error-code.util';
 
 let allExceptionsFilter: AllExceptionsFilter;
 let argumentHost: ArgumentsHost;
@@ -51,7 +52,7 @@ describe('AllExceptionsFilter', () => {
 
       const expectedStatus = notFoundException.getStatus();
       const expectedResponse = new ErrorResponse({
-        code: '404.0.0',
+        code: mapHttpStatusCodeToCommonAppErrorCode(404),
         description: errMessage,
         message: (notFoundException.getResponse() as any).error,
         reqId: getRequestId(),
@@ -76,7 +77,7 @@ describe('AllExceptionsFilter', () => {
 
       const expectedStatus = notFoundException.getStatus();
       const expectedResponse = new ErrorResponse({
-        code: '404.0.0',
+        code: mapHttpStatusCodeToCommonAppErrorCode(404),
         description: errMessage,
         message: 'Internal Server Error',
         reqId: getRequestId(),
@@ -102,7 +103,7 @@ describe('AllExceptionsFilter', () => {
       allExceptionsFilter.catch(fastifyError as any as FastifyError, argumentHost);
 
       const expectedResponse = new ErrorResponse({
-        code: '400.0.0',
+        code: mapHttpStatusCodeToCommonAppErrorCode(400),
         description: errMessage,
         message: errCode,
         reqId: getRequestId(),
@@ -128,7 +129,7 @@ describe('AllExceptionsFilter', () => {
       const expectedStatusCode = 500;
       const expectedErrMessage = 'Internal Server Error';
       const expectedResponse = new ErrorResponse({
-        code: '500.0.0',
+        code: mapHttpStatusCodeToCommonAppErrorCode(500),
         description: errMessage,
         message: expectedErrMessage,
         reqId: getRequestId(),
