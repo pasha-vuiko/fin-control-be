@@ -1,10 +1,11 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 import { PagePaginationDto } from '@shared/dto/page-pagination.dto';
 import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-output.entity';
 
 import { CustomersService } from '@api/customers/services/customers.service';
 import { ExpenseEntity } from '@api/expenses/entities/expense.entity';
+import { ExpenseIsNotFoundException } from '@api/expenses/exceptions/exception-classes';
 import { IExpenseCreateInput } from '@api/expenses/interfaces/expense-create-input.interface';
 import { IExpensesRepository } from '@api/expenses/interfaces/expenses-repository.interface';
 import { ExpensesRepository } from '@api/expenses/repositories/expenses.repository';
@@ -54,7 +55,7 @@ export class ExpensesService {
     ]);
 
     if (!foundExpense || foundExpense.customerId !== customer.id) {
-      throw new NotFoundException(`expense with ${id} is not found`);
+      throw new ExpenseIsNotFoundException();
     }
 
     return ExpenseEntity.fromExpenseObj(foundExpense);
@@ -64,7 +65,7 @@ export class ExpensesService {
     const foundExpense = await this.expensesRepository.findOne(id);
 
     if (!foundExpense) {
-      throw new NotFoundException(`expense with ${id} is not found`);
+      throw new ExpenseIsNotFoundException();
     }
 
     return ExpenseEntity.fromExpenseObj(foundExpense);
@@ -122,7 +123,7 @@ export class ExpensesService {
     const expenseDoesBelongsToCustomer = expense.customerId === customer.id;
 
     if (!expenseDoesBelongsToCustomer) {
-      throw new NotFoundException(`expense with ${id} is not found`);
+      throw new ExpenseIsNotFoundException();
     }
 
     return await this.expensesRepository.delete(id).then(ExpenseEntity.fromExpenseObj);

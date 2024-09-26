@@ -2,20 +2,18 @@ import { VerifierAsync, createVerifier } from 'fast-jwt';
 import { FastifyRequest } from 'fastify';
 import buildGetJwks from 'get-jwks';
 
-import {
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-  Inject,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, Inject, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
 import { AUTH_MODULE_OPTIONS } from '@shared/modules/auth/constants/auth-module-opts-injection-token';
 import { USER_REQ_PROPERTY } from '@shared/modules/auth/constants/user-req-property';
 import { AUTH_ROLES_META } from '@shared/modules/auth/decorators/auth.decorator';
 import { Roles } from '@shared/modules/auth/enums/roles';
+import {
+  AuthExpiredTokenException,
+  AuthForbiddenException,
+  AuthInvalidTokenException,
+} from '@shared/modules/auth/exceptions/exception-classes';
 import {
   AUTH0_ROLES_KEY,
   IAuth0User,
@@ -51,7 +49,11 @@ export class Auth0Guard implements CanActivate {
     const authToken = this.getToken(req.headers.authorization);
 
     const tokenPayload = await this.jwtVerify(authToken).catch((e: Error | any) => {
-      throw new UnauthorizedException(`Failed to auth, ${e.message}`, { cause: e });
+      if (e.message.includes('expired')) {
+        throw new AuthExpiredTokenException();
+      }
+
+      throw new AuthInvalidTokenException({ cause: e });
     });
 
     const requiredRoles = this.getRequiredRoles(context);
@@ -68,7 +70,7 @@ export class Auth0Guard implements CanActivate {
     const token = authorizationHeader?.split(' ').at(1);
 
     if (!token) {
-      throw new UnauthorizedException('No auth token');
+      throw new AuthInvalidTokenException();
     }
 
     return token;
@@ -90,9 +92,7 @@ export class Auth0Guard implements CanActivate {
     );
 
     if (!rolesMatch) {
-      throw new ForbiddenException(
-        'User does not have permissions to access the resource',
-      );
+      throw new AuthForbiddenException();
     }
 
     return rolesMatch;

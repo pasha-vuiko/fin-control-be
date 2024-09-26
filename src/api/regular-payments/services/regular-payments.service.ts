@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-output.entity';
 import { IPagePaginationInput } from '@shared/interfaces/page-pagination-input.interface';
@@ -7,6 +7,7 @@ import { CustomersService } from '@api/customers/services/customers.service';
 import { IExpenseCreateInput } from '@api/expenses/interfaces/expense-create-input.interface';
 import { ExpensesService } from '@api/expenses/services/expenses.service';
 import { RegularPaymentEntity } from '@api/regular-payments/entities/regular-payment.entity';
+import { RegularPaymentNotFoundException } from '@api/regular-payments/exceptions/exception-classes';
 import { IRegularPayment } from '@api/regular-payments/interfaces/regular-payment.interface';
 import { IRegularPaymentsRepository } from '@api/regular-payments/interfaces/regular-payments-repository.interface';
 import { RegularPaymentsRepository } from '@api/regular-payments/repositories/regular-payments.repository';
@@ -58,7 +59,7 @@ export class RegularPaymentsService {
     const regularPayment = await this.regularPaymentsRepository.findOne(id);
 
     if (!regularPayment) {
-      throw new NotFoundException(`Regular payment with id ${id} not found`);
+      throw new RegularPaymentNotFoundException();
     }
 
     return RegularPaymentEntity.fromPlainObj(regularPayment);
@@ -71,7 +72,7 @@ export class RegularPaymentsService {
     ]);
 
     if (!regularPayment || regularPayment.customerId !== customer.id) {
-      throw new NotFoundException(`Regular payment with id ${id} not found`);
+      throw new RegularPaymentNotFoundException();
     }
 
     return RegularPaymentEntity.fromPlainObj(regularPayment);

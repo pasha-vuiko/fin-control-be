@@ -17,10 +17,12 @@ import { Auth } from '@shared/modules/auth/decorators/auth.decorator';
 import { User } from '@shared/modules/auth/decorators/user.decorator';
 import { Roles } from '@shared/modules/auth/enums/roles';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
+import { ApiAppExceptionsRes } from '@shared/modules/error/open-api/api-app-exceptions-response.decorator';
 import { JsonCache } from '@shared/modules/redis/decorators/json-cache.decorator';
 
 import { ExpensesFindDto } from '@api/expenses/dto/expenses-find.dto';
 import { ExpenseEntity } from '@api/expenses/entities/expense.entity';
+import { ExpenseIsNotFoundException } from '@api/expenses/exceptions/exception-classes';
 
 import { ExpenseCreateDto } from '../dto/expense-create.dto';
 import { ExpenseUpdateDto } from '../dto/expense-update.dto';
@@ -49,6 +51,7 @@ export class ExpensesController {
     return { items, total, page, numOfItems };
   }
 
+  @ApiAppExceptionsRes(ExpenseIsNotFoundException)
   @JsonCache()
   @Auth(Roles.CUSTOMER)
   @Get(':id')
@@ -70,6 +73,7 @@ export class ExpensesController {
     return this.expensesService.createMany(expensesToCreate, user.id);
   }
 
+  @ApiAppExceptionsRes(ExpenseIsNotFoundException)
   @Auth(Roles.CUSTOMER)
   @Patch(':id')
   update(
@@ -80,6 +84,7 @@ export class ExpensesController {
     return this.expensesService.update(id, updateExpenseDto, user.id);
   }
 
+  @ApiAppExceptionsRes(ExpenseIsNotFoundException)
   @Auth(Roles.CUSTOMER)
   @Delete(':id')
   remove(@Param('id') id: string, @User() user: IUser): Promise<ExpenseEntity> {

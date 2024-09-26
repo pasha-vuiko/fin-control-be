@@ -5,10 +5,12 @@ import { ApiPagePaginatedRes } from '@shared/decorators/swagger/api-page-paginet
 import { PagePaginationResEntity } from '@shared/entities/page-pagination-res.entity';
 import { Auth } from '@shared/modules/auth/decorators/auth.decorator';
 import { Roles } from '@shared/modules/auth/enums/roles';
+import { ApiAppExceptionsRes } from '@shared/modules/error/open-api/api-app-exceptions-response.decorator';
 
 import { CustomerUpdateDto } from '@api/customers/dto/customer-update.dto';
 import { CustomersFindDto } from '@api/customers/dto/customers-find.dto';
 import { CustomerEntity } from '@api/customers/entities/customer.entity';
+import { CustomerNotFoundException } from '@api/customers/exceptions/exception-classes';
 import { CustomersService } from '@api/customers/services/customers.service';
 
 @ApiTags('Admin/Customers')
@@ -34,12 +36,14 @@ export class CustomersAdminController {
     };
   }
 
+  @ApiAppExceptionsRes(CustomerNotFoundException)
   @Auth(Roles.ADMIN)
   @Get(':id')
   findOne(@Param('id') id: string): Promise<CustomerEntity> {
     return this.customersService.findOneByIdAsAdmin(id);
   }
 
+  @ApiAppExceptionsRes(CustomerNotFoundException)
   @Auth(Roles.ADMIN)
   @Patch(':id')
   update(
@@ -49,6 +53,7 @@ export class CustomersAdminController {
     return this.customersService.updateAsAdmin(id, updateCustomerDto);
   }
 
+  @ApiAppExceptionsRes(CustomerNotFoundException)
   @Auth(Roles.ADMIN)
   @Delete(':id')
   remove(@Param('id') id: string): Promise<CustomerEntity> {

@@ -1,15 +1,14 @@
-import {
-  ForbiddenException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 import { PagePaginationDto } from '@shared/dto/page-pagination.dto';
 import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-output.entity';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
 
 import { CustomerEntity } from '@api/customers/entities/customer.entity';
+import {
+  CustomerNotFoundException,
+  ForbiddenToDeleteCustomerException,
+} from '@api/customers/exceptions/exception-classes';
 import { ICustomersRepository } from '@api/customers/interfaces/customers.repository.interface';
 import { CustomersRepository } from '@api/customers/repositories/customers.repository';
 
@@ -37,7 +36,7 @@ export class CustomersService {
     const foundCustomer = await this.customerRepository.findOneById(id);
 
     if (!foundCustomer) {
-      throw new NotFoundException('The customer was not found');
+      throw new CustomerNotFoundException();
     }
 
     return CustomerEntity.fromCustomerObj(foundCustomer);
@@ -47,7 +46,7 @@ export class CustomersService {
     const foundCustomer = await this.customerRepository.findOneByUserId(userId);
 
     if (!foundCustomer) {
-      throw new NotFoundException('The customer was not found');
+      throw new CustomerNotFoundException();
     }
 
     return CustomerEntity.fromCustomerObj(foundCustomer);
@@ -77,7 +76,7 @@ export class CustomersService {
     const foundCustomer = await this.customerRepository.findOneById(id);
 
     if (!foundCustomer || foundCustomer.userId !== userId) {
-      throw new NotFoundException('The customer not found');
+      throw new CustomerNotFoundException();
     }
 
     return await this.customerRepository
@@ -92,7 +91,7 @@ export class CustomersService {
     const foundCustomer = await this.customerRepository.findOneById(id);
 
     if (!foundCustomer) {
-      throw new NotFoundException('The customer not found');
+      throw new CustomerNotFoundException();
     }
 
     return await this.customerRepository
@@ -104,11 +103,11 @@ export class CustomersService {
     const foundCustomer = await this.customerRepository.findOneById(id);
 
     if (!foundCustomer) {
-      throw new NotFoundException('The customer not found');
+      throw new CustomerNotFoundException();
     }
 
     if (foundCustomer.userId !== userId) {
-      throw new ForbiddenException('You are not allowed to delete this customer');
+      throw new ForbiddenToDeleteCustomerException();
     }
 
     return await this.customerRepository.remove(id).then(CustomerEntity.fromCustomerObj);

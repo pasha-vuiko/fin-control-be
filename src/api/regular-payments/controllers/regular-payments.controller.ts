@@ -8,11 +8,13 @@ import { Auth } from '@shared/modules/auth/decorators/auth.decorator';
 import { User } from '@shared/modules/auth/decorators/user.decorator';
 import { Roles } from '@shared/modules/auth/enums/roles';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
+import { ApiAppExceptionsRes } from '@shared/modules/error/open-api/api-app-exceptions-response.decorator';
 import { Logger } from '@shared/modules/logger/loggers/logger';
 import { JsonCache } from '@shared/modules/redis/decorators/json-cache.decorator';
 
 import { RegularPaymentSearchDto } from '@api/regular-payments/dto/regular-payment-search.dto';
 import { RegularPaymentEntity } from '@api/regular-payments/entities/regular-payment.entity';
+import { RegularPaymentNotFoundException } from '@api/regular-payments/exceptions/exception-classes';
 
 import { RegularPaymentCreateDto } from '../dto/regular-payment-create.dto';
 import { RegularPaymentUpdateDto } from '../dto/regular-payment-update.dto';
@@ -41,6 +43,7 @@ export class RegularPaymentsController {
     return { items, total, page, numOfItems };
   }
 
+  @ApiAppExceptionsRes(RegularPaymentNotFoundException)
   @JsonCache()
   @Auth(Roles.CUSTOMER)
   @Get(':id')

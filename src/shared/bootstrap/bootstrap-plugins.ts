@@ -11,6 +11,7 @@ import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from '@nestjs/sw
 
 import { packageJsonInfo } from '@shared/constants/package-json-info';
 import { AllExceptionsFilter } from '@shared/modules/error/exception-filters/all-exceptions/all-exceptions.filter';
+import { appExceptionsRegistry } from '@shared/modules/error/exceptions/app-exceptions-registry';
 import { PinoLogger } from '@shared/modules/logger/loggers/pino-logger.service';
 
 export async function bootstrapPlugins(
@@ -78,6 +79,15 @@ function setupOpenApi(app: NestFastifyApplication, openidConnectDomain: string):
   const document = SwaggerModule.createDocument(app, swaggerConfig);
 
   SwaggerModule.setup(OPEN_API_URL, app, document, customOptions);
+
+  app.getHttpAdapter().get(`/${OPEN_API_URL}/errors.json`, () => {
+    return appExceptionsRegistry.getRegistryObject();
+  });
+  app.getHttpAdapter().get(`/${OPEN_API_URL}/errors.html`, (_req, res) => {
+    const html = appExceptionsRegistry.getRegistryHtml();
+
+    res.type('text/html').send(html);
+  });
 }
 
 async function setupMetrics(app: NestFastifyApplication): Promise<void> {
