@@ -108,11 +108,10 @@ function setupVersioning(app: NestFastifyApplication): void {
 
 async function setupDdosProtection(app: NestFastifyApplication): Promise<void> {
   await app.register(fastifyUnderPressure, {
-    maxEventLoopDelay: 1000,
+    maxEventLoopDelay: 300,
     maxEventLoopUtilization: 0.98,
     retryAfter: 200,
     exposeStatusRoute: true,
-    //@ts-expect-error incorrect typing
     customError: ServiceUnavailableException,
   });
 }

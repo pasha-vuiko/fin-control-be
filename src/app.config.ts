@@ -12,7 +12,7 @@ setUtcTimezone();
 // TODO Add config validation
 export const config = {
   app: {
-    port: process.env.PORT,
+    port: process.env.PORT as string,
     version: process.env.APP_VERSION,
     mode: process.env.NODE_ENV,
     isDevelopment: process.env.NODE_ENV === 'development',
@@ -69,7 +69,7 @@ function mapRedisSentinels(
   }
 
   return stringRedisSentinels.split(',').map((hostPort: string) => {
-    const [sentinelHost, sentinelPort] = hostPort.split(':');
+    const [sentinelHost, sentinelPort] = hostPort.split(':', 2);
 
     return {
       host: sentinelHost,

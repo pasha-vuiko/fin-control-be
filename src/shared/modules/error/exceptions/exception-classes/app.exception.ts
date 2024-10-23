@@ -42,7 +42,11 @@ export class AppException extends Error {
   }
 
   getHttpStatusCode(): HttpStatus | number {
-    return Number(this.errorCode.split('.').at(ERR_CODE_HTTP_STATUS_INDEX));
+    return Number(
+      this.errorCode
+        .split('.', ERR_CODE_HTTP_STATUS_INDEX + 1)
+        .at(ERR_CODE_HTTP_STATUS_INDEX),
+    );
   }
 
   static fromHttpException(exception: HttpException): AppException {

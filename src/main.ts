@@ -18,7 +18,10 @@ async function bootstrap(): Promise<NestFastifyApplication> {
   await bootstrapPlugins(app, config.app.isDevelopment, config.auth.auth0Domain);
   const logger = bootstrapLogger(app);
 
-  await app.listen(config.app.port as string, '0.0.0.0');
+  await app.listen({
+    port: Number(config.app.port),
+    host: '0.0.0.0',
+  });
   const appUrl = (await app.getUrl()).replace('127.0.0.1', 'localhost');
 
   logger.log(`App is running on: ${appUrl}`, 'main.ts');

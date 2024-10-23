@@ -6,11 +6,11 @@ import { afterEach, expect } from 'vitest';
 import { CallHandler, ExecutionContext } from '@nestjs/common';
 import { AbstractHttpAdapter, HttpAdapterHost, Reflector } from '@nestjs/core';
 
-import { COGNITO_USER_CONTEXT_PROPERTY } from '@shared/modules/auth/constants/constants';
+import { USER_REQ_PROPERTY } from '@shared/modules/auth/constants/user-req-property';
 import { JsonCacheInterceptor } from '@shared/modules/redis/interceptors/json-cache/json-cache.interceptor';
 import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 
-import { getMockedInstance } from '../../../../../../test/utlis/get-mocked-instance.util';
+import { getMockedInstance } from '../../../../../../test/utils/get-mocked-instance.util';
 
 // eslint-disable-next-line max-lines-per-function
 describe('JsonCacheInterceptor', () => {
@@ -33,13 +33,13 @@ describe('JsonCacheInterceptor', () => {
     ioRedisInstance = getMockedInstance(Redis);
     vi.spyOn(RedisConfigService, 'getIoRedisInstance').mockReturnValue(ioRedisInstance);
 
-    interceptor = new JsonCacheInterceptor(reflector, httpAdapterHost);
+    interceptor = new JsonCacheInterceptor(reflector, httpAdapterHost, {});
     context = {
       switchToHttp: () => ({
         getRequest: (): FastifyRequest =>
           ({
             method: 'GET',
-            [COGNITO_USER_CONTEXT_PROPERTY]: { id: '123' },
+            [USER_REQ_PROPERTY]: { id: '123' },
           }) as unknown as FastifyRequest,
         getResponse: (): FastifyReply => ({ header: vi.fn() }) as unknown as FastifyReply,
       }),

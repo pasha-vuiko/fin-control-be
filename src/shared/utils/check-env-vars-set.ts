@@ -22,7 +22,7 @@ function parseEnvFileContent(envFileContent: string): Record<string, string> {
     .filter(Boolean)
     .filter(line => line.trim())
     .filter(line => !line.startsWith('#'))
-    .map(line => line.split('=') as [string, string]);
+    .map(line => line.split('=', 2) as [string, string]);
 
   return Object.fromEntries(keyValuePairs);
 }

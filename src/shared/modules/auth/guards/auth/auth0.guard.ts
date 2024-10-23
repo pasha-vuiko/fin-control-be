@@ -1,6 +1,4 @@
-import { VerifierAsync, createVerifier } from 'fast-jwt';
 import { FastifyRequest } from 'fastify';
-import buildGetJwks from 'get-jwks';
 
 import { CanActivate, ExecutionContext, Inject, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -19,28 +17,21 @@ import {
   IAuth0User,
 } from '@shared/modules/auth/interfaces/auth0-user.interface';
 import { IAuthModuleOptions } from '@shared/modules/auth/interfaces/auth-module-options.interface';
+import { JWTVerifierService } from '@shared/modules/auth/services/jwt-verifier.service';
 
 @Injectable()
 export class Auth0Guard implements CanActivate {
-  private readonly jwtVerify: typeof VerifierAsync;
+  private readonly jwtVerifierService: JWTVerifierService;
 
   constructor(
     private reflector: Reflector,
-    @Inject(AUTH_MODULE_OPTIONS) moduleOptions: IAuthModuleOptions,
+    @Inject(AUTH_MODULE_OPTIONS)
+    moduleOptions: IAuthModuleOptions,
   ) {
-    const domain = `https://${moduleOptions.domain}`;
-    const getJwks = buildGetJwks({});
-
-    this.jwtVerify = createVerifier({
-      cache: true,
-      key: async function ({ header }: any) {
-        return await getJwks.getPublicKey({
-          kid: header.kid,
-          alg: header.alg,
-          domain,
-        });
-      },
-    });
+    this.jwtVerifierService = new JWTVerifierService(
+      moduleOptions.domain,
+      moduleOptions.clientId,
+    );
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -48,13 +39,15 @@ export class Auth0Guard implements CanActivate {
     const req: FastifyRequest = httpContext.getRequest();
     const authToken = this.getToken(req.headers.authorization);
 
-    const tokenPayload = await this.jwtVerify(authToken).catch((e: Error | any) => {
-      if (e.message.includes('expired')) {
-        throw new AuthExpiredTokenException();
-      }
+    const tokenPayload = await this.jwtVerifierService
+      .verify(authToken)
+      .catch((e: Error | any) => {
+        if (e.message.toLowerCase().includes('expired')) {
+          throw new AuthExpiredTokenException();
+        }
 
-      throw new AuthInvalidTokenException({ cause: e });
-    });
+        throw new AuthInvalidTokenException({ cause: e });
+      });
 
     const requiredRoles = this.getRequiredRoles(context);
     const userRoles = Auth0Guard.getRolesFromAuth0User(tokenPayload);
@@ -67,7 +60,7 @@ export class Auth0Guard implements CanActivate {
   }
 
   private getToken(authorizationHeader: string | undefined): string {
-    const token = authorizationHeader?.split(' ').at(1);
+    const token = authorizationHeader?.split(' ', 2).at(1);
 
     if (!token) {
       throw new AuthInvalidTokenException();

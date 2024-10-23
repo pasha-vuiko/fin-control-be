@@ -50,10 +50,11 @@ export class JsonCacheInterceptor implements NestInterceptor {
 
     try {
       const value = await this.getCachedResponse(key);
+      const reply: FastifyReply | null = context.switchToHttp().getResponse();
+
+      this.setHeadersWhenHttp(reply, value);
 
       if (!isNil(value)) {
-        const reply: FastifyReply | null = context.switchToHttp().getResponse();
-
         if (reply) {
           reply.header('content-type', 'application/json; charset=utf-8');
         }
@@ -101,6 +102,14 @@ export class JsonCacheInterceptor implements NestInterceptor {
 
   protected isRequestCacheable(request: FastifyRequest): boolean {
     return this.allowedMethods.includes(request.method);
+  }
+
+  private setHeadersWhenHttp<T>(reply: FastifyReply | null, value: T | null): void {
+    if (!reply) {
+      return;
+    }
+
+    reply.header('x-cache', isNil(value) ? 'MISS' : 'HIT');
   }
 
   private async setCache(responseBody: any, key: string, ttl?: number): Promise<void> {

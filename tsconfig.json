@@ -12,6 +12,8 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "target": "esnext",
+    "lib": ["esnext"],
+    "pretty": true,
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",

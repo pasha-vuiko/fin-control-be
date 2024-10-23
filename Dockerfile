@@ -1,23 +1,24 @@
 FROM node:20.18.0-alpine
 
-RUN apk add --update \
-    openssl --no-cache \
-    dumb-init --no-cache && apk cache clean
-
 ARG VERSION
 
-RUN mkdir -p /opt/app/
-COPY package.json package-lock.json nest-cli.json .env.example tsconfig.json tsconfig.build.json /opt/app/
 WORKDIR /opt/app/
 
+COPY package.json package-lock.json nest-cli.json .env.example tsconfig.json tsconfig.build.json /opt/app/
 COPY ./src /opt/app/src/
 COPY ./prisma /opt/app/prisma/
 
-RUN npm ci --ignore-scripts \
+RUN apk add --update \
+    openssl --no-cache \
+    dumb-init --no-cache \
+    && apk cache clean \
+    && npm ci --ignore-scripts \
     && npx prisma generate \
     && npm run build \
     && rm -rf tsconfig.json tsconfig.build.json src \
     && npm prune --production \
+    && npx clean-modules -y \
+    && npm uninstall -g clean-modules \
     && npm cache clean --force
 
 ENV APP_PORT=3000 \
@@ -26,7 +27,7 @@ ENV APP_PORT=3000 \
     NODE_OPTIONS="--enable-source-maps" \
     LOG_FORMAT="json"
 
-EXPOSE 3000
+EXPOSE $APP_PORT
 
 USER node
 CMD ["dumb-init", "node", "/opt/app/dist/src/main.js"]

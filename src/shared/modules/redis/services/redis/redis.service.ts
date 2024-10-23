@@ -1,7 +1,6 @@
-import { Cache } from 'cache-manager';
 import Redis from 'ioredis';
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 
 import { CatchErrors } from '@shared/modules/error/decorators/catch-errors/catch-errors.decorator';

@@ -29,6 +29,7 @@ const loggerConfig = config.app.logger;
     }),
     AuthModule.forRoot({
       domain: config.auth.auth0Domain as string,
+      clientId: config.auth.auth0ClientId as string,
       secret: config.auth.auth0ClientSecret as string,
     }),
     RedisModule.forRoot(config.cache.redis),

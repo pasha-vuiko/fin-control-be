@@ -38,7 +38,9 @@ export class PrismaService<
     });
 
     this.pgPool = pool;
-    this.$drizzle = pgDrizzle(pool);
+    this.$drizzle = pgDrizzle({
+      client: pool,
+    });
 
     // @ts-expect-error wrong typing
     this.$on<'query'>('query', event => {
@@ -61,7 +63,10 @@ export class PrismaService<
   getDrizzleWithSchema<Schema extends Record<string, unknown>>(
     schema: Schema,
   ): NodePgDatabase<Schema> {
-    return pgDrizzle(this.pgPool, { schema });
+    return pgDrizzle({
+      client: this.pgPool,
+      schema,
+    });
   }
 
   async onApplicationShutdown(): Promise<void> {
