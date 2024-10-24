@@ -9,7 +9,6 @@ COPY ./src /opt/app/src/
 COPY ./prisma /opt/app/prisma/
 
 RUN apk add --update \
-    openssl --no-cache \
     dumb-init --no-cache \
     && apk cache clean \
     && npm ci --ignore-scripts \

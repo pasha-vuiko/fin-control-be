@@ -53,3 +53,4 @@ local-docker.env
 /local-infrastructure/data/sonarqube-data/
 /local-infrastructure/data/sonarqube-extensions/
 /.scannerwork/
+/local-infrastructure/data/postgres-data/

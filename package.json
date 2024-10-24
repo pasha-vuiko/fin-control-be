@@ -47,7 +47,7 @@
     "fastify-plugin": "^5.0.1",
     "get-jwks": "^9.0.2",
     "ioredis": "^5.4.1",
-    "pg": "^8.13.0",
+    "pg": "^8.13.1",
     "pino": "^9.5.0",
     "pino-pretty": "^11.3.0",
     "prisma-error-enum": "^0.1.3",
