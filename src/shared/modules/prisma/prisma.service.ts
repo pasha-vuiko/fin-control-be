@@ -2,7 +2,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 import { drizzle as pgDrizzle } from 'drizzle-orm/node-postgres';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres/driver';
-import { Pool } from 'pg';
+import pg, { Pool } from 'pg';
 
 import { Inject, Injectable, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 
@@ -18,13 +18,13 @@ export class PrismaService<
   implements OnModuleInit, OnApplicationShutdown
 {
   private readonly logger = new Logger(PrismaService.name);
-  private readonly pgPool: Pool;
+  private static pgPool: Pool;
   public readonly $drizzle: NodePgDatabase<DrizzleSchema>;
 
   constructor(@Inject(PRISMA_MODULE_OPTIONS) options: TPrismaOptions) {
     const connectionString = `${process.env.DATABASE_URL}`;
 
-    const pool = new Pool({ connectionString });
+    const pool = new Pool({ connectionString, Client: pg.native?.Client });
     const adapter = new PrismaPg(pool);
     super({
       ...options,
@@ -37,7 +37,7 @@ export class PrismaService<
       ],
     });
 
-    this.pgPool = pool;
+    PrismaService.pgPool = pool;
     this.$drizzle = pgDrizzle({
       client: pool,
     });
@@ -64,8 +64,23 @@ export class PrismaService<
     schema: Schema,
   ): NodePgDatabase<Schema> {
     return pgDrizzle({
-      client: this.pgPool,
+      client: PrismaService.pgPool,
       schema,
+    });
+  }
+
+  static getDrizzleWithSchema<Schema extends Record<string, unknown>>(
+    schema: Schema,
+  ): NodePgDatabase<Schema> {
+    return pgDrizzle({
+      client: PrismaService.pgPool,
+      schema,
+    });
+  }
+
+  static getDrizzle(): NodePgDatabase {
+    return pgDrizzle({
+      client: PrismaService.pgPool,
     });
   }
 
