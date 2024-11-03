@@ -1,4 +1,5 @@
-import { Prisma, RegularPayment } from '@prisma/client';
+import { ExpenseCategory } from '@prisma/client';
+import { SQLWrapper, and, eq } from 'drizzle-orm';
 
 import { Injectable } from '@nestjs/common';
 
@@ -17,7 +18,7 @@ import {
   IRegularPaymentsRepository,
 } from '@api/regular-payments/interfaces/regular-payments-repository.interface';
 
-import TransactionIsolationLevel = Prisma.TransactionIsolationLevel;
+import { RegularPayment } from '../../../../prisma/drizzle/schema';
 
 @Injectable()
 export class RegularPaymentsRepository implements IRegularPaymentsRepository {
@@ -31,17 +32,25 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
     const { take, skip } = getPrismaPaginationParams(pagination);
     const { customerId } = filter;
 
-    return await this.prismaService
-      .$transaction(
-        [
-          this.prismaService.regularPayment.findMany({
-            where: { customerId },
-            skip,
-            take,
-          }),
-          this.prismaService.regularPayment.count({ where: { customerId } }),
-        ],
-        { isolationLevel: TransactionIsolationLevel.RepeatableRead },
+    const whereConditions: SQLWrapper[] = [];
+
+    if (customerId) {
+      whereConditions.push(eq(RegularPayment.customerId, customerId));
+    }
+
+    return await this.prismaService.$drizzle
+      .transaction(
+        async tx =>
+          await Promise.all([
+            tx
+              .select()
+              .from(RegularPayment)
+              .where(and(...whereConditions))
+              .limit(take)
+              .offset(skip),
+            tx.$count(RegularPayment, and(...whereConditions)),
+          ]),
+        { isolationLevel: 'repeatable read' },
       )
       .then(([regularPayments, total]) => ({
         items: this.mapPrismaRegularPaymentsToRegularPayments(regularPayments),
@@ -51,7 +60,9 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
 
   @CatchErrors(handlePrismaError)
   async findAll(): Promise<IRegularPayment[]> {
-    const regularPayments = await this.prismaService.regularPayment.findMany();
+    const regularPayments = await this.prismaService.$drizzle
+      .select()
+      .from(RegularPayment);
 
     return regularPayments.map(regularPayment =>
       this.mapPrismaRegularPaymentToRegularPayment(regularPayment),
@@ -60,9 +71,10 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
 
   @CatchErrors(handlePrismaError)
   async findOne(id: string): Promise<IRegularPayment | null> {
-    const regularPayment = await this.prismaService.regularPayment.findUnique({
-      where: { id },
-    });
+    const [regularPayment] = await this.prismaService.$drizzle
+      .select()
+      .from(RegularPayment)
+      .where(eq(RegularPayment.id, id));
 
     if (!regularPayment) {
       return null;
@@ -73,34 +85,57 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
 
   @CatchErrors(handlePrismaError)
   async create(data: IRegularPaymentCreateInput): Promise<IRegularPayment> {
-    const createdRegularPayment = await this.prismaService.regularPayment.create({
-      data,
-    });
+    const { amount, dateOfCharge, createdAt, updatedAt } = data;
+
+    const [createdRegularPayment] = await this.prismaService.$drizzle
+      .insert(RegularPayment)
+      .values({
+        ...data,
+        amount: amount.toString(),
+        dateOfCharge: new Date(dateOfCharge),
+        createdAt: createdAt ? new Date(createdAt) : undefined,
+        updatedAt: updatedAt ? new Date(updatedAt) : undefined,
+      })
+      .returning();
 
     return this.mapPrismaRegularPaymentToRegularPayment(createdRegularPayment);
   }
 
   @CatchErrors(handlePrismaError)
   async update(id: string, data: IRegularPaymentUpdateInput): Promise<IRegularPayment> {
-    const updatedRegularPayment = await this.prismaService.regularPayment.update({
-      data,
-      where: { id },
-    });
+    const { amount, dateOfCharge, createdAt, updatedAt } = data;
+
+    const [updatedRegularPayment] = await this.prismaService.$drizzle
+      .update(RegularPayment)
+      .set({
+        ...data,
+        amount: amount?.toString(),
+        dateOfCharge: dateOfCharge ? new Date(dateOfCharge) : undefined,
+        createdAt: createdAt ? new Date(createdAt) : undefined,
+        updatedAt: updatedAt ? new Date(updatedAt) : undefined,
+      })
+      .where(eq(RegularPayment.id, id))
+      .returning();
 
     return this.mapPrismaRegularPaymentToRegularPayment(updatedRegularPayment);
   }
 
   @CatchErrors(handlePrismaError)
-  async delete(id: string): Promise<IRegularPayment> {
-    const deletedRegularPayment = await this.prismaService.regularPayment.delete({
-      where: { id },
-    });
+  async delete(id: string): Promise<IRegularPayment | null> {
+    const [deletedRegularPayment] = await this.prismaService.$drizzle
+      .delete(RegularPayment)
+      .where(eq(RegularPayment.id, id))
+      .returning();
+
+    if (!deletedRegularPayment) {
+      return null;
+    }
 
     return this.mapPrismaRegularPaymentToRegularPayment(deletedRegularPayment);
   }
 
   private mapPrismaRegularPaymentsToRegularPayments(
-    prismaRegularPayments: RegularPayment[],
+    prismaRegularPayments: IRegularPaymentFromDb[],
   ): IRegularPayment[] {
     return prismaRegularPayments.map(prismaRegularPayment =>
       this.mapPrismaRegularPaymentToRegularPayment(prismaRegularPayment),
@@ -108,11 +143,21 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
   }
 
   private mapPrismaRegularPaymentToRegularPayment(
-    prismaRegularPayment: RegularPayment,
+    prismaRegularPayment: IRegularPaymentFromDb,
   ): IRegularPayment {
     return {
       ...prismaRegularPayment,
-      amount: prismaRegularPayment.amount.toNumber(),
+      amount: Number(prismaRegularPayment.amount),
     };
   }
+}
+
+interface IRegularPaymentFromDb {
+  id: string;
+  customerId: string;
+  amount: string;
+  dateOfCharge: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  category: `${ExpenseCategory}`;
 }

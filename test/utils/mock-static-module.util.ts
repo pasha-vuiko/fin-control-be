@@ -41,7 +41,7 @@ export function mockStaticModule(module: Type<any>): DynamicModule {
       const controllers = value as Type<any>[];
 
       for (const controller of controllers) {
-        const mockController = getMockedInstance(controller as TConstructor);
+        const mockController = getMockedInstance(controller as TConstructor<any>);
 
         dynamicModule.controllers?.push(mockController);
       }
@@ -77,13 +77,13 @@ export function mockStaticModule(module: Type<any>): DynamicModule {
 
   return {
     ...dynamicModule,
-    providers: Array.from(originalProvidersToMockProviders.values()),
+    providers: originalProvidersToMockProviders.values().toArray(),
   };
 }
 
 function getMockProvider(provider: Provider): Provider {
   if (typeof provider === 'function') {
-    return getMockedInstance(provider as TConstructor);
+    return getMockedInstance(provider as TConstructor<Provider>);
   }
 
   return {

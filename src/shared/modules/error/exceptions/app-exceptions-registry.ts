@@ -10,7 +10,6 @@ import { IAppExceptionFlowRegistryOutput } from '@shared/modules/error/interface
 import { getAppExceptionDocHtml } from '@shared/modules/error/utils/get-app-exception-doc-html.util';
 import { getConstructorName } from '@shared/modules/logger/utils/get-constructor-name.util';
 import { TConstructor } from '@shared/types/constructor.type';
-import { groupBy } from '@shared/utils/group-by.util';
 
 export class AppExceptionsRegistry {
   private exceptionFlowsRegistry = new Map<number, string>();
@@ -98,8 +97,8 @@ export class AppExceptionsRegistry {
   }
 
   getRegistryObject(): IAppExceptionFlowRegistryOutput[] {
-    const exceptionsByFlowIds = groupBy(
-      Array.from(this.exceptionsRegistry.entries()),
+    const exceptionsByFlowIds = Map.groupBy(
+      this.exceptionsRegistry.entries(),
       ([exceptionCode]) => {
         return exceptionCode.split('.').at(ERR_CODE_FLOW_ID_INDEX) ?? 'undefined';
       },
@@ -108,8 +107,7 @@ export class AppExceptionsRegistry {
     const result: IAppExceptionFlowRegistryOutput[] = [];
 
     for (const [code, name] of this.exceptionFlowsRegistry.entries()) {
-      // eslint-disable-next-line security/detect-object-injection
-      const flowExceptions = exceptionsByFlowIds[code] ?? [];
+      const flowExceptions = exceptionsByFlowIds.get(code.toString()) ?? [];
 
       result.push({
         name: name,

@@ -5,7 +5,6 @@ import { ContentObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.int
 import { ErrorResponse } from '@shared/modules/error/exception-filters/all-exceptions/all-exceptions.filter';
 import { AppException } from '@shared/modules/error/exceptions/exception-classes/app.exception';
 import { TConstructor } from '@shared/types/constructor.type';
-import { groupBy } from '@shared/utils/group-by.util';
 
 export const ApiAppExceptionsRes = <E extends TConstructor<AppException>>(
   ...AppExceptionConstructorsOrInstances: (E | AppException)[]
@@ -16,7 +15,7 @@ export const ApiAppExceptionsRes = <E extends TConstructor<AppException>>(
         ? ExceptionConstructorOrInstance
         : new ExceptionConstructorOrInstance(),
   );
-  const appExceptionsGroupedByHttpCode = groupBy(appExceptions, appException =>
+  const appExceptionsGroupedByHttpCode = Object.groupBy(appExceptions, appException =>
     appException.getHttpStatusCode().toString(),
   );
 

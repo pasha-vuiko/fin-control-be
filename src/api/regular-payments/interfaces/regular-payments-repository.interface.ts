@@ -19,7 +19,7 @@ export interface IRegularPaymentsRepository {
 
   update(id: string, data: IRegularPaymentUpdateInput): Promise<IRegularPayment>;
 
-  delete(id: string): Promise<IRegularPayment>;
+  delete(id: string): Promise<IRegularPayment | null>;
 }
 
 export interface IRegularPaymentsFilter {

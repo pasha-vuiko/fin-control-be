@@ -104,12 +104,12 @@ export class RegularPaymentsService {
       .then(RegularPaymentEntity.fromPlainObj);
   }
 
-  async delete(id: string, userId: string): Promise<IRegularPayment> {
+  async delete(id: string, userId: string): Promise<IRegularPayment | null> {
     await this.findOneAsCustomer(id, userId); // check if regular payment exists
 
     return await this.regularPaymentsRepository
       .delete(id)
-      .then(RegularPaymentEntity.fromPlainObj);
+      .then(deleted => (deleted ? RegularPaymentEntity.fromPlainObj(deleted) : null));
   }
 
   async applyRegularPayments(_monthYear: string): Promise<void> {

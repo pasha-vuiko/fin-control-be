@@ -62,18 +62,21 @@ export class RegularPaymentsController {
 
   @Auth(Roles.CUSTOMER)
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateRegularPaymentDto: RegularPaymentUpdateDto,
     @User() user: IUser,
   ): Promise<RegularPaymentEntity> {
-    return this.regularPaymentsService.update(id, updateRegularPaymentDto, user.id);
+    return await this.regularPaymentsService.update(id, updateRegularPaymentDto, user.id);
   }
 
   @Auth(Roles.CUSTOMER)
   @Delete(':id')
-  delete(@Param('id') id: string, @User() user: IUser): Promise<RegularPaymentEntity> {
-    return this.regularPaymentsService.delete(id, user.id);
+  async delete(
+    @Param('id') id: string,
+    @User() user: IUser,
+  ): Promise<RegularPaymentEntity | null> {
+    return await this.regularPaymentsService.delete(id, user.id);
   }
 
   // TODO Run in a separate service

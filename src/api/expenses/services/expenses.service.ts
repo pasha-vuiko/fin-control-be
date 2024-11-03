@@ -84,7 +84,7 @@ export class ExpensesService {
     );
 
     return await this.expensesRepository
-      .createMany(createExpensesDataWithCustomerId, customer.id)
+      .createMany(createExpensesDataWithCustomerId)
       .then(expenses => expenses.map(ExpenseEntity.fromExpenseObj));
   }
 

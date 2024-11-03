@@ -14,7 +14,7 @@ export interface ICustomersRepository {
 
   create(data: ICustomerCreateInput): Promise<ICustomer>;
 
-  update(id: string, data: ICustomerUpdateInput): Promise<ICustomer>;
+  update(id: string, data: ICustomerUpdateInput): Promise<ICustomer | null>;
 
-  remove(id: string): Promise<ICustomer>;
+  remove(id: string): Promise<ICustomer | null>;
 }

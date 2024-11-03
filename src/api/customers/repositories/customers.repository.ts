@@ -1,5 +1,5 @@
-import { Prisma, Customer as PrismaCustomer } from '@prisma/client';
-import { eq } from 'drizzle-orm';
+import { Customer as PrismaCustomer } from '@prisma/client';
+import { eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres/driver';
 
 import { Injectable } from '@nestjs/common';
@@ -19,11 +19,14 @@ import { ICustomersRepository } from '@api/customers/interfaces/customers.reposi
 import { Customer } from '../../../../prisma/drizzle/schema';
 import * as drizzleSchema from '../../../../prisma/drizzle/schema';
 
-import TransactionIsolationLevel = Prisma.TransactionIsolationLevel;
-
 @Injectable()
 export class CustomersRepository implements ICustomersRepository {
   private readonly drizzle: NodePgDatabase<typeof drizzleSchema>;
+  private getOneByIdPreparedQuery = PrismaService.getDrizzle()
+    .select()
+    .from(Customer)
+    .where(eq(Customer.id, sql.placeholder('id')))
+    .prepare('getOneByIdPreparedQuery');
 
   constructor(private prismaService: PrismaService) {
     this.drizzle = prismaService.getDrizzleWithSchema(drizzleSchema);
@@ -35,13 +38,15 @@ export class CustomersRepository implements ICustomersRepository {
   ): Promise<IPagePaginationOutput<ICustomer>> {
     const { skip, take } = getPrismaPaginationParams(pagination);
 
-    return await this.prismaService
-      .$transaction(
-        [
-          this.prismaService.customer.findMany({ skip, take }),
-          this.prismaService.customer.count(),
-        ],
-        { isolationLevel: TransactionIsolationLevel.RepeatableRead },
+    return await this.drizzle
+      .transaction(
+        async tx => {
+          return await Promise.all([
+            tx.select().from(Customer).limit(take).offset(skip),
+            tx.$count(Customer),
+          ]);
+        },
+        { isolationLevel: 'repeatable read' },
       )
       .then(([customers, total]) => ({
         items: this.mapCustomersFromPrismaToCustomers(customers),
@@ -51,7 +56,7 @@ export class CustomersRepository implements ICustomersRepository {
 
   @CatchErrors(handlePrismaError)
   async findOneById(id: string): Promise<ICustomer | null> {
-    const foundCustomer = await this.prismaService.customer.findUnique({ where: { id } });
+    const [foundCustomer] = await this.getOneByIdPreparedQuery.execute({ id });
 
     if (!foundCustomer) {
       return null;
@@ -76,23 +81,54 @@ export class CustomersRepository implements ICustomersRepository {
 
   @CatchErrors(handlePrismaError)
   async create(data: ICustomerCreateInput): Promise<ICustomer> {
-    return await this.prismaService.customer
-      .create({ data })
-      .then(createdCustomer => this.mapCustomerFromPrismaToCustomer(createdCustomer));
+    const { birthdate, createdAt, updatedAt } = data;
+
+    return await this.prismaService.$drizzle
+      .insert(Customer)
+      .values({
+        ...data,
+        birthdate: typeof birthdate === 'string' ? new Date(birthdate) : birthdate,
+        createdAt: typeof createdAt === 'string' ? new Date(createdAt) : createdAt,
+        updatedAt: typeof updatedAt === 'string' ? new Date(updatedAt) : updatedAt,
+      })
+      .returning()
+      .then(([createdCustomer]) => this.mapCustomerFromPrismaToCustomer(createdCustomer));
   }
 
   @CatchErrors(handlePrismaError)
-  async update(id: string, data: ICustomerUpdateInput): Promise<ICustomer> {
-    return await this.prismaService.customer
-      .update({ data, where: { id } })
-      .then(updatedCustomer => this.mapCustomerFromPrismaToCustomer(updatedCustomer));
+  async update(id: string, data: ICustomerUpdateInput): Promise<ICustomer | null> {
+    const { birthdate, createdAt, updatedAt } = data;
+
+    return await this.drizzle
+      .update(Customer)
+      .set({
+        ...data,
+        birthdate: typeof birthdate === 'string' ? new Date(birthdate) : birthdate,
+        createdAt: typeof createdAt === 'string' ? new Date(createdAt) : createdAt,
+        updatedAt: typeof updatedAt === 'string' ? new Date(updatedAt) : updatedAt,
+      })
+      .where(eq(Customer.id, id))
+      .returning()
+      .then(([updatedCustomer]) => {
+        if (!updatedCustomer) {
+          return null;
+        }
+        return this.mapCustomerFromPrismaToCustomer(updatedCustomer);
+      });
   }
 
   @CatchErrors(handlePrismaError)
-  async remove(id: string): Promise<ICustomer> {
-    return await this.prismaService.customer
-      .delete({ where: { id } })
-      .then(removedCustomer => this.mapCustomerFromPrismaToCustomer(removedCustomer));
+  async remove(id: string): Promise<ICustomer | null> {
+    return await this.drizzle
+      .delete(Customer)
+      .where(eq(Customer.id, id))
+      .returning()
+      .then(([removedCustomer]) => {
+        if (!removedCustomer) {
+          return null;
+        }
+        return this.mapCustomerFromPrismaToCustomer(removedCustomer);
+      });
   }
 
   private mapCustomersFromPrismaToCustomers(customers: PrismaCustomer[]): ICustomer[] {

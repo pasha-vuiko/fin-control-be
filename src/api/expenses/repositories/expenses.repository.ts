@@ -1,4 +1,5 @@
-import { Expense, Prisma } from '@prisma/client';
+import { Expense as PrismaExpense } from '@prisma/client';
+import { eq } from 'drizzle-orm';
 
 import { Injectable } from '@nestjs/common';
 
@@ -15,8 +16,7 @@ import { IExpenseUpdateInput } from '@api/expenses/interfaces/expense-update-inp
 import { IExpense } from '@api/expenses/interfaces/expense.interface';
 import { IExpensesRepository } from '@api/expenses/interfaces/expenses-repository.interface';
 
-import SortOrder = Prisma.SortOrder;
-import TransactionIsolationLevel = Prisma.TransactionIsolationLevel;
+import { Expense } from '../../../../prisma/drizzle/schema';
 
 @Injectable()
 export class ExpensesRepository implements IExpensesRepository {
@@ -28,13 +28,13 @@ export class ExpensesRepository implements IExpensesRepository {
   ): Promise<IPagePaginationOutput<IExpense>> {
     const { take, skip } = getPrismaPaginationParams(pagination);
 
-    return await this.prismaService
-      .$transaction(
-        [
-          this.prismaService.expense.findMany({ skip, take }),
-          this.prismaService.expense.count(),
-        ],
-        { isolationLevel: TransactionIsolationLevel.RepeatableRead },
+    return await this.prismaService.$drizzle
+      .transaction(
+        async tx =>
+          await Promise.all([
+            tx.select().from(Expense).limit(take).offset(skip),
+            tx.$count(Expense),
+          ]),
       )
       .then(([expenses, total]) => ({
         items: this.mapExpensesFromPrismaToExpenses(expenses),
@@ -49,17 +49,18 @@ export class ExpensesRepository implements IExpensesRepository {
   ): Promise<IPagePaginationOutput<IExpense>> {
     const { take, skip } = getPrismaPaginationParams(pagination);
 
-    return await this.prismaService
-      .$transaction(
-        [
-          this.prismaService.expense.findMany({
-            where: { customerId },
-            skip,
-            take,
-          }),
-          this.prismaService.expense.count(),
-        ],
-        { isolationLevel: TransactionIsolationLevel.RepeatableRead },
+    return await this.prismaService.$drizzle
+      .transaction(
+        async tx =>
+          await Promise.all([
+            tx
+              .select()
+              .from(Expense)
+              .where(eq(Expense.customerId, customerId))
+              .limit(take)
+              .offset(skip),
+            tx.$count(Expense),
+          ]),
       )
       .then(([expenses, total]) => ({
         items: this.mapExpensesFromPrismaToExpenses(expenses),
@@ -69,7 +70,10 @@ export class ExpensesRepository implements IExpensesRepository {
 
   @CatchErrors(handlePrismaError)
   async findOne(id: string): Promise<IExpense | null> {
-    const foundExpense = await this.prismaService.expense.findUnique({ where: { id } });
+    const [foundExpense] = await this.prismaService.$drizzle
+      .select()
+      .from(Expense)
+      .where(eq(Expense.id, id));
 
     if (!foundExpense) {
       return null;
@@ -79,22 +83,21 @@ export class ExpensesRepository implements IExpensesRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async createMany(
-    createExpenseInputs: IExpenseCreateInput[],
-    customerId: string,
-  ): Promise<IExpense[]> {
-    const { count } = await this.prismaService.expense.createMany({
-      data: createExpenseInputs,
+  async createMany(createExpenseInputs: IExpenseCreateInput[]): Promise<IExpense[]> {
+    const expensesToCreate = createExpenseInputs.map(expenseToCreate => {
+      const { amount, date } = expenseToCreate;
+
+      return {
+        ...expenseToCreate,
+        amount: amount.toString(),
+        date: new Date(date),
+      };
     });
 
-    return await this.prismaService.expense
-      .findMany({
-        where: { customerId },
-        orderBy: {
-          createdAt: SortOrder.desc,
-        },
-        take: count,
-      })
+    return await this.prismaService.$drizzle
+      .insert(Expense)
+      .values(expensesToCreate)
+      .returning()
       .then(createdExpenses => this.mapExpensesFromPrismaToExpenses(createdExpenses));
   }
 
@@ -102,22 +105,20 @@ export class ExpensesRepository implements IExpensesRepository {
   async createManyViaTransaction(
     createExpenseInputs: IExpenseCreateInput[],
   ): Promise<IExpense[]> {
-    return await this.prismaService
-      .$transaction(
-        async tx => {
-          const { count } = await tx.expense.createMany({
-            data: createExpenseInputs,
-          });
+    const expensesToCreate = createExpenseInputs.map(expenseToCreate => {
+      const { amount, date } = expenseToCreate;
 
-          return await tx.expense.findMany({
-            orderBy: {
-              createdAt: SortOrder.desc,
-            },
-            take: count,
-          });
-        },
-        { isolationLevel: TransactionIsolationLevel.ReadCommitted },
-      )
+      return {
+        ...expenseToCreate,
+        amount: amount.toString(),
+        date: new Date(date),
+      };
+    });
+
+    return await this.prismaService.$drizzle
+      .insert(Expense)
+      .values(expensesToCreate)
+      .returning()
       .then(createdExpenses => this.mapExpensesFromPrismaToExpenses(createdExpenses));
   }
 
@@ -125,34 +126,48 @@ export class ExpensesRepository implements IExpensesRepository {
   async update(id: string, data: IExpenseUpdateInput): Promise<IExpense> {
     const dataWithoutCustomerId = omitObjKeys(data, 'customerId');
 
-    return await this.prismaService.expense
-      .update({
-        data: dataWithoutCustomerId,
-        where: { id },
-      })
-      .then(updatedExpense => this.mapExpenseFromPrismaToExpense(updatedExpense));
+    const { amount, date } = dataWithoutCustomerId;
+
+    const expenseToUpdate = {
+      ...dataWithoutCustomerId,
+      amount: amount ? amount.toString() : undefined,
+      date: date ? new Date(date) : undefined,
+    };
+
+    return await this.prismaService.$drizzle
+      .update(Expense)
+      .set(expenseToUpdate)
+      .where(eq(Expense.id, id))
+      .returning()
+      .then(([updatedExpense]) => this.mapExpenseFromPrismaToExpense(updatedExpense));
   }
 
   @CatchErrors(handlePrismaError)
   async delete(id: string): Promise<IExpense> {
-    return await this.prismaService.expense
-      .delete({ where: { id } })
-      .then(deletedExpense => this.mapExpenseFromPrismaToExpense(deletedExpense));
+    return await this.prismaService.$drizzle
+      .delete(Expense)
+      .where(eq(Expense.id, id))
+      .returning()
+      .then(([deletedExpense]) => this.mapExpenseFromPrismaToExpense(deletedExpense));
   }
 
-  private mapExpensesFromPrismaToExpenses(expenses: Expense[]): IExpense[] {
+  private mapExpensesFromPrismaToExpenses(expenses: IExpenseFromDb[]): IExpense[] {
     return expenses.map(expense => this.mapExpenseFromPrismaToExpense(expense));
   }
 
-  private mapExpenseFromPrismaToExpense(expense: Expense): IExpense {
+  private mapExpenseFromPrismaToExpense(expense: IExpenseFromDb): IExpense {
     return {
       id: expense.id,
       customerId: expense.customerId,
       date: expense.date,
-      amount: expense.amount.toNumber(),
+      amount: Number(expense.amount),
       category: expense.category,
       createdAt: expense.createdAt,
       updatedAt: expense.updatedAt,
     };
   }
+}
+
+interface IExpenseFromDb extends Omit<PrismaExpense, 'amount'> {
+  amount: string;
 }

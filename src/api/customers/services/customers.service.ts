@@ -9,6 +9,7 @@ import {
   CustomerNotFoundException,
   ForbiddenToDeleteCustomerException,
 } from '@api/customers/exceptions/exception-classes';
+import { ICustomer } from '@api/customers/interfaces/customer.interface';
 import { ICustomersRepository } from '@api/customers/interfaces/customers.repository.interface';
 import { CustomersRepository } from '@api/customers/repositories/customers.repository';
 
@@ -81,7 +82,7 @@ export class CustomersService {
 
     return await this.customerRepository
       .update(id, updateCustomerDto)
-      .then(CustomerEntity.fromCustomerObj);
+      .then(customer => CustomerEntity.fromCustomerObj(customer as ICustomer));
   }
 
   async updateAsAdmin(
@@ -96,7 +97,7 @@ export class CustomersService {
 
     return await this.customerRepository
       .update(id, updateCustomerDto)
-      .then(CustomerEntity.fromCustomerObj);
+      .then(customer => CustomerEntity.fromCustomerObj(customer as ICustomer));
   }
 
   async removeAsCustomer(id: string, userId: string): Promise<CustomerEntity> {
@@ -110,10 +111,14 @@ export class CustomersService {
       throw new ForbiddenToDeleteCustomerException();
     }
 
-    return await this.customerRepository.remove(id).then(CustomerEntity.fromCustomerObj);
+    return await this.customerRepository
+      .remove(id)
+      .then(customer => CustomerEntity.fromCustomerObj(customer as ICustomer));
   }
 
   async removeAsAdmin(id: string): Promise<CustomerEntity> {
-    return await this.customerRepository.remove(id).then(CustomerEntity.fromCustomerObj);
+    return await this.customerRepository
+      .remove(id)
+      .then(customer => CustomerEntity.fromCustomerObj(customer as ICustomer));
   }
 }
