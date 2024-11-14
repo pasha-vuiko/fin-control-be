@@ -14,6 +14,7 @@ import {
 import { isFunction, isNil } from '@nestjs/common/utils/shared.utils';
 import { HttpAdapterHost, Reflector } from '@nestjs/core';
 
+import { USER_REQ_PROPERTY } from '@shared/modules/auth/constants/user-req-property';
 import { IAuth0User } from '@shared/modules/auth/interfaces/auth0-user.interface';
 import { Logger } from '@shared/modules/logger/loggers/logger';
 import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
@@ -87,7 +88,8 @@ export class JsonCacheInterceptor implements NestInterceptor {
     const isHttpApp = httpAdapter && !!httpAdapter.getRequestMethod;
     const cacheMetadata = this.reflector.get(CACHE_KEY_METADATA, context.getHandler());
 
-    const user: IAuth0User | undefined = request?.user;
+    // eslint-disable-next-line security/detect-object-injection
+    const user: IAuth0User | undefined = request[USER_REQ_PROPERTY];
     const userId = user?.sub;
     const cacheKeyPrefix = userId ? `user_${userId}:` : 'publicUser:';
 

@@ -6,6 +6,7 @@ import { PagePaginationResEntity } from '@shared/entities/page-pagination-res.en
 import { Auth } from '@shared/modules/auth/decorators/auth.decorator';
 import { Roles } from '@shared/modules/auth/enums/roles';
 import { ApiAppExceptionsRes } from '@shared/modules/error/open-api/api-app-exceptions-response.decorator';
+import { JsonCache } from '@shared/modules/redis/decorators/json-cache.decorator';
 
 import { CustomerUpdateDto } from '@api/customers/dto/customer-update.dto';
 import { CustomersFindDto } from '@api/customers/dto/customers-find.dto';
@@ -18,6 +19,7 @@ import { CustomersService } from '@api/customers/services/customers.service';
 export class CustomersAdminController {
   constructor(private readonly customersService: CustomersService) {}
 
+  @JsonCache(3600)
   @ApiPagePaginatedRes(CustomerEntity)
   @Auth(Roles.ADMIN)
   @Get()

@@ -1,29 +1,21 @@
 import { ExpenseCategory } from '@prisma/client';
 import { vitest } from 'vitest';
 
-import { Test, TestingModule } from '@nestjs/testing';
-
 import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-output.entity';
 import { IPagePaginationInput } from '@shared/interfaces/page-pagination-input.interface';
 import { IPagePaginationOutput } from '@shared/interfaces/page-pagination-output.interface';
-import { PrismaModule } from '@shared/modules/prisma/prisma.module';
-import { PrismaService } from '@shared/modules/prisma/prisma.service';
-import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
-import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 
-import { CustomersModule } from '@api/customers/customers.module';
 import { CustomerEntity } from '@api/customers/entities/customer.entity';
 import { CustomersService } from '@api/customers/services/customers.service';
-import { ExpensesModule } from '@api/expenses/expenses.module';
+import { ExpensesService } from '@api/expenses/services/expenses.service';
 import { RegularPaymentCreateDto } from '@api/regular-payments/dto/regular-payment-create.dto';
 import { RegularPaymentUpdateDto } from '@api/regular-payments/dto/regular-payment-update.dto';
 import { RegularPaymentEntity } from '@api/regular-payments/entities/regular-payment.entity';
 import { IRegularPayment } from '@api/regular-payments/interfaces/regular-payment.interface';
 import { RegularPaymentsRepository } from '@api/regular-payments/repositories/regular-payments.repository';
 
+import { getMockedInstance } from '../../../../test/utils/get-mocked-instance.util';
 import { RegularPaymentsService } from './regular-payments.service';
-
-class MockPrismaService {}
 
 const mockCustomer = CustomerEntity.fromCustomerObj({
   id: '1',
@@ -49,28 +41,19 @@ const mockRegularPayment: IRegularPayment = {
 
 // eslint-disable-next-line max-lines-per-function
 describe('RegularPaymentsService', () => {
-  let service: RegularPaymentsService;
+  let regularPaymentsService: RegularPaymentsService;
   let regularPaymentsRepository: RegularPaymentsRepository;
   let customersService: CustomersService;
+  let expensesService: ExpensesService;
 
   beforeEach(async () => {
-    // Preventing connection to the Redis
-    vitest
-      .spyOn(RedisConfigService, 'getIoRedisInstance')
-      .mockReturnValue({} as IoredisWithDefaultTtl);
-
-    const module: TestingModule = await Test.createTestingModule({
-      imports: [CustomersModule, ExpensesModule, PrismaModule.forRoot()],
-      providers: [RegularPaymentsService, RegularPaymentsRepository],
-    })
-      .overrideProvider(PrismaService) // Preventing connection to the database
-      .useClass(MockPrismaService)
-      .compile();
-
-    service = module.get<RegularPaymentsService>(RegularPaymentsService);
-    customersService = module.get<CustomersService>(CustomersService);
-    regularPaymentsRepository = module.get<RegularPaymentsRepository>(
-      RegularPaymentsRepository,
+    regularPaymentsRepository = getMockedInstance(RegularPaymentsRepository);
+    customersService = getMockedInstance(CustomersService);
+    expensesService = getMockedInstance(ExpensesService);
+    regularPaymentsService = new RegularPaymentsService(
+      regularPaymentsRepository,
+      customersService,
+      expensesService,
     );
   });
 
@@ -79,7 +62,7 @@ describe('RegularPaymentsService', () => {
   });
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
+    expect(regularPaymentsService).toBeDefined();
   });
 
   describe('findManyAsAdmin()', () => {
@@ -95,7 +78,7 @@ describe('RegularPaymentsService', () => {
         .spyOn(regularPaymentsRepository, 'findMany')
         .mockResolvedValueOnce(dbResponse);
 
-      const result = await service.findManyAsAdmin(pagination);
+      const result = await regularPaymentsService.findManyAsAdmin(pagination);
       const expectedResult = new PagePaginationOutputEntity<RegularPaymentEntity>({
         items: [RegularPaymentEntity.fromPlainObj(regularPayment)],
         total: dbResponse.total,
@@ -123,7 +106,7 @@ describe('RegularPaymentsService', () => {
         .spyOn(regularPaymentsRepository, 'findMany')
         .mockResolvedValueOnce(dbResponse);
 
-      const result = await service.findManyAsCustomer(userId, pagination);
+      const result = await regularPaymentsService.findManyAsCustomer(userId, pagination);
       const expectedResult = new PagePaginationOutputEntity<RegularPaymentEntity>({
         items: [RegularPaymentEntity.fromPlainObj(regularPayment)],
         total: dbResponse.total,
@@ -157,7 +140,7 @@ describe('RegularPaymentsService', () => {
         .spyOn(regularPaymentsRepository, 'create')
         .mockResolvedValueOnce(createdRegularPayment);
 
-      const result = await service.create(createDto, userId);
+      const result = await regularPaymentsService.create(createDto, userId);
       const expectedResult = RegularPaymentEntity.fromPlainObj(createdRegularPayment);
 
       expect(result).toStrictEqual(expectedResult);
@@ -182,17 +165,17 @@ describe('RegularPaymentsService', () => {
       }; // Mocked updated entity
 
       vitest
-        .spyOn(service, 'findOneAsCustomer')
+        .spyOn(regularPaymentsService, 'findOneAsCustomer')
         .mockResolvedValueOnce({} as RegularPaymentEntity);
       vitest
         .spyOn(regularPaymentsRepository, 'update')
         .mockResolvedValueOnce(updatedRegularPayment);
 
-      const result = await service.update(id, updateDto, userId);
+      const result = await regularPaymentsService.update(id, updateDto, userId);
       const expectedResult = RegularPaymentEntity.fromPlainObj(updatedRegularPayment);
 
       expect(result).toStrictEqual(expectedResult);
-      expect(service.findOneAsCustomer).toHaveBeenCalledWith(id, userId);
+      expect(regularPaymentsService.findOneAsCustomer).toHaveBeenCalledWith(id, userId);
       expect(regularPaymentsRepository.update).toHaveBeenCalledWith(id, updateDto);
     });
   });
@@ -203,17 +186,17 @@ describe('RegularPaymentsService', () => {
       const userId = '1';
       const deletedRegularPayment = structuredClone(mockRegularPayment);
       vitest
-        .spyOn(service, 'findOneAsCustomer')
+        .spyOn(regularPaymentsService, 'findOneAsCustomer')
         .mockResolvedValueOnce({} as RegularPaymentEntity);
       vitest
         .spyOn(regularPaymentsRepository, 'delete')
         .mockResolvedValueOnce(deletedRegularPayment);
 
-      const result = await service.delete(id, userId);
+      const result = await regularPaymentsService.delete(id, userId);
       const expectedResult = RegularPaymentEntity.fromPlainObj(deletedRegularPayment);
 
       expect(result).toStrictEqual(expectedResult);
-      expect(service.findOneAsCustomer).toHaveBeenCalledWith(id, userId);
+      expect(regularPaymentsService.findOneAsCustomer).toHaveBeenCalledWith(id, userId);
       expect(regularPaymentsRepository.delete).toHaveBeenCalledWith(id);
     });
   });

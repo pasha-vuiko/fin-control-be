@@ -1,4 +1,5 @@
 import path from 'node:path';
+import * as process from 'node:process';
 
 import { FastifyServerOptions } from 'fastify';
 
@@ -6,7 +7,10 @@ import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-modu
 import { checkEnvVarsSet } from '@shared/utils/check-env-vars-set';
 import { generateRequestId } from '@shared/utils/generate-request-id.util';
 
-checkEnvVarsSet(path.resolve(__dirname, '..', '..', '.env.example'));
+// disable the check for unit tests
+if (process.env.NODE_ENV !== 'test') {
+  checkEnvVarsSet(path.resolve(__dirname, '..', '..', '.env.example'));
+}
 setUtcTimezone();
 
 // TODO Add config validation

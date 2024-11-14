@@ -2,29 +2,23 @@ import { ExpenseCategory } from '@prisma/client';
 import { vitest } from 'vitest';
 
 import { NotFoundException } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 
 import { PagePaginationDto } from '@shared/dto/page-pagination.dto';
 import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-output.entity';
 import { IPagePaginationOutput } from '@shared/interfaces/page-pagination-output.interface';
-import { PrismaModule } from '@shared/modules/prisma/prisma.module';
-import { PrismaService } from '@shared/modules/prisma/prisma.service';
-import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
-import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 
-import { CustomersModule } from '@api/customers/customers.module';
 import { CustomerEntity } from '@api/customers/entities/customer.entity';
 import { ICustomer } from '@api/customers/interfaces/customer.interface';
 import { CustomersService } from '@api/customers/services/customers.service';
 import { ExpenseCreateDto } from '@api/expenses/dto/expense-create.dto';
 import { ExpenseEntity } from '@api/expenses/entities/expense.entity';
+import { ExpenseIsNotFoundException } from '@api/expenses/exceptions/exception-classes';
 import { IExpenseCreateInput } from '@api/expenses/interfaces/expense-create-input.interface';
 import { IExpense } from '@api/expenses/interfaces/expense.interface';
 import { ExpensesRepository } from '@api/expenses/repositories/expenses.repository';
 
+import { getMockedInstance } from '../../../../test/utils/get-mocked-instance.util';
 import { ExpensesService } from './expenses.service';
-
-class MockPrismaService {}
 
 const mockCustomer: ICustomer = {
   id: '1',
@@ -64,27 +58,14 @@ const mockPagination: PagePaginationDto = {
 
 // eslint-disable-next-line max-lines-per-function
 describe('ExpensesService', () => {
-  let service: ExpensesService;
+  let expensesService: ExpensesService;
   let expensesRepository: ExpensesRepository;
   let customersService: CustomersService;
 
   beforeEach(async () => {
-    // Preventing connection to the Redis
-    vitest
-      .spyOn(RedisConfigService, 'getIoRedisInstance')
-      .mockReturnValue({} as IoredisWithDefaultTtl);
-
-    const module: TestingModule = await Test.createTestingModule({
-      imports: [PrismaModule.forRoot(), CustomersModule],
-      providers: [ExpensesService, ExpensesRepository],
-    })
-      .overrideProvider(PrismaService) // Preventing connection to the database
-      .useClass(MockPrismaService)
-      .compile();
-
-    service = module.get<ExpensesService>(ExpensesService);
-    expensesRepository = module.get<ExpensesRepository>(ExpensesRepository);
-    customersService = module.get<CustomersService>(CustomersService);
+    expensesRepository = getMockedInstance(ExpensesRepository);
+    customersService = getMockedInstance(CustomersService);
+    expensesService = new ExpensesService(expensesRepository, customersService);
   });
 
   afterEach(async () => {
@@ -108,7 +89,7 @@ describe('ExpensesService', () => {
         .spyOn(expensesRepository, 'findManyByCustomer')
         .mockResolvedValueOnce(paginatedExpenses);
 
-      const result = await service.findManyAsCustomer(userId, pagination);
+      const result = await expensesService.findManyAsCustomer(userId, pagination);
       const expectedResult = new PagePaginationOutputEntity<ExpenseEntity>({
         items: expenses.map(ExpenseEntity.fromExpenseObj),
         total: paginatedExpenses.total,
@@ -135,7 +116,7 @@ describe('ExpensesService', () => {
         .spyOn(expensesRepository, 'findMany')
         .mockResolvedValueOnce(paginatedExpenses);
 
-      const result = await service.findManyAsAdmin({ ...mockPagination });
+      const result = await expensesService.findManyAsAdmin({ ...mockPagination });
       const expectedResult = new PagePaginationOutputEntity<ExpenseEntity>({
         items: expenses.map(ExpenseEntity.fromExpenseObj),
         total: paginatedExpenses.total,
@@ -156,7 +137,7 @@ describe('ExpensesService', () => {
       vitest.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
       vitest.spyOn(expensesRepository, 'findOne').mockResolvedValueOnce(expense);
 
-      const result = await service.findOneAsCustomer(expenseId, userId);
+      const result = await expensesService.findOneAsCustomer(expenseId, userId);
       const expectedResult = ExpenseEntity.fromExpenseObj(expense);
 
       expect(result).toStrictEqual(expectedResult);
@@ -176,8 +157,8 @@ describe('ExpensesService', () => {
       vitest.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
       vitest.spyOn(expensesRepository, 'findOne').mockResolvedValueOnce(expense);
 
-      await expect(service.findOneAsCustomer(expenseId, userId)).rejects.toThrow(
-        NotFoundException,
+      await expect(expensesService.findOneAsCustomer(expenseId, userId)).rejects.toThrow(
+        ExpenseIsNotFoundException,
       );
     });
   });
@@ -189,7 +170,7 @@ describe('ExpensesService', () => {
 
       vitest.spyOn(expensesRepository, 'findOne').mockResolvedValueOnce(expense);
 
-      const result = await service.findOneAsAdmin(expenseId);
+      const result = await expensesService.findOneAsAdmin(expenseId);
       const expectedResult = ExpenseEntity.fromExpenseObj(expense);
 
       expect(result).toStrictEqual(expectedResult);
@@ -201,7 +182,9 @@ describe('ExpensesService', () => {
 
       vitest.spyOn(expensesRepository, 'findOne').mockResolvedValueOnce(null);
 
-      await expect(service.findOneAsAdmin(expenseId)).rejects.toThrow(NotFoundException);
+      await expect(expensesService.findOneAsAdmin(expenseId)).rejects.toThrow(
+        ExpenseIsNotFoundException,
+      );
     });
   });
 
@@ -217,15 +200,12 @@ describe('ExpensesService', () => {
         .spyOn(expensesRepository, 'createMany')
         .mockResolvedValueOnce(createdExpenses);
 
-      const result = await service.createMany(expensesToCreate, userId);
+      const result = await expensesService.createMany(expensesToCreate, userId);
       const expectedResult = createdExpenses.map(ExpenseEntity.fromExpenseObj);
 
       expect(result).toStrictEqual(expectedResult);
       expect(customersService.findOneByUserId).toHaveBeenCalledWith(userId);
-      expect(expensesRepository.createMany).toHaveBeenCalledWith(
-        expect.anything(),
-        customer.id,
-      );
+      expect(expensesRepository.createMany).toHaveBeenCalledWith(expect.anything());
     });
   });
 
@@ -243,7 +223,7 @@ describe('ExpensesService', () => {
         .spyOn(expensesRepository, 'createManyViaTransaction')
         .mockResolvedValueOnce(createdExpenses);
 
-      const result = await service.createManyViaTransaction(expensesToCreate);
+      const result = await expensesService.createManyViaTransaction(expensesToCreate);
       const expectedResult = createdExpenses.map(ExpenseEntity.fromExpenseObj);
 
       expect(result).toStrictEqual(expectedResult);
@@ -268,11 +248,11 @@ describe('ExpensesService', () => {
 
       vitest.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
       vitest
-        .spyOn(service, 'findOneAsCustomer')
+        .spyOn(expensesService, 'findOneAsCustomer')
         .mockResolvedValueOnce({ customerId: customer } as any);
       vitest.spyOn(expensesRepository, 'update').mockResolvedValueOnce(updatedExpense);
 
-      const result = await service.update(id, updateExpenseDto, userId);
+      const result = await expensesService.update(id, updateExpenseDto, userId);
       const expectedResult = ExpenseEntity.fromExpenseObj(updatedExpense);
 
       expect(result).toStrictEqual(expectedResult);
@@ -286,13 +266,13 @@ describe('ExpensesService', () => {
 
       vitest
         .spyOn(customersService, 'findOneByUserId')
-        .mockRejectedValueOnce(new NotFoundException());
+        .mockRejectedValueOnce(new ExpenseIsNotFoundException());
       vitest
         .spyOn(expensesRepository, 'update')
         .mockResolvedValueOnce(structuredClone(mockExpense));
 
-      await expect(service.update(id, updateExpenseDto, userId)).rejects.toThrow(
-        NotFoundException,
+      await expect(expensesService.update(id, updateExpenseDto, userId)).rejects.toThrow(
+        ExpenseIsNotFoundException,
       );
       expect(customersService.findOneByUserId).toHaveBeenCalledWith(userId);
       // Verify that update is not called since customer was not found
@@ -307,22 +287,23 @@ describe('ExpensesService', () => {
 
       vitest.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
       vitest
-        .spyOn(service, 'findOneAsCustomer')
+        .spyOn(expensesService, 'findOneAsCustomer')
         .mockRejectedValueOnce(new NotFoundException());
       vitest
         .spyOn(expensesRepository, 'update')
         .mockResolvedValueOnce(structuredClone(mockExpense));
 
-      await expect(service.update(id, updateExpenseDto, userId)).rejects.toThrow(
+      await expect(expensesService.update(id, updateExpenseDto, userId)).rejects.toThrow(
         NotFoundException,
       );
       expect(customersService.findOneByUserId).toHaveBeenCalledWith(userId);
-      expect(service.findOneAsCustomer).toHaveBeenCalledWith(id, userId);
+      expect(expensesService.findOneAsCustomer).toHaveBeenCalledWith(id, userId);
       // Verify that update is not called since expense was not found for the customer
       expect(expensesRepository.update).not.toHaveBeenCalled();
     });
   });
 
+  // eslint-disable-next-line max-lines-per-function
   describe('delete()', () => {
     it('should delete an expense for a customer and return the deleted expense', async () => {
       const id = '1';
@@ -331,10 +312,12 @@ describe('ExpensesService', () => {
       const expense = structuredClone(mockExpense);
 
       vitest.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
-      vitest.spyOn(service, 'findOneAsCustomer').mockResolvedValueOnce(expense as any);
+      vitest
+        .spyOn(expensesService, 'findOneAsCustomer')
+        .mockResolvedValueOnce(expense as any);
       vitest.spyOn(expensesRepository, 'delete').mockResolvedValueOnce(expense);
 
-      const result = await service.delete(id, userId);
+      const result = await expensesService.delete(id, userId);
       const expectedResult = ExpenseEntity.fromExpenseObj(expense);
 
       expect(result).toStrictEqual(expectedResult);
@@ -351,12 +334,14 @@ describe('ExpensesService', () => {
       const expense = structuredClone(mockExpense);
 
       vitest.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
-      vitest.spyOn(service, 'findOneAsCustomer').mockResolvedValueOnce(expense);
+      vitest.spyOn(expensesService, 'findOneAsCustomer').mockResolvedValueOnce(expense);
       vitest
         .spyOn(expensesRepository, 'delete')
         .mockResolvedValueOnce(structuredClone(mockExpense));
 
-      await expect(service.delete(id, userId)).rejects.toThrow(NotFoundException);
+      await expect(expensesService.delete(id, userId)).rejects.toThrow(
+        ExpenseIsNotFoundException,
+      );
       expect(expensesRepository.delete).not.toHaveBeenCalled();
     });
   });

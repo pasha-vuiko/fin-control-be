@@ -9,7 +9,7 @@ import { DEFAULT_CACHE_TTL } from '@shared/modules/redis/constants/defaults';
 import { REDIS_MODULE_OPTIONS } from '@shared/modules/redis/providers/redis-module-options.provider';
 import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 
-import { getMockedInstance } from '../../../../../../test/utlis/get-mocked-instance.util';
+import { getMockedInstance } from '../../../../../../test/utils/get-mocked-instance.util';
 import { RedisService } from './redis.service';
 
 // eslint-disable-next-line max-lines-per-function

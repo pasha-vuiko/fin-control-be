@@ -1,28 +1,25 @@
 import { Sex } from '@prisma/client';
 import { vitest } from 'vitest';
 
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
-
 import { PagePaginationDto } from '@shared/dto/page-pagination.dto';
 import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-output.entity';
 import { IPagePaginationOutput } from '@shared/interfaces/page-pagination-output.interface';
 import { Roles } from '@shared/modules/auth/enums/roles';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
-import { PrismaModule } from '@shared/modules/prisma/prisma.module';
-import { PrismaService } from '@shared/modules/prisma/prisma.service';
-import { IoredisWithDefaultTtl } from '@shared/modules/redis/classes/ioredis-with-default-ttl';
-import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 
 import { CustomerCreateDto } from '@api/customers/dto/customer-create.dto';
 import { CustomerUpdateDto } from '@api/customers/dto/customer-update.dto';
 import { CustomerEntity } from '@api/customers/entities/customer.entity';
+import {
+  CustomerNotFoundException,
+  ForbiddenToDeleteCustomerException,
+} from '@api/customers/exceptions/exception-classes';
 import { ICustomer } from '@api/customers/interfaces/customer.interface';
+import { ICustomersRepository } from '@api/customers/interfaces/customers.repository.interface';
 import { CustomersRepository } from '@api/customers/repositories/customers.repository';
 
+import { getMockedInstance } from '../../../../test/utils/get-mocked-instance.util';
 import { CustomersService } from './customers.service';
-
-class MockPrismaService {}
 
 const mockCustomerCreateDto: CustomerCreateDto = {
   firstName: 'test',
@@ -62,24 +59,11 @@ const mockCustomer: ICustomer = {
 // eslint-disable-next-line max-lines-per-function
 describe('CustomerService', () => {
   let service: CustomersService;
-  let customersRepository: CustomersRepository;
+  let customersRepository: ICustomersRepository;
 
   beforeEach(async () => {
-    // Preventing connection to the Redis
-    vitest
-      .spyOn(RedisConfigService, 'getIoRedisInstance')
-      .mockReturnValue({} as IoredisWithDefaultTtl);
-
-    const module: TestingModule = await Test.createTestingModule({
-      imports: [PrismaModule.forRoot()],
-      providers: [CustomersService, CustomersRepository],
-    })
-      .overrideProvider(PrismaService) // Preventing connection to the database
-      .useClass(MockPrismaService)
-      .compile();
-
-    service = module.get<CustomersService>(CustomersService);
-    customersRepository = module.get<CustomersRepository>(CustomersRepository);
+    customersRepository = getMockedInstance(CustomersRepository);
+    service = new CustomersService(customersRepository);
   });
 
   afterEach(() => {
@@ -133,7 +117,9 @@ describe('CustomerService', () => {
       const id = '1';
       vitest.spyOn(customersRepository, 'findOneById').mockResolvedValue(null);
 
-      await expect(service.findOneByIdAsAdmin(id)).rejects.toThrow(NotFoundException);
+      await expect(service.findOneByIdAsAdmin(id)).rejects.toThrow(
+        CustomerNotFoundException,
+      );
     });
   });
 
@@ -157,7 +143,9 @@ describe('CustomerService', () => {
       const userId = '1';
       vitest.spyOn(customersRepository, 'findOneByUserId').mockResolvedValue(null);
 
-      await expect(service.findOneByUserId(userId)).rejects.toThrow(NotFoundException);
+      await expect(service.findOneByUserId(userId)).rejects.toThrow(
+        CustomerNotFoundException,
+      );
     });
   });
 
@@ -214,7 +202,7 @@ describe('CustomerService', () => {
 
       await expect(
         service.updateAsCustomer(id, updateCustomerDto, userId),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(CustomerNotFoundException);
     });
   });
 
@@ -245,7 +233,7 @@ describe('CustomerService', () => {
       vitest.spyOn(customersRepository, 'findOneById').mockResolvedValue(null);
 
       await expect(service.updateAsAdmin(id, updateCustomerDto)).rejects.toThrow(
-        NotFoundException,
+        CustomerNotFoundException,
       );
     });
   });
@@ -274,7 +262,7 @@ describe('CustomerService', () => {
       vitest.spyOn(customersRepository, 'findOneById').mockResolvedValue(null);
 
       await expect(service.removeAsCustomer(id, userId)).rejects.toThrow(
-        NotFoundException,
+        CustomerNotFoundException,
       );
     });
 
@@ -288,7 +276,7 @@ describe('CustomerService', () => {
       vitest.spyOn(customersRepository, 'findOneById').mockResolvedValue(foundCustomer);
 
       await expect(service.removeAsCustomer(id, userId)).rejects.toThrow(
-        ForbiddenException,
+        ForbiddenToDeleteCustomerException,
       );
     });
   });

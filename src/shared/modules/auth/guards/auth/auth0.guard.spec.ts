@@ -1,19 +1,21 @@
 import { describe, vitest } from 'vitest';
 
-import {
-  ExecutionContext,
-  ForbiddenException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Test } from '@nestjs/testing';
 
 import { Roles } from '@shared/modules/auth/enums/roles';
+import {
+  AuthForbiddenException,
+  AuthInvalidTokenException,
+} from '@shared/modules/auth/exceptions/exception-classes';
 import {
   AUTH0_ROLES_KEY,
   IAuth0User,
 } from '@shared/modules/auth/interfaces/auth0-user.interface';
+import { IAuthModuleOptions } from '@shared/modules/auth/interfaces/auth-module-options.interface';
+import { JWTVerifierService } from '@shared/modules/auth/services/jwt-verifier.service';
 
+import { getMockedInstance } from '../../../../../../test/utils/get-mocked-instance.util';
 import { Auth0Guard } from './auth0.guard';
 
 // Mocks
@@ -32,19 +34,13 @@ const mockReflector = {
 // eslint-disable-next-line max-lines-per-function
 describe('Auth0Guard', () => {
   let authGuard: Auth0Guard;
+  let jwtVerifierService: JWTVerifierService;
 
   beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
-      providers: [
-        Auth0Guard,
-        {
-          provide: Reflector,
-          useValue: { get: vitest.fn() },
-        },
-      ],
-    }).compile();
-
-    authGuard = moduleRef.get<Auth0Guard>(Auth0Guard);
+    jwtVerifierService = getMockedInstance(JWTVerifierService);
+    authGuard = new Auth0Guard(mockReflector, {} as IAuthModuleOptions);
+    //@ts-expect-error access to private property
+    authGuard.jwtVerifierService = jwtVerifierService;
   });
 
   afterEach(() => {
@@ -58,12 +54,13 @@ describe('Auth0Guard', () => {
       vitest.spyOn(mockContext, 'switchToHttp').mockReturnValueOnce({
         getRequest: (): any => ({
           user: { [AUTH0_ROLES_KEY]: [Roles.CUSTOMER] },
-          authenticate: vitest.fn().mockResolvedValue(true),
+          headers: {
+            authorization: 'Bearer wdfsdffsdfdfsdfsaff',
+          },
         }),
         getResponse: (): any => ({}),
       });
-
-      authGuard = new Auth0Guard(mockReflector);
+      vitest.spyOn(jwtVerifierService, 'verify').mockResolvedValue({});
 
       expect(await authGuard.canActivate(mockContext)).toBe(true);
     });
@@ -73,16 +70,17 @@ describe('Auth0Guard', () => {
       vitest.spyOn(mockContext, 'switchToHttp').mockReturnValueOnce({
         getRequest: (): any => ({
           user: { [AUTH0_ROLES_KEY]: [Roles.CUSTOMER] },
-          authenticate: vitest.fn().mockRejectedValue(new Error('Auth failed')),
+          headers: {
+            authorization: 'Bearer wdfsdffsdfdfsdfsaff',
+          },
         }),
         getResponse: (): any => ({}),
       });
+      vitest.spyOn(jwtVerifierService, 'verify').mockRejectedValue(new Error());
 
-      authGuard = new Auth0Guard(new Reflector());
+      const resultPromise = authGuard.canActivate(mockContext);
 
-      await expect(authGuard.canActivate(mockContext)).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(resultPromise).rejects.toThrow(AuthInvalidTokenException);
     });
 
     it('should throw ForbiddenException when user does not have the required roles', async () => {
@@ -90,16 +88,17 @@ describe('Auth0Guard', () => {
       vitest.spyOn(mockContext, 'switchToHttp').mockReturnValueOnce({
         getRequest: (): any => ({
           user: { [AUTH0_ROLES_KEY]: [Roles.CUSTOMER] },
-          authenticate: vitest.fn().mockResolvedValue(true),
+          headers: {
+            authorization: 'Bearer wdfsdffsdfdfsdfsaff',
+          },
         }),
         getResponse: (): any => ({}),
       });
+      vitest.spyOn(jwtVerifierService, 'verify').mockResolvedValue({});
       vitest.spyOn(mockReflector, 'get').mockReturnValueOnce([Roles.ADMIN]);
 
-      authGuard = new Auth0Guard(mockReflector);
-
       await expect(authGuard.canActivate(mockContext)).rejects.toThrow(
-        ForbiddenException,
+        AuthForbiddenException,
       );
     });
   });

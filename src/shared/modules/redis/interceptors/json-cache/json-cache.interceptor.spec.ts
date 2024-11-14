@@ -39,7 +39,7 @@ describe('JsonCacheInterceptor', () => {
         getRequest: (): FastifyRequest =>
           ({
             method: 'GET',
-            [USER_REQ_PROPERTY]: { id: '123' },
+            [USER_REQ_PROPERTY]: { sub: '123' },
           }) as unknown as FastifyRequest,
         getResponse: (): FastifyReply => ({ header: vi.fn() }) as unknown as FastifyReply,
       }),
