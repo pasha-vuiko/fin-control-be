@@ -24,7 +24,6 @@ export class PrismaService<
   constructor(@Inject(PRISMA_MODULE_OPTIONS) options: TPrismaOptions) {
     const connectionString = `${process.env.DATABASE_URL}`;
 
-    // const pool = new Pool({ connectionString });
     const pool = new Pool({ connectionString, Client: pg.native?.Client });
     const adapter = new PrismaPg(pool);
     super({
