@@ -61,7 +61,7 @@ export const Expense = pgTable(
       .primaryKey()
       .default(sql`uuid(4)`),
     customerId: text('customerId').notNull(),
-    amount: decimal('amount', { precision: 65, scale: 30 }).notNull(),
+    amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
     date: timestamp('date', { precision: 6, withTimezone: true }).notNull(),
     createdAt: timestamp('createdAt', { precision: 6, withTimezone: true })
       .notNull()
@@ -90,7 +90,7 @@ export const RegularPayment = pgTable(
       .primaryKey()
       .default(sql`uuid(4)`),
     customerId: text('customerId').notNull(),
-    amount: decimal('amount', { precision: 65, scale: 30 }).notNull(),
+    amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
     dateOfCharge: timestamp('dateOfCharge', {
       precision: 6,
       withTimezone: true,
