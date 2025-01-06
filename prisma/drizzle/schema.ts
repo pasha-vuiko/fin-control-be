@@ -37,7 +37,7 @@ export const Customer = pgTable('Customer', {
   id: text('id')
     .notNull()
     .primaryKey()
-    .default(sql`uuid(4)`),
+    .default(sql`uuid()`),
   userId: text('userId').notNull().unique(),
   firstName: text('firstName').notNull(),
   lastName: text('lastName').notNull(),
@@ -59,7 +59,7 @@ export const Expense = pgTable(
     id: text('id')
       .notNull()
       .primaryKey()
-      .default(sql`uuid(4)`),
+      .default(sql`uuid()`),
     customerId: text('customerId').notNull(),
     amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
     date: timestamp('date', { precision: 6, withTimezone: true }).notNull(),
@@ -88,7 +88,7 @@ export const RegularPayment = pgTable(
     id: text('id')
       .notNull()
       .primaryKey()
-      .default(sql`uuid(4)`),
+      .default(sql`uuid()`),
     customerId: text('customerId').notNull(),
     amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
     dateOfCharge: timestamp('dateOfCharge', {

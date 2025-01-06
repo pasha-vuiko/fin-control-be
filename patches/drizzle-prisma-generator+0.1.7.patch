@@ -1,5 +1,5 @@
 diff --git a/node_modules/drizzle-prisma-generator/index.js b/node_modules/drizzle-prisma-generator/index.js
-index d8ecc2a..c5f0bc2 100755
+index d8ecc2a..f9d6a0f 100755
 --- a/node_modules/drizzle-prisma-generator/index.js
 +++ b/node_modules/drizzle-prisma-generator/index.js
 @@ -156,8 +156,7 @@ var getJoinIdType = (typeName, models) => {
@@ -69,6 +69,15 @@ index d8ecc2a..c5f0bc2 100755
    if (field.default) {
      const defVal = field.default;
      switch (typeof defVal) {
+@@ -261,7 +260,7 @@ var addColumnModifiers = (field, column) => {
+           drizzleImports.add("sql");
+           break;
+         }
+-        if (/^uuid\([0-9]*\)$/.test(value.name)) {
++        if (/^uuid\([0-9]*\)$/.test(value.name) || value.name === "uuid") {
+           column = column + `.default(sql\`uuid()\`)`;
+           drizzleImports.add("sql");
+           break;
 @@ -275,16 +274,17 @@ var addColumnModifiers = (field, column) => {
    }
    return column;
@@ -150,7 +159,7 @@ index d8ecc2a..c5f0bc2 100755
    switch (type.toLowerCase()) {
      case "bigint":
        pgImports.add("bigint");
-@@ -411,11 +418,36 @@ var prismaToDrizzleType2 = (type, colDbName, defVal) => {
+@@ -411,15 +418,48 @@ var prismaToDrizzleType2 = (type, colDbName, defVal) => {
      case "bytes":
        throw new import_generator_helper2.GeneratorError("Drizzle ORM doesn't support binary data type for PostgreSQL");
      case "datetime":
@@ -188,7 +197,19 @@ index d8ecc2a..c5f0bc2 100755
      case "float":
        pgImports.add("doublePrecision");
        return `doublePrecision('${colDbName}')`;
-@@ -437,14 +469,10 @@ var prismaToDrizzleType2 = (type, colDbName, defVal) => {
+     case "json":
++      if (nativeType === "Json") {
++        pgImports.add("json");
++        return `json('${colDbName}')`;
++      }
++      if (nativeType === "JsonB") {
++        pgImports.add("jsonb");
++        return `jsonb('${colDbName}')`;
++      }
+       pgImports.add("jsonb");
+       return `jsonb('${colDbName}')`;
+     case "int":
+@@ -437,14 +477,10 @@ var prismaToDrizzleType2 = (type, colDbName, defVal) => {
    }
  };
  var addColumnModifiers2 = (field, column) => {
@@ -207,7 +228,16 @@ index d8ecc2a..c5f0bc2 100755
    if (field.default) {
      const defVal = field.default;
      switch (typeof defVal) {
-@@ -486,16 +514,21 @@ var addColumnModifiers2 = (field, column) => {
+@@ -472,7 +508,7 @@ var addColumnModifiers2 = (field, column) => {
+           drizzleImports2.add("sql");
+           break;
+         }
+-        if (/^uuid\([0-9]*\)$/.test(value.name)) {
++        if (/^uuid\([0-9]*\)$/.test(value.name) || value.name === "uuid") {
+           column = column + `.default(sql\`uuid()\`)`;
+           drizzleImports2.add("sql");
+           break;
+@@ -486,16 +522,21 @@ var addColumnModifiers2 = (field, column) => {
    }
    return column;
  };
@@ -233,7 +263,7 @@ index d8ecc2a..c5f0bc2 100755
      column = column + drizzleType;
    }
    column = addColumnModifiers2(field, column);
-@@ -508,8 +541,7 @@ var generatePgSchema = (options) => {
+@@ -508,8 +549,7 @@ var generatePgSchema = (options) => {
    const modelsWithImplicit = [...clonedModels, ...manyToManyModels];
    const pgEnums = [];
    for (const schemaEnum of enums) {
@@ -243,7 +273,7 @@ index d8ecc2a..c5f0bc2 100755
      const enumDbName = s(schemaEnum.dbName ?? schemaEnum.name);
      pgImports.add("pgEnum");
      pgEnums.push(
-@@ -521,13 +553,22 @@ var generatePgSchema = (options) => {
+@@ -521,13 +561,22 @@ var generatePgSchema = (options) => {
    for (const schemaTable of modelsWithImplicit) {
      const tableDbName = s(schemaTable.dbName ?? schemaTable.name);
      const columnFields = Object.fromEntries(
@@ -269,7 +299,7 @@ index d8ecc2a..c5f0bc2 100755
        const fkeyName = s(`${schemaTable.dbName ?? schemaTable.name}_${field.dbName ?? field.name}_fkey`);
        let deleteAction;
        switch (field.relationOnDelete) {
-@@ -585,8 +626,7 @@ ${Object.values(columnFields).join(",\n")}
+@@ -585,8 +634,7 @@ ${Object.values(columnFields).join(",\n")}
  ${indexes.join(",\n")}
  })` : ""});`;
      tables.push(table);
@@ -279,7 +309,7 @@ index d8ecc2a..c5f0bc2 100755
      drizzleImports2.add("relations");
      const relationArgs = /* @__PURE__ */ new Set();
      const rqbFields = relFields.map((field) => {
-@@ -611,10 +651,8 @@ ${rqbFields}
+@@ -611,10 +659,8 @@ ${rqbFields}
    const pgImportsArr = Array.from(pgImports.values()).sort((a, b) => a.localeCompare(b));
    const pgImportsStr = pgImportsArr.length ? `import { ${pgImportsArr.join(", ")} } from 'drizzle-orm/pg-core'` : void 0;
    let importsStr = [drizzleImportsStr, pgImportsStr].filter((e) => e !== void 0).join("\n");
@@ -292,7 +322,7 @@ index d8ecc2a..c5f0bc2 100755
  };
  
  // src/util/generators/sqlite.ts
-@@ -655,12 +693,9 @@ var prismaToDrizzleType3 = (type, colDbName) => {
+@@ -655,12 +701,9 @@ var prismaToDrizzleType3 = (type, colDbName) => {
    }
  };
  var addColumnModifiers3 = (field, column) => {
@@ -308,7 +338,16 @@ index d8ecc2a..c5f0bc2 100755
    if (field.default) {
      const defVal = field.default;
      switch (typeof defVal) {
-@@ -706,8 +741,7 @@ var prismaToDrizzleColumn3 = (field) => {
+@@ -688,7 +731,7 @@ var addColumnModifiers3 = (field, column) => {
+           drizzleImports3.add("sql");
+           break;
+         }
+-        if (/^uuid\([0-9]*\)$/.test(value.name)) {
++        if (/^uuid\([0-9]*\)$/.test(value.name) || value.name === "uuid") {
+           column = column + `.default(sql\`uuid()\`)`;
+           drizzleImports3.add("sql");
+           break;
+@@ -706,8 +749,7 @@ var prismaToDrizzleColumn3 = (field) => {
    const colDbName = s(field.dbName ?? field.name);
    let column = `	${field.name}: `;
    const drizzleType = prismaToDrizzleType3(field.type, colDbName);
@@ -318,7 +357,7 @@ index d8ecc2a..c5f0bc2 100755
    column = column + drizzleType;
    column = addColumnModifiers3(field, column);
    return column;
-@@ -727,8 +761,7 @@ var generateSQLiteSchema = (options) => {
+@@ -727,8 +769,7 @@ var generateSQLiteSchema = (options) => {
      const indexes = [];
      const relFields = schemaTable.fields.filter((field) => field.relationToFields && field.relationFromFields);
      const relations = relFields.map((field) => {
@@ -328,7 +367,7 @@ index d8ecc2a..c5f0bc2 100755
        const fkeyName = s(`${schemaTable.dbName ?? schemaTable.name}_${field.dbName ?? field.name}_fkey`);
        let deleteAction;
        switch (field.relationOnDelete) {
-@@ -786,8 +819,7 @@ ${Object.values(columnFields).join(",\n")}
+@@ -786,8 +827,7 @@ ${Object.values(columnFields).join(",\n")}
  ${indexes.join(",\n")}
  })` : ""});`;
      tables.push(table);
@@ -338,7 +377,7 @@ index d8ecc2a..c5f0bc2 100755
      drizzleImports3.add("relations");
      const relationArgs = /* @__PURE__ */ new Set();
      const rqbFields = relFields.map((field) => {
-@@ -812,8 +844,7 @@ ${rqbFields}
+@@ -812,8 +852,7 @@ ${rqbFields}
    const sqliteImportsArr = Array.from(sqliteImports.values()).sort((a, b) => a.localeCompare(b));
    const sqliteImportsStr = sqliteImportsArr.length ? `import { ${sqliteImportsArr.join(", ")} } from 'drizzle-orm/sqlite-core'` : void 0;
    let importsStr = [drizzleImportsStr, sqliteImportsStr].filter((e) => e !== void 0).join("\n");
