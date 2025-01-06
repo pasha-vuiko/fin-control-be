@@ -2,6 +2,7 @@ import { vi } from 'vitest';
 
 import { TConstructor } from '@shared/types/constructor.type';
 
+const cache = new Map<TConstructor, InstanceType<any>>();
 /**
  * Creates object from input class which properties is mocked with vi.fn()
  *
@@ -10,28 +11,37 @@ import { TConstructor } from '@shared/types/constructor.type';
 export function getMockedInstance<C extends TConstructor>(
   ClassConstructor: C,
 ): InstanceType<C> {
+  const cached = cache.get(ClassConstructor);
+
+  if (cached) {
+    // return cloned object to avoid shared state
+    return { ...cached };
+  }
+
   const mockedInstance: Record<string, any> = {};
 
-  for (const key in getAllPropertyDescriptors(ClassConstructor)) {
+  const allPropertyDescriptorNames = getAllPropertyDescriptorNames(ClassConstructor);
+
+  for (const descriptorName of allPropertyDescriptorNames) {
     // eslint-disable-next-line security/detect-object-injection
-    mockedInstance[key] = vi.fn();
+    mockedInstance[descriptorName] = vi.fn();
   }
+
+  cache.set(ClassConstructor, mockedInstance);
 
   return mockedInstance as InstanceType<C>;
 }
 
 /**
- * Retrieves all property descriptors of a class, including inherited properties
+ * Retrieves all property descriptor names of a class, including inherited properties
  * but excluding properties of the Object prototype.
  *
  * @param ClassConstructor - The class constructor from which to retrieve property descriptors.
  * @returns An object containing all property descriptors.
  */
-function getAllPropertyDescriptors<T>(ClassConstructor: new (...args: any[]) => T): {
-  [key: string]: PropertyDescriptor;
-} {
+function getAllPropertyDescriptorNames<T>(ClassConstructor: TConstructor<T>): string[] {
   // Initialize an empty object to hold the property descriptors
-  const descriptors: { [key: string]: PropertyDescriptor } = {};
+  const descriptorsNames = new Set<string>();
 
   // Start with the prototype of the class
   let proto = ClassConstructor.prototype;
@@ -41,13 +51,10 @@ function getAllPropertyDescriptors<T>(ClassConstructor: new (...args: any[]) => 
     // Get all own property names of the current prototype
     for (const name of Object.getOwnPropertyNames(proto)) {
       // If the property is not already in the descriptors object, add it
-      // eslint-disable-next-line security/detect-object-injection
-      if (!descriptors[name]) {
-        const descriptor = Object.getOwnPropertyDescriptor(proto, name);
-        if (descriptor) {
-          // eslint-disable-next-line security/detect-object-injection
-          descriptors[name] = descriptor;
-        }
+      const descriptor = Object.getOwnPropertyDescriptor(proto, name);
+
+      if (descriptor) {
+        descriptorsNames.add(name);
       }
     }
 
@@ -55,5 +62,5 @@ function getAllPropertyDescriptors<T>(ClassConstructor: new (...args: any[]) => 
     proto = Object.getPrototypeOf(proto);
   }
 
-  return descriptors;
+  return [...descriptorsNames];
 }
