@@ -1,7 +1,9 @@
+import { Prettify } from '@shared/types/prettify.type';
+
 export const omitObjKeys = <T extends Record<string, any>, K extends (keyof T)[]>(
   obj: T,
   ...keysToOmit: K
-): Pick<T, Exclude<keyof T, K[number]>> => {
+): Prettify<Pick<T, Exclude<keyof T, K[number]>>> => {
   let result = obj;
 
   for (const key of keysToOmit) {
