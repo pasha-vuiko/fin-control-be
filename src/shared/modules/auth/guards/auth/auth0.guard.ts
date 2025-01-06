@@ -28,10 +28,7 @@ export class Auth0Guard implements CanActivate {
     @Inject(AUTH_MODULE_OPTIONS)
     moduleOptions: IAuthModuleOptions,
   ) {
-    this.jwtVerifierService = new JWTVerifierService(
-      moduleOptions.domain,
-      moduleOptions.clientId,
-    );
+    this.jwtVerifierService = new JWTVerifierService(moduleOptions.domain);
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

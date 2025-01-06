@@ -3,14 +3,12 @@ import buildGetJwks, { GetJwks } from 'get-jwks';
 
 export class JWTVerifierService {
   private readonly domain: string;
-  private readonly clientId: string;
   private readonly cacheDuration: number;
   private readonly getJwks: GetJwks;
   private jwkCache: Map<string, { publicKey: string; fetchedAt: number }>;
 
-  constructor(domain: string, clientId: string, cacheDuration = 60000) {
+  constructor(domain: string, cacheDuration = 60000) {
     this.domain = domain;
-    this.clientId = clientId;
     this.cacheDuration = cacheDuration; // Cache duration in milliseconds
     this.jwkCache = new Map();
     this.getJwks = buildGetJwks({});
@@ -55,7 +53,6 @@ export class JWTVerifierService {
 
     return await verify(token, publicKey, {
       algorithms: [algorithm],
-      aud: [this.clientId],
     });
   }
 }
