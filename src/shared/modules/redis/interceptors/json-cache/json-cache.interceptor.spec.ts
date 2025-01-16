@@ -28,7 +28,7 @@ describe('JsonCacheInterceptor', () => {
         getRequestMethod: vi.fn(),
         getRequestUrl: vi.fn().mockReturnValue('/test-url'),
       } as unknown as AbstractHttpAdapter,
-    };
+    } as unknown as HttpAdapterHost;
 
     ioRedisInstance = getMockedInstance(Redis);
     vi.spyOn(RedisConfigService, 'getIoRedisInstance').mockReturnValue(ioRedisInstance);
@@ -93,7 +93,6 @@ describe('JsonCacheInterceptor', () => {
       const MOCK_URL = 'user_123:/test-url';
       const MOCK_MANUAL_TTL = 60;
 
-      vi.spyOn(interceptor as any, 'getCacheKey').mockReturnValueOnce(undefined);
       vi.spyOn(interceptor as any, 'getCacheKey').mockReturnValueOnce(MOCK_URL);
       vi.spyOn(reflector, 'get').mockReturnValue(MOCK_MANUAL_TTL);
       vi.spyOn(ioRedisInstance, 'get').mockResolvedValue(null);

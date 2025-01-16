@@ -21,10 +21,10 @@ export const ApiAppExceptionsRes = <E extends TConstructor<AppException>>(
 
   const apiResponseDecorators: MethodDecorator[] = Object.entries(
     appExceptionsGroupedByHttpCode,
-  ).map(([httpCode, appExceptions]) => {
+  ).map(([httpCode, exception]) => {
     return ApiResponse({
       status: parseInt(httpCode),
-      content: getContent(appExceptions ?? []),
+      content: getContent(exception ?? []),
     });
   });
 

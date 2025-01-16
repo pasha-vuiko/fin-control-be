@@ -110,11 +110,11 @@ export class AppExceptionsRegistry {
       const flowExceptions = exceptionsByFlowIds.get(code.toString()) ?? [];
 
       result.push({
-        name: name,
-        code: code,
-        exceptions: flowExceptions.map(([code, exception]) => {
+        name,
+        code,
+        exceptions: flowExceptions.map(([flowCode, exception]) => {
           return {
-            code,
+            code: flowCode,
             name: exception.name,
             description: exception.message,
           };

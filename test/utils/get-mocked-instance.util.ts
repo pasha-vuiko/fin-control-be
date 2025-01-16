@@ -2,7 +2,6 @@ import { vi } from 'vitest';
 
 import { TConstructor } from '@shared/types/constructor.type';
 
-const cache = new Map<TConstructor, InstanceType<any>>();
 /**
  * Creates object from input class which properties is mocked with vi.fn()
  *
@@ -11,13 +10,6 @@ const cache = new Map<TConstructor, InstanceType<any>>();
 export function getMockedInstance<C extends TConstructor>(
   ClassConstructor: C,
 ): InstanceType<C> {
-  const cached = cache.get(ClassConstructor);
-
-  if (cached) {
-    // return cloned object to avoid shared state
-    return { ...cached };
-  }
-
   const mockedInstance: Record<string, any> = {};
 
   const allPropertyDescriptorNames = getAllPropertyDescriptorNames(ClassConstructor);
@@ -26,8 +18,6 @@ export function getMockedInstance<C extends TConstructor>(
     // eslint-disable-next-line security/detect-object-injection
     mockedInstance[descriptorName] = vi.fn();
   }
-
-  cache.set(ClassConstructor, mockedInstance);
 
   return mockedInstance as InstanceType<C>;
 }
