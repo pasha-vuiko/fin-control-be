@@ -1,13 +1,13 @@
+import ValKey from '@keyv/valkey';
 import Redis from 'ioredis';
+import Keyv from 'keyv';
 
 import { CacheModuleOptions, CacheOptionsFactory } from '@nestjs/cache-manager';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { CacheStoreFactory } from '@nestjs/common/cache/interfaces/cache-manager.interface';
 
 import { Logger } from '@shared/modules/logger/loggers/logger';
 import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
 import { REDIS_MODULE_OPTIONS } from '@shared/modules/redis/providers/redis-module-options.provider';
-import { REDIS_STORE } from '@shared/modules/redis/providers/redis-store.provider';
 import { omitObjKeys } from '@shared/utils/omit-obj-keys.util';
 
 @Injectable()
@@ -16,11 +16,7 @@ export class RedisConfigService implements CacheOptionsFactory, OnApplicationShu
   private static ioRedisInstance: Redis;
   private static logger = new Logger('RedisConfigService');
 
-  constructor(
-    @Inject(REDIS_STORE)
-    private redisStore: CacheStoreFactory,
-    @Inject(REDIS_MODULE_OPTIONS) private moduleOptions: IRedisModuleOptions,
-  ) {
+  constructor(@Inject(REDIS_MODULE_OPTIONS) private moduleOptions: IRedisModuleOptions) {
     RedisConfigService.moduleOptions = moduleOptions;
   }
 
@@ -30,10 +26,14 @@ export class RedisConfigService implements CacheOptionsFactory, OnApplicationShu
   }
 
   public createCacheOptions(): CacheModuleOptions {
-    return {
-      store: this.redisStore,
-      redisInstance: RedisConfigService.getIoRedisInstance(),
+    const valKey = new ValKey(RedisConfigService.getIoRedisInstance() as any);
+    const keyv = new Keyv({
+      store: valKey,
       ttl: this.moduleOptions.ttl,
+    });
+
+    return {
+      stores: [keyv],
     };
   }
 

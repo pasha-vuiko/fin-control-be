@@ -29,7 +29,7 @@ npm install
 
 ```bash
 # generate Prisma Client
-npm run prisma:generate
+npm run migrations:run
 ```
 
 ```bash
@@ -40,7 +40,7 @@ docker compose up
 Run this if you use local DB instance from docker-compose:
 
 ```bash
-npm run prisma:deploy
+npm run migrations:run
 ```
 
 Then run (watch mode)

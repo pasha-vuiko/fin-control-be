@@ -4,7 +4,6 @@ import { DynamicModule, Module } from '@nestjs/common';
 import { JsonCacheInterceptor } from '@shared/modules/redis/interceptors/json-cache/json-cache.interceptor';
 import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
 import { redisModuleOptionsProvider } from '@shared/modules/redis/providers/redis-module-options.provider';
-import { redisStoreProvider } from '@shared/modules/redis/providers/redis-store.provider';
 import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 import { RedisService } from '@shared/modules/redis/services/redis/redis.service';
 
@@ -22,11 +21,10 @@ export class RedisModule {
       imports: [
         CacheModule.registerAsync({
           useClass: RedisConfigService,
-          extraProviders: [redisStoreProvider, moduleOptionsProvider],
+          extraProviders: [moduleOptionsProvider],
         }),
       ],
       providers: [
-        redisStoreProvider,
         moduleOptionsProvider,
         RedisService,
         RedisConfigService,
