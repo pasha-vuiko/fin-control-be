@@ -41,14 +41,14 @@ export class CustomersRepository implements ICustomersRepository {
     return await this.drizzle
       .transaction(
         async tx => {
-          return await Promise.all([
-            tx.select().from(Customer).limit(take).offset(skip),
-            tx.$count(Customer),
-          ]);
+          const customers = await tx.select().from(Customer).limit(take).offset(skip);
+          const total = await tx.$count(Customer);
+
+          return { customers, total };
         },
         { isolationLevel: 'repeatable read' },
       )
-      .then(([customers, total]) => ({
+      .then(({ customers, total }) => ({
         items: this.mapCustomersFromPrismaToCustomers(customers),
         total,
       }));

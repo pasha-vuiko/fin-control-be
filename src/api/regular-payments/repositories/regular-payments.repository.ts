@@ -40,19 +40,20 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
 
     return await this.prismaService.$drizzle
       .transaction(
-        async tx =>
-          await Promise.all([
-            tx
-              .select()
-              .from(RegularPayment)
-              .where(and(...whereConditions))
-              .limit(take)
-              .offset(skip),
-            tx.$count(RegularPayment, and(...whereConditions)),
-          ]),
+        async tx => {
+          const regularPayments = await tx
+            .select()
+            .from(RegularPayment)
+            .where(and(...whereConditions))
+            .limit(take)
+            .offset(skip);
+          const total = await tx.$count(RegularPayment, and(...whereConditions));
+
+          return { regularPayments, total };
+        },
         { isolationLevel: 'repeatable read' },
       )
-      .then(([regularPayments, total]) => ({
+      .then(({ regularPayments, total }) => ({
         items: this.mapPrismaRegularPaymentsToRegularPayments(regularPayments),
         total,
       }));

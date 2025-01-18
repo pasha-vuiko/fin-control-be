@@ -29,14 +29,13 @@ export class ExpensesRepository implements IExpensesRepository {
     const { take, skip } = getPrismaPaginationParams(pagination);
 
     return await this.prismaService.$drizzle
-      .transaction(
-        async tx =>
-          await Promise.all([
-            tx.select().from(Expense).limit(take).offset(skip),
-            tx.$count(Expense),
-          ]),
-      )
-      .then(([expenses, total]) => ({
+      .transaction(async tx => {
+        const expenses = await tx.select().from(Expense).limit(take).offset(skip);
+        const total = await tx.$count(Expense);
+
+        return { expenses, total };
+      })
+      .then(({ expenses, total }) => ({
         items: this.mapExpensesFromPrismaToExpenses(expenses),
         total,
       }));
@@ -50,19 +49,18 @@ export class ExpensesRepository implements IExpensesRepository {
     const { take, skip } = getPrismaPaginationParams(pagination);
 
     return await this.prismaService.$drizzle
-      .transaction(
-        async tx =>
-          await Promise.all([
-            tx
-              .select()
-              .from(Expense)
-              .where(eq(Expense.customerId, customerId))
-              .limit(take)
-              .offset(skip),
-            tx.$count(Expense),
-          ]),
-      )
-      .then(([expenses, total]) => ({
+      .transaction(async tx => {
+        const expenses = await tx
+          .select()
+          .from(Expense)
+          .where(eq(Expense.customerId, customerId))
+          .limit(take)
+          .offset(skip);
+        const total = await tx.$count(Expense, eq(Expense.customerId, customerId));
+
+        return { expenses, total };
+      })
+      .then(({ expenses, total }) => ({
         items: this.mapExpensesFromPrismaToExpenses(expenses),
         total,
       }));
