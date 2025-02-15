@@ -2,6 +2,7 @@ import path from 'node:path';
 
 import { FastifyServerOptions } from 'fastify';
 
+import { packageJsonInfo } from '@shared/constants/package-json-info';
 import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
 import { checkEnvVarsSet } from '@shared/utils/check-env-vars-set';
 import { generateRequestId } from '@shared/utils/generate-request-id.util';
@@ -16,7 +17,7 @@ setUtcTimezone();
 export const config = {
   app: {
     port: process.env.PORT as string,
-    version: process.env.APP_VERSION,
+    version: process.env.APP_VERSION || packageJsonInfo.version,
     mode: process.env.NODE_ENV,
     isDevelopment: process.env.NODE_ENV === 'development',
     logger: {
