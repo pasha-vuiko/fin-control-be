@@ -9,6 +9,7 @@ import { Inject, Injectable, OnApplicationShutdown, OnModuleInit } from '@nestjs
 import { Logger } from '@shared/modules/logger/loggers/logger';
 import { PRISMA_MODULE_OPTIONS } from '@shared/modules/prisma/constants/prisma-module-options-injection-token';
 import { TPrismaOptions } from '@shared/modules/prisma/types/prisma-options.type';
+import { omitObjKeys } from '@shared/utils/omit-obj-keys.util';
 
 @Injectable()
 export class PrismaService<
@@ -21,13 +22,24 @@ export class PrismaService<
   private static pgPool: Pool;
   public readonly $drizzle: NodePgDatabase<DrizzleSchema>;
 
-  constructor(@Inject(PRISMA_MODULE_OPTIONS) options: TPrismaOptions) {
+  constructor(@Inject(PRISMA_MODULE_OPTIONS) options?: TPrismaOptions) {
+    const definedOptions = options ?? {};
+    const { applicationName } = definedOptions;
     const connectionString = `${process.env.DATABASE_URL}`;
 
-    const pool = new Pool({ connectionString, Client: pg.native?.Client });
-    const adapter = new PrismaPg(pool);
+    const pool = new Pool({
+      connectionString: connectionString,
+      application_name: applicationName,
+      Client: pg.native?.Client,
+    });
+    const adapter = new PrismaPg({
+      connectionString: connectionString,
+      application_name: applicationName,
+      Client: pg.native?.Client,
+    });
+
     super({
-      ...options,
+      ...omitObjKeys(definedOptions, 'applicationName'),
       adapter,
       log: [
         {

@@ -18,7 +18,8 @@ RUN apk add --update \
     && npm prune --production \
     && npx clean-modules -y \
     && npm uninstall -g clean-modules \
-    && npm cache clean --force
+    && npm cache clean --force \
+    && rm -rf /root/.npm
 
 ENV APP_PORT=3000 \
     APP_VERSION=${VERSION:-unknown} \

@@ -21,7 +21,6 @@ export type TPrismaDrizzleClient = DynamicClientExtensionThis<
     model: NonNullable<unknown>;
     query: NonNullable<unknown>;
     client: { $drizzle: () => PrismaPgDatabase };
-  },
-  NonNullable<unknown>
+  }
 > &
   PrismaService;
