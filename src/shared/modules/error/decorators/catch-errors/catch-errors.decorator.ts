@@ -9,7 +9,7 @@ import { isAsyncFn } from '@shared/utils/is-async-fn';
  *
  * @param ErrorClassConstructor Class constructor of error to be handled
  * @param handler Error handler function
- * @description Catches method exceptions of specified error class constructor with
+ * @description Catches method exceptions to specified error class constructor with
  * handler function,
  * Turns entry method to async even if it wasn't async before
  */
