@@ -18,11 +18,11 @@ services:
   #      - '3001:3000'
   #      - '9229:9229'
   #    depends_on:
-  #      - redis
+  #      - valkey
   #      - postgres
 
-  redis:
-    image: redis:7.4.1
+  valkey:
+    image: valkey/valkey:8.1.1
     restart: unless-stopped
     ports:
       - '6379:6379'

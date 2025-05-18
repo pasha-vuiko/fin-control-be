@@ -3,7 +3,7 @@ import path from 'node:path';
 import { FastifyServerOptions } from 'fastify';
 
 import { packageJsonInfo } from '@shared/constants/package-json-info';
-import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
+import { ICacheModuleOptions } from '@shared/modules/cache/interfaces/cache-module-options.interface';
 import { checkEnvVarsSet } from '@shared/utils/check-env-vars-set';
 import { generateRequestId } from '@shared/utils/generate-request-id.util';
 
@@ -49,14 +49,14 @@ export const config = {
     },
   },
   cache: {
-    redis: {
-      host: process.env.REDIS_CONFIG_HOST,
-      port: Number(process.env.REDIS_CONFIG_PORT),
-      name: process.env.REDIS_CONFIG_NAME,
-      sentinels: mapRedisSentinels(process.env.REDIS_CONFIG_SENTINELS),
-      ttl: Number(process.env.REDIS_TTL), // seconds
+    valkey: {
+      host: process.env.VALKEY_CONFIG_HOST,
+      port: Number(process.env.VALKEY_CONFIG_PORT),
+      name: process.env.VALKEY_CONFIG_NAME,
+      sentinels: mapValkeySentinels(process.env.VALKEY_CONFIG_SENTINELS),
+      ttl: Number(process.env.VALKEY_TTL), // seconds
       enableAutoPipelining: true,
-    } satisfies IRedisModuleOptions,
+    } satisfies ICacheModuleOptions,
   },
   auth: {
     auth0Domain: process.env.AUTH_AUTH0_DOMAIN as string,
@@ -65,14 +65,14 @@ export const config = {
   },
 } as const;
 
-function mapRedisSentinels(
-  stringRedisSentinels: string | undefined,
+function mapValkeySentinels(
+  stringValkeySentinels: string | undefined,
 ): Array<{ host: string; port: number }> | undefined {
-  if (!stringRedisSentinels) {
+  if (!stringValkeySentinels) {
     return undefined;
   }
 
-  return stringRedisSentinels.split(',').map((hostPort: string) => {
+  return stringValkeySentinels.split(',').map((hostPort: string) => {
     const [sentinelHost, sentinelPort] = hostPort.split(':', 2);
 
     return {

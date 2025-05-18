@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import Redis from 'ioredis';
+import Valkey from 'iovalkey';
 import { lastValueFrom, of } from 'rxjs';
 import { afterEach, expect } from 'vitest';
 
@@ -7,8 +7,8 @@ import { CallHandler, ExecutionContext } from '@nestjs/common';
 import { AbstractHttpAdapter, HttpAdapterHost, Reflector } from '@nestjs/core';
 
 import { USER_REQ_PROPERTY } from '@shared/modules/auth/constants/user-req-property';
-import { JsonCacheInterceptor } from '@shared/modules/redis/interceptors/json-cache/json-cache.interceptor';
-import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
+import { JsonCacheInterceptor } from '@shared/modules/cache/interceptors/json-cache/json-cache.interceptor';
+import { CacheConfigService } from '@shared/modules/cache/services/cache-config/cache-config.service';
 
 import { getMockedInstance } from '../../../../../../test/utils/get-mocked-instance.util';
 
@@ -17,7 +17,7 @@ describe('JsonCacheInterceptor', () => {
   let interceptor: JsonCacheInterceptor;
   let reflector: Reflector;
   let httpAdapterHost: HttpAdapterHost;
-  let ioRedisInstance: Redis;
+  let ioValkeyInstance: Valkey;
   let context: ExecutionContext;
   let next: CallHandler;
 
@@ -30,8 +30,8 @@ describe('JsonCacheInterceptor', () => {
       } as unknown as AbstractHttpAdapter,
     } as unknown as HttpAdapterHost;
 
-    ioRedisInstance = getMockedInstance(Redis);
-    vi.spyOn(RedisConfigService, 'getIoRedisInstance').mockReturnValue(ioRedisInstance);
+    ioValkeyInstance = getMockedInstance(Valkey);
+    vi.spyOn(CacheConfigService, 'getIoValkeyInstance').mockReturnValue(ioValkeyInstance);
 
     interceptor = new JsonCacheInterceptor(reflector, httpAdapterHost, {});
     context = {
@@ -60,18 +60,18 @@ describe('JsonCacheInterceptor', () => {
     it('should return cached value if present', async () => {
       const cachedValue = `{"data":"test"}`;
 
-      vi.spyOn(ioRedisInstance, 'get').mockResolvedValue(cachedValue);
+      vi.spyOn(ioValkeyInstance, 'get').mockResolvedValue(cachedValue);
 
       const result$ = await interceptor.intercept(context, next);
       const resultPromise = await lastValueFrom(result$);
 
       expect(resultPromise).toEqual(cachedValue);
-      expect(ioRedisInstance.get).toHaveBeenCalledWith('user_123:/test-url');
+      expect(ioValkeyInstance.get).toHaveBeenCalledWith('user_123:/test-url');
     });
 
     it('should call next.handle() and do not set cache if request is not cacheable', async () => {
-      vi.spyOn(ioRedisInstance, 'get').mockResolvedValue(null);
-      vi.spyOn(ioRedisInstance, 'set').mockResolvedValue('OK');
+      vi.spyOn(ioValkeyInstance, 'get').mockResolvedValue(null);
+      vi.spyOn(ioValkeyInstance, 'set').mockResolvedValue('OK');
 
       const localContext = {
         switchToHttp: () => ({
@@ -95,15 +95,15 @@ describe('JsonCacheInterceptor', () => {
 
       vi.spyOn(interceptor as any, 'getCacheKey').mockReturnValueOnce(MOCK_URL);
       vi.spyOn(reflector, 'get').mockReturnValue(MOCK_MANUAL_TTL);
-      vi.spyOn(ioRedisInstance, 'get').mockResolvedValue(null);
-      vi.spyOn(ioRedisInstance, 'set').mockResolvedValue('OK');
+      vi.spyOn(ioValkeyInstance, 'get').mockResolvedValue(null);
+      vi.spyOn(ioValkeyInstance, 'set').mockResolvedValue('OK');
 
       const result$ = await interceptor.intercept(context, next);
       const resultPromise = await lastValueFrom(result$);
 
       expect(resultPromise).toEqual({ data: 'test' });
-      expect(ioRedisInstance.get).toHaveBeenCalledWith(MOCK_URL);
-      expect(ioRedisInstance.setex).toHaveBeenCalledWith(
+      expect(ioValkeyInstance.get).toHaveBeenCalledWith(MOCK_URL);
+      expect(ioValkeyInstance.setex).toHaveBeenCalledWith(
         'user_123:/test-url',
         MOCK_MANUAL_TTL,
         `{"data":"test"}`,
@@ -111,15 +111,15 @@ describe('JsonCacheInterceptor', () => {
     });
 
     it('should call next.handle() and set cache without manual TTL if no cached value', async () => {
-      vi.spyOn(ioRedisInstance, 'get').mockResolvedValue(null);
-      vi.spyOn(ioRedisInstance, 'set').mockResolvedValue('OK');
+      vi.spyOn(ioValkeyInstance, 'get').mockResolvedValue(null);
+      vi.spyOn(ioValkeyInstance, 'set').mockResolvedValue('OK');
 
       const result$ = await interceptor.intercept(context, next);
       const resultPromise = await lastValueFrom(result$);
 
       expect(resultPromise).toEqual({ data: 'test' });
-      expect(ioRedisInstance.get).toHaveBeenCalledWith('user_123:/test-url');
-      expect(ioRedisInstance.set).toHaveBeenCalledWith(
+      expect(ioValkeyInstance.get).toHaveBeenCalledWith('user_123:/test-url');
+      expect(ioValkeyInstance.set).toHaveBeenCalledWith(
         'user_123:/test-url',
         `{"data":"test"}`,
       );
@@ -132,18 +132,18 @@ describe('JsonCacheInterceptor', () => {
       const resultPromise = await lastValueFrom(result$);
 
       expect(resultPromise).toEqual({ data: 'test' });
-      expect(ioRedisInstance.get).not.toHaveBeenCalled();
-      expect(ioRedisInstance.set).not.toHaveBeenCalled();
+      expect(ioValkeyInstance.get).not.toHaveBeenCalled();
+      expect(ioValkeyInstance.set).not.toHaveBeenCalled();
     });
 
     it('should handle exceptions and proceed without cache', async () => {
-      vi.spyOn(ioRedisInstance, 'get').mockRejectedValue(new Error('Redis error'));
+      vi.spyOn(ioValkeyInstance, 'get').mockRejectedValue(new Error('Valkey error'));
 
       const result$ = await interceptor.intercept(context, next);
       const resultPromise = await lastValueFrom(result$);
 
       expect(resultPromise).toEqual({ data: 'test' });
-      expect(ioRedisInstance.get).toHaveBeenCalledWith('user_123:/test-url');
+      expect(ioValkeyInstance.get).toHaveBeenCalledWith('user_123:/test-url');
     });
   });
 });

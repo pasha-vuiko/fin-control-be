@@ -8,7 +8,7 @@ Tech Stack:
 * [NestJS (Fastify)](https://docs.nestjs.com) as a freamwork
 * [Prisma](https://www.prisma.io) as an ORM
 * [PostgreSQL](https://www.postgresql.org) as a primary DB
-* [Redis](https://redis.com) as DB for caching
+* [Valkey](https://valkey.io) as DB for caching
 * [Pino](https://github.com/pinojs/pino) as a logger
 * [Jest](https://jestjs.io/) for unit and integration tests
 

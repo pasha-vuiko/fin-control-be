@@ -1,24 +1,24 @@
-import Redis from 'ioredis';
+import Valkey from 'iovalkey';
 
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 
+import { DEFAULT_CACHE_TTL } from '@shared/modules/cache/constants/defaults';
+import { ICacheModuleOptions } from '@shared/modules/cache/interfaces/cache-module-options.interface';
+import { CACHE_MODULE_OPTIONS } from '@shared/modules/cache/providers/cache-module-options.provider';
+import { CacheConfigService } from '@shared/modules/cache/services/cache-config/cache-config.service';
 import { CatchErrors } from '@shared/modules/error/decorators/catch-errors/catch-errors.decorator';
 import { internalErrHandler } from '@shared/modules/error/handlers/internal-err-handler';
-import { DEFAULT_CACHE_TTL } from '@shared/modules/redis/constants/defaults';
-import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
-import { REDIS_MODULE_OPTIONS } from '@shared/modules/redis/providers/redis-module-options.provider';
-import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 
 @Injectable()
-export class RedisService {
-  private ioRedisInstance: Redis;
+export class ValkeyService {
+  private ioValkeyInstance: Valkey;
 
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    @Inject(REDIS_MODULE_OPTIONS) private moduleOptions: IRedisModuleOptions,
+    @Inject(CACHE_MODULE_OPTIONS) private moduleOptions: ICacheModuleOptions,
   ) {
-    this.ioRedisInstance = RedisConfigService.getIoRedisInstance();
+    this.ioValkeyInstance = CacheConfigService.getIoValkeyInstance();
   }
 
   /***
@@ -61,9 +61,9 @@ export class RedisService {
     }
 
     if (typeof value === 'object' || typeof value === 'boolean') {
-      await this.ioRedisInstance.set(key, JSON.stringify(value), 'KEEPTTL');
+      await this.ioValkeyInstance.set(key, JSON.stringify(value), 'KEEPTTL');
     } else {
-      await this.ioRedisInstance.set(key, value, 'KEEPTTL');
+      await this.ioValkeyInstance.set(key, value, 'KEEPTTL');
     }
 
     return value;
@@ -75,7 +75,7 @@ export class RedisService {
     value: string,
     ttl = this.moduleOptions.ttl ?? DEFAULT_CACHE_TTL,
   ): Promise<string> {
-    await this.ioRedisInstance.setex(cacheKey, ttl, value);
+    await this.ioValkeyInstance.setex(cacheKey, ttl, value);
 
     return value;
   }
@@ -87,24 +87,24 @@ export class RedisService {
 
   @CatchErrors(internalErrHandler)
   public async getRaw(cacheKey: string): Promise<string | null> {
-    return await this.ioRedisInstance.get(cacheKey);
+    return await this.ioValkeyInstance.get(cacheKey);
   }
 
   @CatchErrors(internalErrHandler)
   public async ttl(cacheKey: string): Promise<number> {
-    return await this.ioRedisInstance.ttl(cacheKey);
+    return await this.ioValkeyInstance.ttl(cacheKey);
   }
 
   @CatchErrors(internalErrHandler)
   public async checkIfExists(cacheKey: string): Promise<boolean> {
-    const result = await this.ioRedisInstance.exists(cacheKey);
+    const result = await this.ioValkeyInstance.exists(cacheKey);
 
     return Boolean(result);
   }
 
   @CatchErrors(internalErrHandler)
   public async delete(cacheKey: string): Promise<boolean> {
-    const result = await this.ioRedisInstance.del(cacheKey);
+    const result = await this.ioValkeyInstance.del(cacheKey);
 
     return Boolean(result);
   }

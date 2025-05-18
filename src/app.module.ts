@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 
 import { AuthModule } from '@shared/modules/auth/auth.module';
+import { CacheModule } from '@shared/modules/cache/cache.module';
 import { LogFormat } from '@shared/modules/logger/interfaces/logger-options.interface';
 import { LoggerModule } from '@shared/modules/logger/logger.module';
 import { LogLevel } from '@shared/modules/logger/types';
 import { PrismaModule } from '@shared/modules/prisma/prisma.module';
-import { RedisModule } from '@shared/modules/redis/redis.module';
 
 import { CustomersModule } from '@api/customers/customers.module';
 import { ExpensesModule } from '@api/expenses/expenses.module';
@@ -32,7 +32,7 @@ const loggerConfig = config.app.logger;
       clientId: config.auth.auth0ClientId as string,
       secret: config.auth.auth0ClientSecret as string,
     }),
-    RedisModule.forRoot(config.cache.redis),
+    CacheModule.forRoot(config.cache.valkey),
     LoggerModule.forRoot(loggerConfig.level as LogLevel, {
       ignorePaths: loggerConfig.requestLoggerIgnorePaths,
       logFormat: loggerConfig.prettyPrint ? LogFormat.PRETTY : LogFormat.JSON,

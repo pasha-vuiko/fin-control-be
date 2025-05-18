@@ -1,31 +1,31 @@
 import { Cache } from 'cache-manager';
-import Redis from 'ioredis';
+import Valkey from 'iovalkey';
 import { afterEach, vi } from 'vitest';
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { DEFAULT_CACHE_TTL } from '@shared/modules/redis/constants/defaults';
-import { REDIS_MODULE_OPTIONS } from '@shared/modules/redis/providers/redis-module-options.provider';
-import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
+import { DEFAULT_CACHE_TTL } from '@shared/modules/cache/constants/defaults';
+import { CACHE_MODULE_OPTIONS } from '@shared/modules/cache/providers/cache-module-options.provider';
+import { CacheConfigService } from '@shared/modules/cache/services/cache-config/cache-config.service';
 
 import { getMockedInstance } from '../../../../../../test/utils/get-mocked-instance.util';
-import { RedisService } from './redis.service';
+import { ValkeyService } from './valkey.service';
 
 // eslint-disable-next-line max-lines-per-function
-describe('RedisService()', () => {
-  let service: RedisService;
+describe('ValkeyService()', () => {
+  let service: ValkeyService;
   let cacheManager: Cache;
-  let ioRedisInstance: Redis;
+  let ioValkeyInstance: Valkey;
 
   beforeEach(async () => {
-    vi.spyOn(RedisConfigService, 'getIoRedisInstance').mockReturnValue(
-      getMockedInstance(Redis),
+    vi.spyOn(CacheConfigService, 'getIoValkeyInstance').mockReturnValue(
+      getMockedInstance(Valkey),
     );
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        RedisService,
+        ValkeyService,
         {
           provide: CACHE_MANAGER,
           useValue: {
@@ -35,15 +35,15 @@ describe('RedisService()', () => {
           },
         },
         {
-          provide: REDIS_MODULE_OPTIONS,
+          provide: CACHE_MODULE_OPTIONS,
           useValue: {},
         },
       ],
     }).compile();
 
-    service = module.get<RedisService>(RedisService);
+    service = module.get<ValkeyService>(ValkeyService);
     cacheManager = module.get<Cache>(CACHE_MANAGER);
-    ioRedisInstance = RedisConfigService.getIoRedisInstance();
+    ioValkeyInstance = CacheConfigService.getIoValkeyInstance();
   });
 
   afterEach(() => {
@@ -71,7 +71,7 @@ describe('RedisService()', () => {
     it('should set value in cache and return it', async () => {
       const cacheKey = 'test-key';
       const value = { data: 'test' };
-      vi.spyOn(cacheManager, 'set').mockResolvedValue();
+      vi.spyOn(cacheManager, 'set').mockResolvedValue(undefined);
 
       const result = await service.set(cacheKey, value);
 
@@ -83,15 +83,15 @@ describe('RedisService()', () => {
   });
 
   describe('setRaw()', () => {
-    it('should set raw value in Redis and return it', async () => {
+    it('should set raw value in Valkey and return it', async () => {
       const cacheKey = 'test-key';
       const value = 'raw-value';
-      vi.spyOn(ioRedisInstance, 'set').mockResolvedValue('OK');
+      vi.spyOn(ioValkeyInstance, 'set').mockResolvedValue('OK');
 
       const result = await service.setRaw(cacheKey, value);
 
       expect(result).toEqual(value);
-      expect(ioRedisInstance.setex).toHaveBeenCalledWith(
+      expect(ioValkeyInstance.setex).toHaveBeenCalledWith(
         cacheKey,
         DEFAULT_CACHE_TTL,
         value,
@@ -113,15 +113,15 @@ describe('RedisService()', () => {
   });
 
   describe('getRaw()', () => {
-    it('should return raw value from Redis if exists', async () => {
+    it('should return raw value from Valkey if exists', async () => {
       const cacheKey = 'test-key';
       const rawValue = 'raw-value';
-      vi.spyOn(ioRedisInstance, 'get').mockResolvedValue(rawValue);
+      vi.spyOn(ioValkeyInstance, 'get').mockResolvedValue(rawValue);
 
       const result = await service.getRaw(cacheKey);
 
       expect(result).toEqual(rawValue);
-      expect(ioRedisInstance.get).toHaveBeenCalledWith(cacheKey);
+      expect(ioValkeyInstance.get).toHaveBeenCalledWith(cacheKey);
     });
   });
 
@@ -129,12 +129,12 @@ describe('RedisService()', () => {
     it('should return ttl of the cache key', async () => {
       const cacheKey = 'test-key';
       const ttlValue = 60;
-      vi.spyOn(ioRedisInstance, 'ttl').mockResolvedValue(ttlValue);
+      vi.spyOn(ioValkeyInstance, 'ttl').mockResolvedValue(ttlValue);
 
       const result = await service.ttl(cacheKey);
 
       expect(result).toEqual(ttlValue);
-      expect(ioRedisInstance.ttl).toHaveBeenCalledWith(cacheKey);
+      expect(ioValkeyInstance.ttl).toHaveBeenCalledWith(cacheKey);
     });
   });
 });

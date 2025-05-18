@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import Redis from 'ioredis';
+import Valkey from 'iovalkey';
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
@@ -16,15 +16,15 @@ import { HttpAdapterHost, Reflector } from '@nestjs/core';
 
 import { USER_REQ_PROPERTY } from '@shared/modules/auth/constants/user-req-property';
 import { IAuth0User } from '@shared/modules/auth/interfaces/auth0-user.interface';
+import { ICacheModuleOptions } from '@shared/modules/cache/interfaces/cache-module-options.interface';
+import { CACHE_MODULE_OPTIONS } from '@shared/modules/cache/providers/cache-module-options.provider';
+import { CacheConfigService } from '@shared/modules/cache/services/cache-config/cache-config.service';
 import { Logger } from '@shared/modules/logger/loggers/logger';
-import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
-import { REDIS_MODULE_OPTIONS } from '@shared/modules/redis/providers/redis-module-options.provider';
-import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 import { createAsyncCacheDedupe } from '@shared/utils/create-async-cache-dedupe';
 
 @Injectable()
 export class JsonCacheInterceptor implements NestInterceptor {
-  private ioRedisInstance: Redis;
+  private ioValkeyInstance: Valkey;
   private logger = new Logger(JsonCacheInterceptor.name);
   private readonly getCachedResponse: (key: string) => Promise<string | null>;
 
@@ -33,10 +33,12 @@ export class JsonCacheInterceptor implements NestInterceptor {
   constructor(
     protected readonly reflector: Reflector,
     protected readonly httpAdapterHost: HttpAdapterHost,
-    @Inject(REDIS_MODULE_OPTIONS) private moduleOptions: IRedisModuleOptions,
+    @Inject(CACHE_MODULE_OPTIONS) private moduleOptions: ICacheModuleOptions,
   ) {
-    this.ioRedisInstance = RedisConfigService.getIoRedisInstance();
-    this.getCachedResponse = createAsyncCacheDedupe(key => this.ioRedisInstance.get(key));
+    this.ioValkeyInstance = CacheConfigService.getIoValkeyInstance();
+    this.getCachedResponse = createAsyncCacheDedupe(key =>
+      this.ioValkeyInstance.get(key),
+    );
   }
 
   async intercept(
@@ -119,12 +121,12 @@ export class JsonCacheInterceptor implements NestInterceptor {
 
     try {
       if (typeof ttl === 'number') {
-        await this.ioRedisInstance.setex(key, ttl, serializedResponseBody);
+        await this.ioValkeyInstance.setex(key, ttl, serializedResponseBody);
 
         return;
       }
 
-      await this.ioRedisInstance.set(key, serializedResponseBody);
+      await this.ioValkeyInstance.set(key, serializedResponseBody);
     } catch (err: Error | any) {
       this.logger.error(
         `An error has occurred when inserting "key: ${key}", "value: ${responseBody}"`,

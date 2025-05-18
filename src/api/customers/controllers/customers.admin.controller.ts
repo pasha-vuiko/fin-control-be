@@ -5,8 +5,8 @@ import { ApiPagePaginatedRes } from '@shared/decorators/swagger/api-page-paginet
 import { PagePaginationResEntity } from '@shared/entities/page-pagination-res.entity';
 import { Auth } from '@shared/modules/auth/decorators/auth.decorator';
 import { Roles } from '@shared/modules/auth/enums/roles';
+import { JsonCache } from '@shared/modules/cache/decorators/json-cache.decorator';
 import { ApiAppExceptionsRes } from '@shared/modules/error/open-api/api-app-exceptions-response.decorator';
-import { JsonCache } from '@shared/modules/redis/decorators/json-cache.decorator';
 
 import { CustomerUpdateDto } from '@api/customers/dto/customer-update.dto';
 import { CustomersFindDto } from '@api/customers/dto/customers-find.dto';

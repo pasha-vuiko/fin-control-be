@@ -17,8 +17,8 @@ import { Auth } from '@shared/modules/auth/decorators/auth.decorator';
 import { User } from '@shared/modules/auth/decorators/user.decorator';
 import { Roles } from '@shared/modules/auth/enums/roles';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
+import { JsonCache } from '@shared/modules/cache/decorators/json-cache.decorator';
 import { ApiAppExceptionsRes } from '@shared/modules/error/open-api/api-app-exceptions-response.decorator';
-import { JsonCache } from '@shared/modules/redis/decorators/json-cache.decorator';
 
 import { ExpensesFindDto } from '@api/expenses/dto/expenses-find.dto';
 import { ExpenseEntity } from '@api/expenses/entities/expense.entity';
