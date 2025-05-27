@@ -1,4 +1,4 @@
-import { Customer as PrismaCustomer } from '@prisma/client';
+import { Customer as PrismaCustomer } from '@prisma-definitions/client';
 import { eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres/driver';
 
