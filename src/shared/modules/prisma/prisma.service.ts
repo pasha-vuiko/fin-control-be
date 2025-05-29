@@ -1,5 +1,6 @@
-import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma-definitions/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { AnyRelations } from 'drizzle-orm';
 import { drizzle as pgDrizzle } from 'drizzle-orm/node-postgres';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres/driver';
 import pg, { Pool } from 'pg';
@@ -72,12 +73,14 @@ export class PrismaService<
       );
   }
 
-  getDrizzleWithSchema<Schema extends Record<string, unknown>>(
-    schema: Schema,
-  ): NodePgDatabase<Schema> {
-    return pgDrizzle({
+  getDrizzleWithSchema<
+    TSchema extends Record<string, unknown>,
+    TRelations extends AnyRelations,
+  >(schema: TSchema, relations: TRelations): NodePgDatabase<TSchema, TRelations> {
+    return pgDrizzle<TSchema, TRelations>({
       client: PrismaService.pgPool,
       schema,
+      relations,
     });
   }
 

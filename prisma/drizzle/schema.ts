@@ -1,4 +1,4 @@
-import { relations, sql } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import {
   decimal,
   foreignKey,
@@ -113,28 +113,3 @@ export const RegularPayment = pgTable(
       .onUpdate('cascade'),
   }),
 );
-
-export const CustomerRelations = relations(Customer, ({ many }) => ({
-  expense: many(Expense, {
-    relationName: 'CustomerToExpense',
-  }),
-  regularPayment: many(RegularPayment, {
-    relationName: 'CustomerToRegularPayment',
-  }),
-}));
-
-export const ExpenseRelations = relations(Expense, ({ one }) => ({
-  customer: one(Customer, {
-    relationName: 'CustomerToExpense',
-    fields: [Expense.customerId],
-    references: [Customer.id],
-  }),
-}));
-
-export const RegularPaymentRelations = relations(RegularPayment, ({ one }) => ({
-  customer: one(Customer, {
-    relationName: 'CustomerToRegularPayment',
-    fields: [RegularPayment.customerId],
-    references: [Customer.id],
-  }),
-}));
