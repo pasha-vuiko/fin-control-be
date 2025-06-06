@@ -54,7 +54,7 @@ describe('RedisService()', () => {
     it('should return cached value if exists', async () => {
       const cacheKey = 'test-key';
       const cachedValue = { data: 'cached' };
-      vi.spyOn(cacheManager, 'wrap').mockResolvedValue(cachedValue);
+      vi.spyOn(cacheManager, 'wrap').mockResolvedValue(cachedValue as any);
 
       const result = await service.wrap(cacheKey, async () => ({ data: 'fresh' }));
 
@@ -71,7 +71,7 @@ describe('RedisService()', () => {
     it('should set value in cache and return it', async () => {
       const cacheKey = 'test-key';
       const value = { data: 'test' };
-      vi.spyOn(cacheManager, 'set').mockResolvedValue();
+      vi.spyOn(cacheManager, 'set').mockResolvedValue(undefined);
 
       const result = await service.set(cacheKey, value);
 
