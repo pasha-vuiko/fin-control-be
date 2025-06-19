@@ -92,6 +92,7 @@
     "node": "22.16.0"
   },
   "overrides": {
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "fastify": "^5.4.0"
   }
 }
