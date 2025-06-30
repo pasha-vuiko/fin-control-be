@@ -1,4 +1,4 @@
-import { Sex } from '@prisma/client';
+import { Sex } from '@prisma-definitions/client';
 import { vitest } from 'vitest';
 
 import { PagePaginationDto } from '@shared/dto/page-pagination.dto';

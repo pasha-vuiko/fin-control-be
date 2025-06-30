@@ -1,4 +1,4 @@
-import { relations, sql } from 'drizzle-orm'
+import { sql } from 'drizzle-orm'
 import { decimal, foreignKey, pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 
 export const Sex = pgEnum('Sex', ['MALE', 'FEMALE'])

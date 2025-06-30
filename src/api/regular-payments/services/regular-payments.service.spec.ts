@@ -1,4 +1,4 @@
-import { ExpenseCategory } from '@prisma/client';
+import { ExpenseCategory } from '@prisma-definitions/client';
 import { vitest } from 'vitest';
 
 import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-output.entity';

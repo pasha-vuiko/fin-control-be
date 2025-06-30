@@ -21,6 +21,7 @@
     "skipLibCheck": true,
     "types": ["vitest/globals"],
     "paths": {
+      "@prisma-definitions/*": ["prisma/*"],
       "@api/*": ["src/api/*"],
       "@shared/*": ["src/shared/*"]
     }

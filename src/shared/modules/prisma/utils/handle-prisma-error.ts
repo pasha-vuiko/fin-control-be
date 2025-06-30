@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma-definitions/client';
 import { DrizzleQueryError } from 'drizzle-orm/errors';
 import { DatabaseError as PgDatabaseError } from 'pg';
 import { PostgresError } from 'pg-error-enum';
