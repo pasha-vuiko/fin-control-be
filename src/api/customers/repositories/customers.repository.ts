@@ -1,7 +1,4 @@
-import { Customer as PrismaCustomer } from '@prisma-definitions/client';
-import { relations } from '@prisma-definitions/drizzle/relations';
-import { Customer } from '@prisma-definitions/drizzle/schema';
-import * as drizzleSchema from '@prisma-definitions/drizzle/schema';
+import { Customer as PrismaCustomer } from '@prisma/client';
 import { eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres/driver';
 
@@ -18,6 +15,10 @@ import { ICustomerCreateInput } from '@api/customers/interfaces/customer-create-
 import { ICustomerUpdateInput } from '@api/customers/interfaces/customer-update-input.interface';
 import { ICustomer } from '@api/customers/interfaces/customer.interface';
 import { ICustomersRepository } from '@api/customers/interfaces/customers.repository.interface';
+
+import { relations } from '../../../../prisma/drizzle/relations';
+import { Customer } from '../../../../prisma/drizzle/schema';
+import * as drizzleSchema from '../../../../prisma/drizzle/schema';
 
 @Injectable()
 export class CustomersRepository implements ICustomersRepository {
