@@ -84,32 +84,44 @@ function handlePrismaClientKnownRequestError(
     case PrismaError.TLSConnectionError:
       throw new TLSConnectionErrorException('DB TLS connection error', { cause: err });
     case PrismaError.ValueTooLongForColumnType: {
-      // TODO add more info about the field that is too long
-      throw new ValueTooLongForColumnTypeException('Value is too long for column type', {
-        cause: err,
-      });
+      const targetField = Array.isArray(err.meta?.target)
+        ? err.meta?.target.join(', ')
+        : (err.meta?.target ?? 'unknown field');
+      throw new ValueTooLongForColumnTypeException(
+        `Value is too long for column type in: [${targetField}]`,
+        { cause: err },
+      );
     }
     case PrismaError.InvalidValue: {
-      // TODO add more info about the field that is invalid
-      throw new InvalidValueException('Invalid value', { cause: err });
-    }
-    case PrismaError.ValidationError: {
-      // TODO add more info about the field that is invalid
-      throw new ValidationErrorException('Validation error', { cause: err });
-    }
-    case PrismaError.QueryParsingError: {
-      // TODO add more info about the field that is invalid
-      throw new QueryParsingErrorException('Query parsing error', { cause: err });
-    }
-    case PrismaError.QueryValidationError: {
-      // TODO add more info about the field that is invalid
-      throw new QueryValidationErrorException('Query validation error', { cause: err });
-    }
-    case PrismaError.NullConstraintViolation: {
-      // TODO add more info about the field that is invalid
-      throw new NullConstraintViolationException('Null constraint violation', {
+      const fieldName = err.meta?.field_name || err.meta?.target || 'unknown field';
+      throw new InvalidValueException(`Invalid value in: [${fieldName}]`, {
         cause: err,
       });
+    }
+    case PrismaError.ValidationError: {
+      const fieldName = err.meta?.field_name || err.meta?.target || 'unknown field';
+      throw new ValidationErrorException(`Validation error in: [${fieldName}]`, {
+        cause: err,
+      });
+    }
+    case PrismaError.QueryParsingError: {
+      const query = err.meta?.query || 'unknown query';
+      throw new QueryParsingErrorException(`Query parsing error in: ${query}`, {
+        cause: err,
+      });
+    }
+    case PrismaError.QueryValidationError: {
+      const query = err.meta?.query || 'unknown query';
+      throw new QueryValidationErrorException(`Query validation error in: ${query}`, {
+        cause: err,
+      });
+    }
+    case PrismaError.NullConstraintViolation: {
+      const fieldName = err.meta?.field_name || err.meta?.target || 'unknown field';
+      throw new NullConstraintViolationException(
+        `Null constraint violation in: [${fieldName}]`,
+        { cause: err },
+      );
     }
     default: {
       logger.error(err.message, err);
