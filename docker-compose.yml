@@ -18,15 +18,19 @@ services:
   #      - '3001:3000'
   #      - '9229:9229'
   #    depends_on:
-  #      - redis
+  #      - valkey
   #      - postgres
 
-  redis:
-    image: redis:7.4.1
+  valkey:
+    image: bitnami/valkey:8.1.2
     restart: unless-stopped
     ports:
       - '6379:6379'
-
+#    network_mode: host  # Required for clustering, optional otherwise
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - VALKEY_IO_THREADS_DO_READS=yes
+      - VALKEY_IO_THREADS=4
 
   postgres:
     image: postgres:17
