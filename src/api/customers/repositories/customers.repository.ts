@@ -1,4 +1,4 @@
-import { Customer as PrismaCustomer } from '@prisma-definitions/client';
+import { Customer as PrismaCustomer } from '@prisma-definitions/client/client';
 import { relations } from '@prisma-definitions/drizzle/relations';
 import { Customer } from '@prisma-definitions/drizzle/schema';
 import * as drizzleSchema from '@prisma-definitions/drizzle/schema';

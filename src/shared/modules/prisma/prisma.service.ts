@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma-definitions/client';
+import { PrismaClient } from '@prisma-definitions/client/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { AnyRelations } from 'drizzle-orm';
 import { drizzle as pgDrizzle } from 'drizzle-orm/node-postgres';

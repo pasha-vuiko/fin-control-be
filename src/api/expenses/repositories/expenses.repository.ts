@@ -1,4 +1,4 @@
-import { Expense as PrismaExpense } from '@prisma-definitions/client';
+import { Expense as PrismaExpense } from '@prisma-definitions/client/client';
 import { eq } from 'drizzle-orm';
 
 import { Injectable } from '@nestjs/common';

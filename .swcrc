@@ -13,7 +13,8 @@
     },
     "paths": {
       "@api/*": ["src/api/*"],
-      "@shared/*": ["src/shared/*"]
+      "@shared/*": ["src/shared/*"],
+      "@prisma-definitions/*": ["prisma/*"]
     },
     "baseUrl": "./"
   },

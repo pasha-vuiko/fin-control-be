@@ -8,6 +8,7 @@ export default defineConfig({
     alias: {
       '@api': './src/api',
       '@shared': './src/shared',
+      '@prisma-definitions': './prisma',
     },
   },
   plugins: [

@@ -1,4 +1,4 @@
-import { ExpenseCategory } from '@prisma-definitions/client';
+import { ExpenseCategory } from '@prisma-definitions/client/client';
 import { SQLWrapper, and, eq } from 'drizzle-orm';
 
 import { Injectable } from '@nestjs/common';

@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma-definitions/client';
+import { Prisma } from '@prisma-definitions/client/client';
 
 export type TPrismaOptions<
   T extends Prisma.PrismaClientOptions = Prisma.PrismaClientOptions,

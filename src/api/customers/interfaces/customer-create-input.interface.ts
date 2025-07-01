@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma-definitions/client';
+import { Prisma } from '@prisma-definitions/client/client';
 
 import CustomerCreateInput = Prisma.CustomerCreateInput;
 

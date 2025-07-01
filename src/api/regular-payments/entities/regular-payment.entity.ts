@@ -1,4 +1,4 @@
-import { ExpenseCategory } from '@prisma-definitions/client';
+import { ExpenseCategory } from '@prisma-definitions/client/client';
 
 import { ApiProperty } from '@nestjs/swagger';
 

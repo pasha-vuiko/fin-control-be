@@ -1,5 +1,5 @@
-import { Prisma } from '@prisma-definitions/client';
-import { DrizzleQueryError } from 'drizzle-orm/errors';
+import { Prisma } from '@prisma-definitions/client/client';
+import { DrizzleError } from 'drizzle-orm/errors';
 import { DatabaseError as PgDatabaseError } from 'pg';
 import { PostgresError } from 'pg-error-enum';
 import { PrismaError } from 'prisma-error-enum';
@@ -49,7 +49,7 @@ export const handlePrismaError: TErrorHandler = (
   if (err instanceof PgDatabaseError) {
     handlePgDatabaseError(err, logger);
   }
-  if (err instanceof DrizzleQueryError) {
+  if (err instanceof DrizzleError) {
     handleDrizzleQueryError(err, logger);
   }
 
@@ -193,7 +193,7 @@ function handlePgDatabaseError(err: PgDatabaseError, logger: Logger): void {
   }
 }
 
-function handleDrizzleQueryError(err: DrizzleQueryError, logger: Logger): void {
+function handleDrizzleQueryError(err: DrizzleError, logger: Logger): void {
   if (err.cause instanceof PgDatabaseError) {
     return handlePgDatabaseError(err.cause, logger);
   }

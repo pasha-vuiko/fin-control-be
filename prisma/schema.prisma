@@ -2,6 +2,7 @@ generator client {
   provider        = "prisma-client"
   previewFeatures = ["relationJoins", "driverAdapters", "metrics", "queryCompiler"]
   output          = "./client"
+  moduleFormat    = "cjs"
 }
 
 generator drizzle {

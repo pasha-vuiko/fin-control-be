@@ -1,4 +1,4 @@
-import { Sex } from '@prisma-definitions/client';
+import { Sex } from '@prisma-definitions/client/client';
 
 import { ApiProperty } from '@nestjs/swagger';
 

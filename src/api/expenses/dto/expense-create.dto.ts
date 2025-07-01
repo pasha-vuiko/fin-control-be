@@ -1,4 +1,4 @@
-import { ExpenseCategory } from '@prisma-definitions/client';
+import { ExpenseCategory } from '@prisma-definitions/client/client';
 import { IsDateString, IsEnum, IsNotEmpty } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
