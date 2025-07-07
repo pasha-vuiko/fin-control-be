@@ -6,25 +6,25 @@ export const Sex = pgEnum('Sex', ['MALE', 'FEMALE'])
 export const ExpenseCategory = pgEnum('ExpenseCategory', ['FOOD', 'MEDICINE', 'CLOTHES', 'UTILITY_PAYMENTS', 'ANIMALS', 'PLACES_TO_EAT', 'EDUCATION', 'BOOKS', 'TAXI', 'GIFTS', 'DONATIONS', 'MOBILE_SERVICES', 'SUBSCRIPTIONS', 'SPORTS', 'ENTERTAINMENT', 'BEAUTY_AND_CARE', 'HOUSEHOLD', 'PUBLIC_TRANSPORT', 'TRAVEL', 'OTHER'])
 
 export const Customer = pgTable('Customer', {
-	id: text('id').notNull().primaryKey().default(sql`uuid(4)`),
+	id: text('id').notNull().primaryKey().default(sql`uuid()`),
 	userId: text('userId').notNull().unique(),
 	firstName: text('firstName').notNull(),
 	lastName: text('lastName').notNull(),
 	email: text('email').notNull().unique(),
 	phone: text('phone').unique(),
-	birthdate: timestamp('birthdate', { precision: 3 }).notNull(),
+	birthdate: timestamp('birthdate', { precision: 6, withTimezone: true }).notNull(),
 	sex: Sex('sex').notNull(),
-	createdAt: timestamp('createdAt', { precision: 3 }).notNull().defaultNow(),
-	updatedAt: timestamp('updatedAt', { precision: 3 }).notNull().defaultNow()
+	createdAt: timestamp('createdAt', { precision: 6, withTimezone: true }).notNull().defaultNow(),
+	updatedAt: timestamp('updatedAt', { precision: 6, withTimezone: true }).notNull().defaultNow()
 });
 
 export const Expense = pgTable('Expense', {
-	id: text('id').notNull().primaryKey().default(sql`uuid(4)`),
+	id: text('id').notNull().primaryKey().default(sql`uuid()`),
 	customerId: text('customerId').notNull(),
-	amount: decimal('amount', { precision: 65, scale: 30 }).notNull(),
-	date: timestamp('date', { precision: 3 }).notNull(),
-	createdAt: timestamp('createdAt', { precision: 3 }).notNull().defaultNow(),
-	updatedAt: timestamp('updatedAt', { precision: 3 }).notNull().defaultNow(),
+	amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
+	date: timestamp('date', { precision: 6, withTimezone: true }).notNull(),
+	createdAt: timestamp('createdAt', { precision: 6, withTimezone: true }).notNull().defaultNow(),
+	updatedAt: timestamp('updatedAt', { precision: 6, withTimezone: true }).notNull().defaultNow(),
 	category: ExpenseCategory('category').notNull()
 }, (Expense) => ({
 	'Expense_customer_fkey': foreignKey({
@@ -37,12 +37,12 @@ export const Expense = pgTable('Expense', {
 }));
 
 export const RegularPayment = pgTable('RegularPayment', {
-	id: text('id').notNull().primaryKey().default(sql`uuid(4)`),
+	id: text('id').notNull().primaryKey().default(sql`uuid()`),
 	customerId: text('customerId').notNull(),
-	amount: decimal('amount', { precision: 65, scale: 30 }).notNull(),
-	dateOfCharge: timestamp('dateOfCharge', { precision: 3 }).notNull(),
-	createdAt: timestamp('createdAt', { precision: 3 }).notNull().defaultNow(),
-	updatedAt: timestamp('updatedAt', { precision: 3 }).notNull().defaultNow(),
+	amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
+	dateOfCharge: timestamp('dateOfCharge', { precision: 6, withTimezone: true }).notNull(),
+	createdAt: timestamp('createdAt', { precision: 6, withTimezone: true }).notNull().defaultNow(),
+	updatedAt: timestamp('updatedAt', { precision: 6, withTimezone: true }).notNull().defaultNow(),
 	category: ExpenseCategory('category').notNull()
 }, (RegularPayment) => ({
 	'RegularPayment_customer_fkey': foreignKey({
