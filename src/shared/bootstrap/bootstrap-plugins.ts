@@ -118,7 +118,7 @@ async function setupDdosProtection(app: NestFastifyApplication): Promise<void> {
 
 async function setupShutdownHooks(app: NestFastifyApplication): Promise<void> {
   app.enableShutdownHooks();
-  // Accessing pino instance to have access to 'fatal' log level
+  // Accessing a pino instance to have access to the 'fatal' log level
   const pinoLogger = app
     .get(PinoLogger)
     .getInternalLogger()
