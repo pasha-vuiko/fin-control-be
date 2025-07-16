@@ -4,6 +4,9 @@ ARG VERSION
 
 WORKDIR /opt/app/
 
+# Enable compile cache early
+ENV NODE_COMPILE_CACHE=/opt/app/.node_cache
+
 COPY package.json package-lock.json nest-cli.json .env.example tsconfig.json tsconfig.build.json /opt/app/
 COPY ./src /opt/app/src/
 COPY ./prisma /opt/app/prisma/
