@@ -32,11 +32,7 @@ export class PrismaService<
       application_name: applicationName,
       Client: pg.native?.Client,
     });
-    const adapter = new PrismaPg({
-      connectionString: connectionString,
-      application_name: applicationName,
-      Client: pg.native?.Client,
-    });
+    const adapter = new PrismaPg(pool);
 
     super({
       ...omitObjKeys(definedOptions, 'applicationName'),
