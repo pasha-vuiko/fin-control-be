@@ -1,0 +1,5 @@
+export enum EmailVerificationFlowState {
+  NOT_STARTED = 'NOT_STARTED',
+  STARTED_NOT_VERIFIED = 'STARTED_NOT_VERIFIED',
+  VERIFIED = 'VERIFIED',
+}

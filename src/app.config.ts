@@ -1,4 +1,5 @@
 import path from 'node:path';
+import * as process from 'node:process';
 
 import { FastifyServerOptions } from 'fastify';
 
@@ -62,6 +63,12 @@ export const config = {
     auth0Domain: process.env.AUTH_AUTH0_DOMAIN as string,
     auth0ClientId: process.env.AUTH_CLIENT_ID,
     auth0ClientSecret: process.env.AUTH_CLIENT_SECRET,
+  },
+  aws: {
+    region: process.env.AWS_REGION as string,
+    ses: {
+      senderEmail: process.env.AWS_SES_SENDER_EMAIL as string,
+    },
   },
 } as const;
 

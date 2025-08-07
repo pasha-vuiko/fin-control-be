@@ -7,14 +7,10 @@ import { ICustomer } from '@api/customers/interfaces/customer.interface';
 
 export interface ICustomersRepository {
   findMany(pagination: IPagePaginationInput): Promise<IPagePaginationOutput<ICustomer>>;
-
   findOneById(id: string): Promise<ICustomer | null>;
-
   findOneByUserId(id: string): Promise<ICustomer | null>;
-
   create(data: ICustomerCreateInput): Promise<ICustomer>;
-
   update(id: string, data: ICustomerUpdateInput): Promise<ICustomer | null>;
-
+  updateEmail(userId: string, email: string): Promise<void>;
   remove(id: string): Promise<ICustomer | null>;
 }

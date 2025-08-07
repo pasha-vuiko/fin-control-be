@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { AuthModule } from '@shared/modules/auth/auth.module';
+import { EmailModule } from '@shared/modules/email/email.module';
 import { LogFormat } from '@shared/modules/logger/interfaces/logger-options.interface';
 import { LoggerModule } from '@shared/modules/logger/logger.module';
 import { LogLevel } from '@shared/modules/logger/types';
@@ -36,6 +37,12 @@ const loggerConfig = config.app.logger;
     LoggerModule.forRoot(loggerConfig.level as LogLevel, {
       ignorePaths: loggerConfig.requestLoggerIgnorePaths,
       logFormat: loggerConfig.prettyPrint ? LogFormat.PRETTY : LogFormat.JSON,
+    }),
+    EmailModule.forRoot({
+      ses: {
+        awsRegion: config.aws.region,
+        senderEmail: config.aws.ses.senderEmail,
+      },
     }),
   ],
   controllers: [AppController],

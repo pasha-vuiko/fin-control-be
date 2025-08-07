@@ -117,6 +117,13 @@ export class CustomersRepository implements ICustomersRepository {
       });
   }
 
+  async updateEmail(userId: string, email: string): Promise<void> {
+    await this.drizzle
+      .update(Customer)
+      .set({ email, updatedAt: new Date() })
+      .where(eq(Customer.userId, userId));
+  }
+
   @CatchErrors(handlePrismaError)
   async remove(id: string): Promise<ICustomer | null> {
     return await this.drizzle
