@@ -20,17 +20,16 @@ import { CustomersService } from '../services/customers.service';
 // TODO Add method to change customers Email and Phone
 @ApiTags('Customers')
 @Controller('customers')
+@Auth(Roles.CUSTOMER)
 export class CustomersController {
   constructor(private readonly customerService: CustomersService) {}
 
   @ApiAppExceptionsRes(CustomerNotFoundException)
-  @Auth(Roles.CUSTOMER)
   @Get('self')
   findSelf(@User() user: IUser): Promise<CustomerEntity> {
     return this.customerService.findOneByUserId(user.id);
   }
 
-  @Auth(Roles.CUSTOMER)
   @Post()
   create(
     @Body() createCustomerDto: CustomerCreateDto,
@@ -40,7 +39,6 @@ export class CustomersController {
   }
 
   @ApiAppExceptionsRes(CustomerNotFoundException)
-  @Auth(Roles.CUSTOMER)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -51,7 +49,6 @@ export class CustomersController {
   }
 
   @ApiAppExceptionsRes(CustomerNotFoundException, ForbiddenToDeleteCustomerException)
-  @Auth(Roles.CUSTOMER)
   @Delete(':id')
   remove(@Param('id') id: string, @User() user: IUser): Promise<CustomerEntity> {
     return this.customerService.removeAsCustomer(id, user.id);

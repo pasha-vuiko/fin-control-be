@@ -13,12 +13,12 @@ import { ExpenseIsNotFoundException } from '@api/expenses/exceptions/exception-c
 import { ExpensesService } from '@api/expenses/services/expenses.service';
 
 @ApiTags('Admin/Expenses')
-@Controller('admin/expenses')
+@Controller('customer-admin/expenses')
+@Auth(Roles.ADMIN)
 export class ExpensesAdminController {
   constructor(private readonly expensesService: ExpensesService) {}
 
   @ApiPagePaginatedRes(ExpenseEntity)
-  @Auth(Roles.ADMIN)
   @Get()
   async findMany(
     @Query() findDto: ExpensesFindDto,
@@ -34,7 +34,6 @@ export class ExpensesAdminController {
   }
 
   @ApiAppExceptionsRes(ExpenseIsNotFoundException)
-  @Auth(Roles.ADMIN)
   @Get(':id')
   findOne(@Param('id') id: string): Promise<ExpenseEntity> {
     return this.expensesService.findOneAsAdmin(id);

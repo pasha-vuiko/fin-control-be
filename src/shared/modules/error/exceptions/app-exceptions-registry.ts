@@ -43,8 +43,11 @@ export class AppExceptionsRegistry {
     const foundRegisteredFlow = this.exceptionFlowsRegistry.get(flowCode);
 
     if (foundRegisteredFlow) {
+      const reservedCodes = this.exceptionFlowsRegistry.keys().toArray().sort();
+
       throw new Error(
-        `Flow with code ${flowCode} already exists, existing flow name: ${foundRegisteredFlow}`,
+        `Flow with code ${flowCode} already exists, existing flow name: ${foundRegisteredFlow}, ` +
+          `reserved codes: ${JSON.stringify(reservedCodes)}`,
       );
     }
 

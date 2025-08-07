@@ -26,8 +26,8 @@ export const User = createParamDecorator(
       name: name,
       firstName: given_name,
       lastName: family_name,
-      nickname: nickname,
-      email: email,
+      nickname,
+      email,
       emailVerified: email_verified,
       roles: Auth0Guard.getRolesFromAuth0User(auth0User),
     };

@@ -13,12 +13,12 @@ import { RegularPaymentNotFoundException } from '@api/regular-payments/exception
 import { RegularPaymentsService } from '@api/regular-payments/services/regular-payments.service';
 
 @ApiTags('Admin/Regular Payments')
-@Controller('admin/regular-payments')
+@Controller('customer-admin/regular-payments')
+@Auth(Roles.ADMIN)
 export class RegularPaymentsAdminController {
   constructor(private readonly regularPaymentsService: RegularPaymentsService) {}
 
   @ApiPagePaginatedRes(RegularPaymentEntity)
-  @Auth(Roles.ADMIN)
   @Get()
   async findMany(
     @Query() findDto: RegularPaymentSearchDto,
@@ -34,7 +34,6 @@ export class RegularPaymentsAdminController {
   }
 
   @ApiAppExceptionsRes(RegularPaymentNotFoundException)
-  @Auth(Roles.ADMIN)
   @Get(':id')
   findOne(@Param('id') id: string): Promise<RegularPaymentEntity> {
     return this.regularPaymentsService.findOneAsAdmin(id);

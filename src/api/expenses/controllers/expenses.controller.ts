@@ -30,12 +30,12 @@ import { ExpensesService } from '../services/expenses.service';
 
 @ApiTags('Expenses')
 @Controller('expenses')
+@Auth(Roles.CUSTOMER)
 export class ExpensesController {
   constructor(private readonly expensesService: ExpensesService) {}
 
   @ApiPagePaginatedRes(ExpenseEntity)
   @JsonCache()
-  @Auth(Roles.CUSTOMER)
   @Get()
   async findMany(
     @Query() findDto: ExpensesFindDto,
@@ -53,13 +53,11 @@ export class ExpensesController {
 
   @ApiAppExceptionsRes(ExpenseIsNotFoundException)
   @JsonCache()
-  @Auth(Roles.CUSTOMER)
   @Get(':id')
   findOne(@Param('id') id: string, @User() user: IUser): Promise<ExpenseEntity> {
     return this.expensesService.findOneAsCustomer(id, user.id);
   }
 
-  @Auth(Roles.CUSTOMER)
   @ApiBody({ type: [ExpenseCreateDto] })
   @Post()
   create(
@@ -74,7 +72,6 @@ export class ExpensesController {
   }
 
   @ApiAppExceptionsRes(ExpenseIsNotFoundException)
-  @Auth(Roles.CUSTOMER)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -85,7 +82,6 @@ export class ExpensesController {
   }
 
   @ApiAppExceptionsRes(ExpenseIsNotFoundException)
-  @Auth(Roles.CUSTOMER)
   @Delete(':id')
   remove(@Param('id') id: string, @User() user: IUser): Promise<ExpenseEntity> {
     return this.expensesService.delete(id, user.id);

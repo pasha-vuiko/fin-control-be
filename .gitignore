@@ -46,11 +46,14 @@ lerna-debug.log*
 .env
 local-docker.env
 
+# SonarQube data
+/.scannerwork/
+
 # Local infrastructure data
 /local-infrastructure/data/cockroach-data
 /local-infrastructure/data/grafana-data
 /local-infrastructure/data/prometheus-data
 /local-infrastructure/data/sonarqube-data/
 /local-infrastructure/data/sonarqube-extensions/
-/.scannerwork/
 /local-infrastructure/data/postgres-data/
+/local-infrastructure/data/localstack-data/

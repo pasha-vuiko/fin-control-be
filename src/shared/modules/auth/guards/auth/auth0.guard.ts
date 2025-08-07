@@ -5,7 +5,7 @@ import { Reflector } from '@nestjs/core';
 
 import { AUTH_MODULE_OPTIONS } from '@shared/modules/auth/constants/auth-module-opts-injection-token';
 import { USER_REQ_PROPERTY } from '@shared/modules/auth/constants/user-req-property';
-import { AUTH_ROLES_META } from '@shared/modules/auth/decorators/auth.decorator';
+import { AuthRoles } from '@shared/modules/auth/decorators/auth-roles.decorator';
 import { Roles } from '@shared/modules/auth/enums/roles';
 import {
   AuthExpiredTokenException,
@@ -67,7 +67,9 @@ export class Auth0Guard implements CanActivate {
   }
 
   private getRequiredRoles(context: ExecutionContext): Roles[] {
-    const roles = this.reflector.get<Roles[]>(AUTH_ROLES_META, context.getHandler());
+    const roles =
+      this.reflector.get(AuthRoles, context.getHandler()) ??
+      this.reflector.get(AuthRoles, context.getClass());
 
     return roles ?? [];
   }

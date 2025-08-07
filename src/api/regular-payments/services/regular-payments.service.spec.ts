@@ -66,7 +66,7 @@ describe('RegularPaymentsService', () => {
   });
 
   describe('findManyAsAdmin()', () => {
-    it('should return all regular payments for admin with pagination', async () => {
+    it('should return all regular payments for customer-admin with pagination', async () => {
       const pagination: IPagePaginationInput = { page: 1, numOfItems: 10 };
       const regularPayment = structuredClone(mockRegularPayment);
       const dbResponse: IPagePaginationOutput<IRegularPayment> = {

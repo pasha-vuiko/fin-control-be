@@ -49,7 +49,7 @@ export class RedisService {
   }
 
   @CatchErrors(internalErrHandler)
-  public async update<T extends TCacheable>(key: string, value: T): Promise<T> {
+  public async update<T>(key: string, value: T): Promise<T> {
     const isCachable = !(
       typeof value === 'function' ||
       value === undefined ||
@@ -63,7 +63,7 @@ export class RedisService {
     if (typeof value === 'object' || typeof value === 'boolean') {
       await this.ioRedisInstance.set(key, JSON.stringify(value), 'KEEPTTL');
     } else {
-      await this.ioRedisInstance.set(key, value, 'KEEPTTL');
+      await this.ioRedisInstance.set(key, value as any, 'KEEPTTL');
     }
 
     return value;
@@ -109,5 +109,3 @@ export class RedisService {
     return Boolean(result);
   }
 }
-
-type TCacheable = string | number | boolean | Buffer | Record<string, any>;

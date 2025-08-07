@@ -15,13 +15,13 @@ import { CustomerNotFoundException } from '@api/customers/exceptions/exception-c
 import { CustomersService } from '@api/customers/services/customers.service';
 
 @ApiTags('Admin/Customers')
-@Controller('admin/customers')
+@Controller('customer-admin/customers')
+@Auth(Roles.ADMIN)
 export class CustomersAdminController {
   constructor(private readonly customersService: CustomersService) {}
 
   @JsonCache(3600)
   @ApiPagePaginatedRes(CustomerEntity)
-  @Auth(Roles.ADMIN)
   @Get()
   async findMany(
     @Query() findDto: CustomersFindDto,
@@ -39,14 +39,12 @@ export class CustomersAdminController {
   }
 
   @ApiAppExceptionsRes(CustomerNotFoundException)
-  @Auth(Roles.ADMIN)
   @Get(':id')
   findOne(@Param('id') id: string): Promise<CustomerEntity> {
     return this.customersService.findOneByIdAsAdmin(id);
   }
 
   @ApiAppExceptionsRes(CustomerNotFoundException)
-  @Auth(Roles.ADMIN)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -56,7 +54,6 @@ export class CustomersAdminController {
   }
 
   @ApiAppExceptionsRes(CustomerNotFoundException)
-  @Auth(Roles.ADMIN)
   @Delete(':id')
   remove(@Param('id') id: string): Promise<CustomerEntity> {
     return this.customersService.removeAsAdmin(id);
