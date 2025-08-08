@@ -12,8 +12,8 @@ import { getConstructorName } from '@shared/modules/logger/utils/get-constructor
 import { TConstructor } from '@shared/types/constructor.type';
 
 export class AppExceptionsRegistry {
-  private exceptionFlowsRegistry = new Map<number, string>();
-  private exceptionsRegistry = new Map<TAppErrorCode, AppException>();
+  private readonly exceptionFlowsRegistry = new Map<number, string>();
+  private readonly exceptionsRegistry = new Map<TAppErrorCode, AppException>();
 
   constructor() {
     // Register flow for common errors
@@ -43,7 +43,10 @@ export class AppExceptionsRegistry {
     const foundRegisteredFlow = this.exceptionFlowsRegistry.get(flowCode);
 
     if (foundRegisteredFlow) {
-      const reservedCodes = this.exceptionFlowsRegistry.keys().toArray().sort();
+      const reservedCodes = this.exceptionFlowsRegistry
+        .keys()
+        .toArray()
+        .sort((a, b) => a - b);
 
       throw new Error(
         `Flow with code ${flowCode} already exists, existing flow name: ${foundRegisteredFlow}, ` +

@@ -147,7 +147,9 @@ describe('RegularPaymentsService', () => {
       expect(customersService.findOneByUserId).toHaveBeenCalledWith(userId);
       expect(regularPaymentsRepository.create).toHaveBeenCalledWith({
         ...createDto,
-        customerId: customerId,
+        customerId,
+        amount: createDto.amount.toString(),
+        dateOfCharge: new Date(createDto.dateOfCharge),
       });
     });
   });
@@ -176,7 +178,10 @@ describe('RegularPaymentsService', () => {
 
       expect(result).toStrictEqual(expectedResult);
       expect(regularPaymentsService.findOneAsCustomer).toHaveBeenCalledWith(id, userId);
-      expect(regularPaymentsRepository.update).toHaveBeenCalledWith(id, updateDto);
+      expect(regularPaymentsRepository.update).toHaveBeenCalledWith(id, {
+        ...updateDto,
+        amount: updateDto.amount?.toString(),
+      });
     });
   });
 

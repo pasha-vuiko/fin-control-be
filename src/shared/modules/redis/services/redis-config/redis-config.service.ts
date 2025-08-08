@@ -14,9 +14,11 @@ import { omitObjKeys } from '@shared/utils/omit-obj-keys.util';
 export class RedisConfigService implements CacheOptionsFactory, OnApplicationShutdown {
   private static moduleOptions: IRedisModuleOptions;
   private static ioRedisInstance: Redis;
-  private static logger = new Logger('RedisConfigService');
+  private static readonly logger = new Logger('RedisConfigService');
 
-  constructor(@Inject(REDIS_MODULE_OPTIONS) private moduleOptions: IRedisModuleOptions) {
+  constructor(
+    @Inject(REDIS_MODULE_OPTIONS) private readonly moduleOptions: IRedisModuleOptions,
+  ) {
     RedisConfigService.moduleOptions = moduleOptions;
   }
 

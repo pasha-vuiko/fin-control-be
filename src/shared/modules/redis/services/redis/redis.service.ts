@@ -12,11 +12,11 @@ import { RedisConfigService } from '@shared/modules/redis/services/redis-config/
 
 @Injectable()
 export class RedisService {
-  private ioRedisInstance: Redis;
+  private readonly ioRedisInstance: Redis;
 
   constructor(
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    @Inject(REDIS_MODULE_OPTIONS) private moduleOptions: IRedisModuleOptions,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    @Inject(REDIS_MODULE_OPTIONS) private readonly moduleOptions: IRedisModuleOptions,
   ) {
     this.ioRedisInstance = RedisConfigService.getIoRedisInstance();
   }

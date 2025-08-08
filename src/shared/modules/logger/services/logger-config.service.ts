@@ -12,8 +12,8 @@ import { ILoggerOptions } from '@shared/modules/logger/interfaces/logger-options
 export class LoggerConfigService implements OnModuleInit {
   constructor(
     @Inject(LOGGER_MODULE_OPTIONS)
-    private loggerModuleOptions: ILoggerOptions,
-    private adapterHost: HttpAdapterHost<FastifyAdapter>,
+    private readonly loggerModuleOptions: ILoggerOptions,
+    private readonly adapterHost: HttpAdapterHost<FastifyAdapter>,
   ) {}
 
   async onModuleInit(): Promise<void> {

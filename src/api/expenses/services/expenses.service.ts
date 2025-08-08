@@ -16,8 +16,8 @@ import { ExpenseUpdateDto } from '../dto/expense-update.dto';
 @Injectable()
 export class ExpensesService {
   constructor(
-    @Inject(ExpensesRepository) private expensesRepository: IExpensesRepository,
-    private customersService: CustomersService,
+    @Inject(ExpensesRepository) private readonly expensesRepository: IExpensesRepository,
+    private readonly customersService: CustomersService,
   ) {}
 
   async findManyAsCustomer(
@@ -80,6 +80,8 @@ export class ExpensesService {
       dto => ({
         ...dto,
         customerId: customer.id,
+        amount: dto.amount.toString(),
+        date: new Date(dto.date),
       }),
     );
 
@@ -92,7 +94,7 @@ export class ExpensesService {
     expensesToCreate: IExpenseCreateInput[],
   ): Promise<ExpenseEntity[]> {
     return await this.expensesRepository
-      .createManyViaTransaction(expensesToCreate)
+      .createMany(expensesToCreate)
       .then(expenses => expenses.map(ExpenseEntity.fromExpenseObj));
   }
 
@@ -110,6 +112,8 @@ export class ExpensesService {
       .update(id, {
         ...updateExpenseDto,
         customerId: customer.id,
+        amount: updateExpenseDto.amount?.toString(),
+        date: updateExpenseDto.date ? new Date(updateExpenseDto.date) : undefined,
       })
       .then(ExpenseEntity.fromExpenseObj);
   }

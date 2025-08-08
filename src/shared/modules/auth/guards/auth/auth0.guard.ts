@@ -24,7 +24,7 @@ export class Auth0Guard implements CanActivate {
   private readonly jwtVerifierService: JWTVerifierService;
 
   constructor(
-    private reflector: Reflector,
+    private readonly reflector: Reflector,
     @Inject(AUTH_MODULE_OPTIONS)
     moduleOptions: IAuthModuleOptions,
   ) {
@@ -38,7 +38,7 @@ export class Auth0Guard implements CanActivate {
 
     const tokenPayload = await this.jwtVerifierService
       .verify(authToken)
-      .catch((e: Error | any) => {
+      .catch((e: Error) => {
         if (e.message.toLowerCase().includes('expired')) {
           throw new AuthExpiredTokenException();
         }

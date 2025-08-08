@@ -1,8 +1,10 @@
-import { Prisma } from '@prisma/client';
+import { InferInsertModel } from 'drizzle-orm';
 
-import RegularPaymentCreateInput = Prisma.RegularPaymentCreateInput;
+import { RegularPayment } from '../../../../prisma/drizzle/schema';
+
+type RegularPaymentCreateInput = InferInsertModel<typeof RegularPayment>;
 
 export interface IRegularPaymentCreateInput
-  extends Omit<RegularPaymentCreateInput, 'id' | 'customer'> {
+  extends Omit<RegularPaymentCreateInput, 'id'> {
   customerId: string;
 }

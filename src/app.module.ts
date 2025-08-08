@@ -28,7 +28,7 @@ const loggerConfig = config.app.logger;
       errorFormat: config.app.isDevelopment ? 'pretty' : 'minimal',
     }),
     AuthModule.forRoot({
-      domain: config.auth.auth0Domain as string,
+      domain: config.auth.auth0Domain,
       clientId: config.auth.auth0ClientId as string,
       secret: config.auth.auth0ClientSecret as string,
     }),

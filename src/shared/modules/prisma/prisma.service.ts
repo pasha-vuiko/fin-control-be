@@ -68,15 +68,6 @@ export class PrismaService<
       );
   }
 
-  getDrizzleWithSchema<Schema extends Record<string, unknown>>(
-    schema: Schema,
-  ): NodePgDatabase<Schema> {
-    return pgDrizzle({
-      client: PrismaService.pgPool,
-      schema,
-    });
-  }
-
   static getDrizzleWithSchema<Schema extends Record<string, unknown>>(
     schema: Schema,
   ): NodePgDatabase<Schema> {

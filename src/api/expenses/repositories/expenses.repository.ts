@@ -20,7 +20,7 @@ import { Expense } from '../../../../prisma/drizzle/schema';
 
 @Injectable()
 export class ExpensesRepository implements IExpensesRepository {
-  constructor(private prismaService: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService) {}
 
   @CatchErrors(handlePrismaError)
   async findMany(
@@ -87,28 +87,7 @@ export class ExpensesRepository implements IExpensesRepository {
 
       return {
         ...expenseToCreate,
-        amount: amount.toString(),
-        date: new Date(date),
-      };
-    });
-
-    return await this.prismaService.$drizzle
-      .insert(Expense)
-      .values(expensesToCreate)
-      .returning()
-      .then(createdExpenses => this.mapExpensesFromPrismaToExpenses(createdExpenses));
-  }
-
-  @CatchErrors(handlePrismaError)
-  async createManyViaTransaction(
-    createExpenseInputs: IExpenseCreateInput[],
-  ): Promise<IExpense[]> {
-    const expensesToCreate = createExpenseInputs.map(expenseToCreate => {
-      const { amount, date } = expenseToCreate;
-
-      return {
-        ...expenseToCreate,
-        amount: amount.toString(),
+        amount,
         date: new Date(date),
       };
     });

@@ -5,9 +5,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { IsDecimalNum } from '@shared/decorators/validation/is-decimal-num.decorator';
 
-import { IExpenseCreateInput } from '@api/expenses/interfaces/expense-create-input.interface';
-
-export class ExpenseCreateDto implements Omit<IExpenseCreateInput, 'customerId'> {
+export class ExpenseCreateDto {
   @IsDecimalNum()
   @IsNotEmpty()
   amount: number;

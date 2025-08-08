@@ -15,9 +15,9 @@ import { Logger } from '@shared/modules/logger/loggers/logger';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  private logger = new Logger(AllExceptionsFilter.name);
+  private readonly logger = new Logger(AllExceptionsFilter.name);
 
-  constructor(private config?: IAllExceptionsFilterConfig) {}
+  constructor(private readonly config?: IAllExceptionsFilterConfig) {}
 
   catch(
     exception: AppException | HttpException | FastifyError | Error,
