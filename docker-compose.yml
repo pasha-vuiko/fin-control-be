@@ -67,3 +67,12 @@ services:
     volumes:
       - ./local-infrastructure/data/sonarqube-data:/opt/sonarqube/data
       - ./local-infrastructure/data/sonarqube-extensions:/opt/sonarqube/extensions
+
+  dkron:
+    image: dkron/dkron:4.0.5
+    command: agent --server --bootstrap-expect=1 --node-name=node1
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8085:8080"
