@@ -1,4 +1,6 @@
 import { PrismaClient } from '@prisma-definitions/client/client';
+import { LogOptions } from '@prisma-definitions/client/internal/class';
+import { PrismaClientOptions } from '@prisma-definitions/client/internal/prismaNamespace';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { AnyRelations } from 'drizzle-orm';
 import { drizzle as pgDrizzle } from 'drizzle-orm/node-postgres';
@@ -16,7 +18,7 @@ import { omitObjKeys } from '@shared/utils/omit-obj-keys.util';
 export class PrismaService<
     DrizzleSchema extends Record<string, unknown> = Record<string, never>,
   >
-  extends PrismaClient
+  extends PrismaClient<PrismaClientOptions, LogOptions<PrismaClientOptions>>
   implements OnModuleInit, OnApplicationShutdown
 {
   private readonly logger = new Logger(PrismaService.name);
@@ -72,9 +74,7 @@ export class PrismaService<
   static getDrizzleWithSchema<
     TSchema extends Record<string, unknown>,
     TRelations extends AnyRelations,
-  >(
-    schema: TSchema, relations: TRelations
-  ): NodePgDatabase<TSchema, TRelations> {
+  >(schema: TSchema, relations: TRelations): NodePgDatabase<TSchema, TRelations> {
     return pgDrizzle<TSchema, TRelations>({
       client: PrismaService.pgPool,
       schema,
