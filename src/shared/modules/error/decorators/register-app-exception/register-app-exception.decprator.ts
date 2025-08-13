@@ -8,7 +8,47 @@ import {
 } from '@shared/modules/error/exceptions/exception-classes/app.exception';
 import { TConstructor } from '@shared/types/constructor.type';
 
-// TODO Add documentation
+/**
+ * Decorator that registers an {@link AppException}-derived class in the global {@link appExceptionsRegistry}.
+ *
+ * Use it on a custom exception class to:
+ *  - set a fixed error code (e.g., `"1.404.0"`)
+ *  - inject a default message
+ *  - auto-register the class in the registry on definition
+ *
+ * @template T extends new (...args: any[]) => AppException
+ * @param {TAppErrorCode} code - A dot-separated error code in the form `FLOW.HTTP.SEQ`.
+ *   The second part must be a valid HTTP status (400–599).
+ * @param {string} message - Default message used when an instance is constructed without an explicit message.
+ *
+ * @remarks
+ * - The decorated class must extend {@link AppException}.
+ * - The generated class name is suffixed with `Generated` for clarity in stack traces.
+ * - Supported constructor overloads for the decorated class instances:
+ *   1. (options: {@link IOptionsWithCause})
+ *   2. (message?: string, options?: {@link IAppExceptionsOptions})
+ *
+ * @throws {Error} If the HTTP code segment of error-code is not a number or is outside 400–599.
+ * @throws {Error} If the decorated class does not extend {@link AppException}.
+ *
+ * @see appExceptionsRegistry.registerException
+ * @see AppException
+ *
+ * @example
+ * ```ts
+ * @RegisterAppException('1.404.0', 'User not found')
+ * class UserNotFoundException extends AppException {}
+ *
+ * // Uses default message and code '1.404.0'
+ * throw new UserNotFoundException();
+ * ```
+ *
+ * @example
+ * ```ts
+ * // With a custom message and cause
+ * throw new UserNotFoundException('No user with id', { cause: err });
+ * ```
+ */
 // eslint-disable-next-line max-lines-per-function
 export const RegisterAppException = <T extends TConstructor<AppException>>(
   code: TAppErrorCode,
@@ -30,8 +70,7 @@ export const RegisterAppException = <T extends TConstructor<AppException>>(
   //@ts-expect-error wrong type of target, TConstructor used as more convenient
   // eslint-disable-next-line max-lines-per-function
   return (Constructor: T): T | void => {
-    const instanceForValidation: unknown = new Constructor();
-    if (!(instanceForValidation instanceof AppException)) {
+    if (!(Constructor.prototype instanceof AppException)) {
       throw new Error('Decorated class should be child of AppException');
     }
 
@@ -68,7 +107,7 @@ export const RegisterAppException = <T extends TConstructor<AppException>>(
         }
       }
     };
-    // Renaming generated class
+    // Renaming a generated class
     Object.defineProperty(GeneratedClass, 'name', {
       get: () => `${Constructor.name}Generated`,
     });

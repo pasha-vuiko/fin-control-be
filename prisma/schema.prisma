@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client"
-  previewFeatures = ["relationJoins", "driverAdapters", "metrics", "queryCompiler"]
+  previewFeatures = ["relationJoins", "driverAdapters", "queryCompiler"]
   output          = "./client"
   moduleFormat    = "cjs"
 }

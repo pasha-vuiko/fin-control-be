@@ -1,6 +1,7 @@
-import { SetMetadata, UseGuards, applyDecorators } from '@nestjs/common';
+import { UseGuards, applyDecorators } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
+import { AuthRoles } from '@shared/modules/auth/decorators/auth-roles.decorator';
 import { Roles } from '@shared/modules/auth/enums/roles';
 import {
   AuthExpiredTokenException,
@@ -10,16 +11,14 @@ import {
 import { Auth0Guard } from '@shared/modules/auth/guards/auth/auth0.guard';
 import { ApiAppExceptionsRes } from '@shared/modules/error/open-api/api-app-exceptions-response.decorator';
 
-export const AUTH_ROLES_META = Symbol('roles');
-
 /**
  *
  * @param roles one of roles should be present to access an endpoint
  * @constructor
  */
-export function Auth(...roles: Roles[]): MethodDecorator {
+export function Auth(...roles: Roles[]): MethodDecorator & ClassDecorator {
   return applyDecorators(
-    SetMetadata<symbol, Roles[]>(AUTH_ROLES_META, roles),
+    AuthRoles(roles),
     UseGuards(Auth0Guard),
     ApiBearerAuth(),
     ApiAppExceptionsRes(

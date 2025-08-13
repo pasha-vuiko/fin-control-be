@@ -7,8 +7,8 @@ export function rethrowError<E extends Error>(err: E): RethrowErrorService {
 // TODO Add ability to return value instead of throwing of an error
 class ThrowErrorWhenService {
   constructor(
-    private rethrowService: RethrowErrorService,
-    private InputErrorConstructor: TConstructor<Error>,
+    private readonly rethrowService: RethrowErrorService,
+    private readonly InputErrorConstructor: TConstructor<Error>,
   ) {}
 
   throw(error: Error): RethrowErrorService;

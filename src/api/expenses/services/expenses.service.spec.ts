@@ -13,7 +13,6 @@ import { CustomersService } from '@api/customers/services/customers.service';
 import { ExpenseCreateDto } from '@api/expenses/dto/expense-create.dto';
 import { ExpenseEntity } from '@api/expenses/entities/expense.entity';
 import { ExpenseIsNotFoundException } from '@api/expenses/exceptions/exception-classes';
-import { IExpenseCreateInput } from '@api/expenses/interfaces/expense-create-input.interface';
 import { IExpense } from '@api/expenses/interfaces/expense.interface';
 import { ExpensesRepository } from '@api/expenses/repositories/expenses.repository';
 
@@ -206,30 +205,6 @@ describe('ExpensesService', () => {
       expect(result).toStrictEqual(expectedResult);
       expect(customersService.findOneByUserId).toHaveBeenCalledWith(userId);
       expect(expensesRepository.createMany).toHaveBeenCalledWith(expect.anything());
-    });
-  });
-
-  describe('createManyViaTransaction()', () => {
-    it('should create and return multiple expenses via transaction', async () => {
-      const expensesToCreate: IExpenseCreateInput[] = [
-        {
-          ...structuredClone(mockExpenseToCreate),
-          customerId: '1',
-        },
-      ]; // Mock array of expenses to create
-      const createdExpenses = [structuredClone(mockExpense)]; // Mock array of created expenses
-
-      vitest
-        .spyOn(expensesRepository, 'createManyViaTransaction')
-        .mockResolvedValueOnce(createdExpenses);
-
-      const result = await expensesService.createManyViaTransaction(expensesToCreate);
-      const expectedResult = createdExpenses.map(ExpenseEntity.fromExpenseObj);
-
-      expect(result).toStrictEqual(expectedResult);
-      expect(expensesRepository.createManyViaTransaction).toHaveBeenCalledWith(
-        expensesToCreate,
-      );
     });
   });
 

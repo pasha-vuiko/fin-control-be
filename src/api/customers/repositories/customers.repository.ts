@@ -22,14 +22,14 @@ import { ICustomersRepository } from '@api/customers/interfaces/customers.reposi
 @Injectable()
 export class CustomersRepository implements ICustomersRepository {
   private readonly drizzle: NodePgDatabase<typeof drizzleSchema, typeof relations>;
-  private getOneByIdPreparedQuery = PrismaService.getDrizzle()
+  private readonly getOneByIdPreparedQuery = PrismaService.getDrizzle()
     .select()
     .from(Customer)
     .where(eq(Customer.id, sql.placeholder('id')))
     .prepare('getOneByIdPreparedQuery');
 
-  constructor(private prismaService: PrismaService) {
-    this.drizzle = prismaService.getDrizzleWithSchema(drizzleSchema, relations);
+  constructor(private readonly prismaService: PrismaService) {
+    this.drizzle = PrismaService.getDrizzleWithSchema(drizzleSchema, relations);
   }
 
   @CatchErrors(handlePrismaError)

@@ -8,6 +8,7 @@ import { IExpenseCreateInput } from '@api/expenses/interfaces/expense-create-inp
 import { ExpensesService } from '@api/expenses/services/expenses.service';
 import { RegularPaymentEntity } from '@api/regular-payments/entities/regular-payment.entity';
 import { RegularPaymentNotFoundException } from '@api/regular-payments/exceptions/exception-classes';
+import { IRegularPaymentUpdateInput } from '@api/regular-payments/interfaces/regular-payment-update-input.interface';
 import { IRegularPayment } from '@api/regular-payments/interfaces/regular-payment.interface';
 import { IRegularPaymentsRepository } from '@api/regular-payments/interfaces/regular-payments-repository.interface';
 import { RegularPaymentsRepository } from '@api/regular-payments/repositories/regular-payments.repository';
@@ -88,6 +89,8 @@ export class RegularPaymentsService {
       .create({
         ...createRegularPaymentDto,
         customerId: customer.id,
+        amount: createRegularPaymentDto.amount.toString(),
+        dateOfCharge: new Date(createRegularPaymentDto.dateOfCharge),
       })
       .then(RegularPaymentEntity.fromPlainObj);
   }
@@ -99,8 +102,16 @@ export class RegularPaymentsService {
   ): Promise<IRegularPayment> {
     await this.findOneAsCustomer(id, userId); // check if regular payment exists
 
+    const updateInput: IRegularPaymentUpdateInput = {
+      ...updateRegularPaymentDto,
+      amount: updateRegularPaymentDto.amount?.toString(),
+      dateOfCharge: updateRegularPaymentDto.dateOfCharge
+        ? new Date(updateRegularPaymentDto.dateOfCharge)
+        : undefined,
+    };
+
     return await this.regularPaymentsRepository
-      .update(id, updateRegularPaymentDto)
+      .update(id, updateInput)
       .then(RegularPaymentEntity.fromPlainObj);
   }
 
@@ -120,7 +131,7 @@ export class RegularPaymentsService {
       regularPayment => ({
         customerId: regularPayment.customerId,
         date: regularPayment.dateOfCharge,
-        amount: regularPayment.amount,
+        amount: regularPayment.amount.toString(),
         category: regularPayment.category,
       }),
     );

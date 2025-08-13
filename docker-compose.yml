@@ -44,35 +44,17 @@ services:
     volumes:
       - ./local-infrastructure/data/postgres-data:/var/lib/postgresql/data
 
-  prometheus:
-    image: prom/prometheus:v2.50.0
-    container_name: prometheus
-    restart: unless-stopped
+  localstack:
+    image: localstack/localstack
     ports:
-      - '9090:9090'
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yaml'
+      - "127.0.0.1:4566:4566"            # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559"  # external services port range
+    environment:
+      # LocalStack configuration: https://docs.localstack.cloud/references/configuration/
+      - DEBUG=${DEBUG:-0}
     volumes:
-      - ./local-infrastructure/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
-      - ./local-infrastructure/data/prometheus-data:/prometheus
-
-  grafana:
-    image: grafana/grafana-oss:10.3.3
-    container_name: grafana
-    restart: unless-stopped
-    ports:
-      - '3001:3000'
-    volumes:
-      - ./local-infrastructure/data/grafana-data:/var/lib/grafana
-
-  node_exporter:
-    image: quay.io/prometheus/node-exporter:v1.5.0
-    container_name: node_exporter
-    restart: unless-stopped
-    command: '--path.rootfs=/host'
-    pid: host
-    volumes:
-      - /:/host:ro,rslave
+      - "./local-infrastructure/data/localstack-data:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
 
   sonarqube:
     image: sonarqube
@@ -85,3 +67,12 @@ services:
     volumes:
       - ./local-infrastructure/data/sonarqube-data:/opt/sonarqube/data
       - ./local-infrastructure/data/sonarqube-extensions:/opt/sonarqube/extensions
+
+  dkron:
+    image: dkron/dkron:4.0.5
+    command: agent --server --bootstrap-expect=1 --node-name=node1
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8085:8080"

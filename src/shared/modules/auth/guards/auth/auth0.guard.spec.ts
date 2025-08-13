@@ -25,6 +25,7 @@ const mockContext = {
     getResponse: vitest.fn(),
   }),
   getHandler: vitest.fn(),
+  getClass: vitest.fn(),
 } as unknown as ExecutionContext;
 
 const mockReflector = {

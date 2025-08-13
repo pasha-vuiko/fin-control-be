@@ -9,8 +9,8 @@ import { IAuthModuleOptions } from '@shared/modules/auth/interfaces/auth-module-
 @Injectable()
 export class AuthConfigService implements OnModuleInit {
   constructor(
-    @Inject(AUTH_MODULE_OPTIONS) private authModuleOptions: IAuthModuleOptions,
-    private adapterHost: HttpAdapterHost<FastifyAdapter>,
+    @Inject(AUTH_MODULE_OPTIONS) private readonly authModuleOptions: IAuthModuleOptions,
+    private readonly adapterHost: HttpAdapterHost<FastifyAdapter>,
   ) {}
 
   async onModuleInit(): Promise<void> {

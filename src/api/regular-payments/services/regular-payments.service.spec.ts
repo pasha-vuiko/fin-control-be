@@ -66,7 +66,7 @@ describe('RegularPaymentsService', () => {
   });
 
   describe('findManyAsAdmin()', () => {
-    it('should return all regular payments for admin with pagination', async () => {
+    it('should return all regular payments for customer-admin with pagination', async () => {
       const pagination: IPagePaginationInput = { page: 1, numOfItems: 10 };
       const regularPayment = structuredClone(mockRegularPayment);
       const dbResponse: IPagePaginationOutput<IRegularPayment> = {
@@ -147,7 +147,9 @@ describe('RegularPaymentsService', () => {
       expect(customersService.findOneByUserId).toHaveBeenCalledWith(userId);
       expect(regularPaymentsRepository.create).toHaveBeenCalledWith({
         ...createDto,
-        customerId: customerId,
+        customerId,
+        amount: createDto.amount.toString(),
+        dateOfCharge: new Date(createDto.dateOfCharge),
       });
     });
   });
@@ -176,7 +178,10 @@ describe('RegularPaymentsService', () => {
 
       expect(result).toStrictEqual(expectedResult);
       expect(regularPaymentsService.findOneAsCustomer).toHaveBeenCalledWith(id, userId);
-      expect(regularPaymentsRepository.update).toHaveBeenCalledWith(id, updateDto);
+      expect(regularPaymentsRepository.update).toHaveBeenCalledWith(id, {
+        ...updateDto,
+        amount: updateDto.amount?.toString(),
+      });
     });
   });
 

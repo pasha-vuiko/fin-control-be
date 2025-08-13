@@ -13,31 +13,13 @@ import { packageJsonInfo } from '@shared/constants/package-json-info';
 import { AllExceptionsFilter } from '@shared/modules/error/exception-filters/all-exceptions/all-exceptions.filter';
 import { appExceptionsRegistry } from '@shared/modules/error/exceptions/app-exceptions-registry';
 import { PinoLogger } from '@shared/modules/logger/loggers/pino-logger.service';
+import { TConstructor } from '@shared/types/constructor.type';
 
-export async function bootstrapPlugins(
-  app: NestFastifyApplication,
-  isDevelopment: boolean,
-  openidConnectDomain: string,
-): Promise<void> {
-  // Enable CORS only for local development, CORS should be enabled in Reverse Proxy instead of the app
-  if (isDevelopment) {
-    app.enableCors();
-  }
-
-  setupVersioning(app);
-  setupExceptionFilters(app);
-  setupOpenApi(app, openidConnectDomain);
-  setupRequestsValidation(app, isDevelopment);
-  await setupDdosProtection(app);
-  await setupShutdownHooks(app);
-  await setupMetrics(app);
-}
-
-function setupExceptionFilters(app: NestFastifyApplication): void {
+export function setupExceptionFilters(app: NestFastifyApplication): void {
   app.useGlobalFilters(new AllExceptionsFilter());
 }
 
-function setupRequestsValidation(
+export function setupRequestsValidation(
   app: NestFastifyApplication,
   isDevelopment: boolean,
 ): void {
@@ -52,7 +34,12 @@ function setupRequestsValidation(
   );
 }
 
-function setupOpenApi(app: NestFastifyApplication, openidConnectDomain: string): void {
+// eslint-disable-next-line max-lines-per-function
+export function setupOpenApi(
+  app: NestFastifyApplication,
+  openidConnectDomain: string,
+  extraModels: TConstructor[] = [],
+): void {
   const swaggerConfig = new DocumentBuilder()
     .setTitle(packageJsonInfo.name)
     .setDescription(packageJsonInfo.description)
@@ -76,7 +63,9 @@ function setupOpenApi(app: NestFastifyApplication, openidConnectDomain: string):
     reply.redirect(`/${OPEN_API_URL}${req.raw.url}`, 308);
   });
 
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  const document = SwaggerModule.createDocument(app, swaggerConfig, {
+    extraModels,
+  });
 
   SwaggerModule.setup(OPEN_API_URL, app, document, customOptions);
 
@@ -90,7 +79,7 @@ function setupOpenApi(app: NestFastifyApplication, openidConnectDomain: string):
   });
 }
 
-async function setupMetrics(app: NestFastifyApplication): Promise<void> {
+export async function setupMetrics(app: NestFastifyApplication): Promise<void> {
   await app.register(fastifyMetrics, {
     endpoint: '/metrics',
     defaultMetrics: {
@@ -99,14 +88,14 @@ async function setupMetrics(app: NestFastifyApplication): Promise<void> {
   });
 }
 
-function setupVersioning(app: NestFastifyApplication): void {
+export function setupVersioning(app: NestFastifyApplication): void {
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: '1',
   });
 }
 
-async function setupDdosProtection(app: NestFastifyApplication): Promise<void> {
+export async function setupDdosProtection(app: NestFastifyApplication): Promise<void> {
   await app.register(fastifyUnderPressure, {
     maxEventLoopDelay: 300,
     maxEventLoopUtilization: 0.98,
@@ -116,9 +105,9 @@ async function setupDdosProtection(app: NestFastifyApplication): Promise<void> {
   });
 }
 
-async function setupShutdownHooks(app: NestFastifyApplication): Promise<void> {
+export async function setupShutdownHooks(app: NestFastifyApplication): Promise<void> {
   app.enableShutdownHooks();
-  // Accessing pino instance to have access to 'fatal' log level
+  // Accessing a pino instance to have access to the 'fatal' log level
   const pinoLogger = app
     .get(PinoLogger)
     .getInternalLogger()

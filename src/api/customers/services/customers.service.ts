@@ -19,7 +19,8 @@ import { CustomerUpdateDto } from '../dto/customer-update.dto';
 @Injectable()
 export class CustomersService {
   constructor(
-    @Inject(CustomersRepository) private customerRepository: ICustomersRepository,
+    @Inject(CustomersRepository)
+    private readonly customerRepository: ICustomersRepository,
   ) {}
 
   async findMany(

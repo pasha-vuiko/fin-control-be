@@ -5,7 +5,7 @@ export class JWTVerifierService {
   private readonly domain: string;
   private readonly cacheDuration: number;
   private readonly getJwks: GetJwks;
-  private jwkCache: Map<string, { publicKey: string; fetchedAt: number }>;
+  private readonly jwkCache: Map<string, { publicKey: string; fetchedAt: number }>;
 
   constructor(domain: string, cacheDuration = 60000) {
     this.domain = domain;

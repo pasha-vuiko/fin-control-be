@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 
 import { CustomersAdminController } from '@api/customers/controllers/customers.admin.controller';
+import { CustomersController } from '@api/customers/controllers/customers.controller';
 import { CustomersRepository } from '@api/customers/repositories/customers.repository';
 
-import { CustomersController } from './controllers/customers.controller';
 import { CustomersService } from './services/customers.service';
 
 @Module({

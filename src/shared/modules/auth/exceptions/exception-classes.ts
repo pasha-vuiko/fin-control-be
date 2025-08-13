@@ -26,3 +26,9 @@ export class AuthExpiredTokenException extends AppException {}
   'User does not have permissions to access the resource',
 )
 export class AuthForbiddenException extends AppException {}
+
+@RegisterAppException(
+  createErrCode(FLOW_ID, HttpStatus.INTERNAL_SERVER_ERROR, 0),
+  'Failed to update user email.',
+)
+export class UserEmailUpdateException extends AppException {}

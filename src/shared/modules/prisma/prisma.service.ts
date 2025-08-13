@@ -33,11 +33,7 @@ export class PrismaService<
       application_name: applicationName,
       Client: pg.native?.Client,
     });
-    const adapter = new PrismaPg({
-      connectionString: connectionString,
-      application_name: applicationName,
-      Client: pg.native?.Client,
-    });
+    const adapter = new PrismaPg(pool);
 
     super({
       ...omitObjKeys(definedOptions, 'applicationName'),
@@ -73,23 +69,16 @@ export class PrismaService<
       );
   }
 
-  getDrizzleWithSchema<
+  static getDrizzleWithSchema<
     TSchema extends Record<string, unknown>,
     TRelations extends AnyRelations,
-  >(schema: TSchema, relations: TRelations): NodePgDatabase<TSchema, TRelations> {
+  >(
+    schema: TSchema, relations: TRelations
+  ): NodePgDatabase<TSchema, TRelations> {
     return pgDrizzle<TSchema, TRelations>({
       client: PrismaService.pgPool,
       schema,
       relations,
-    });
-  }
-
-  static getDrizzleWithSchema<Schema extends Record<string, unknown>>(
-    schema: Schema,
-  ): NodePgDatabase<Schema> {
-    return pgDrizzle({
-      client: PrismaService.pgPool,
-      schema,
     });
   }
 
