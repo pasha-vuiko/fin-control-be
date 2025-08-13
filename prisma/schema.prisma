@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["relationJoins", "driverAdapters", "metrics", "queryCompiler"]
+  previewFeatures = ["relationJoins", "driverAdapters", "queryCompiler"]
   output          = "../node_modules/.prisma/client"
 }
 
