@@ -10,11 +10,13 @@ ENV NODE_COMPILE_CACHE=/opt/app/.node_cache
 COPY package.json package-lock.json nest-cli.json .env.example tsconfig.json tsconfig.build.json /opt/app/
 COPY ./src /opt/app/src/
 COPY ./prisma /opt/app/prisma/
+COPY ./patches /opt/app/patches/
 
 RUN apk add --update \
     dumb-init --no-cache \
     && apk cache clean \
     && npm ci --ignore-scripts \
+    && npm run postinstall \
     && npx prisma generate \
     && npm run build \
     && rm -rf tsconfig.json tsconfig.build.json src \
