@@ -99,14 +99,17 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
       })
       .returning();
 
-    return this.mapPrismaRegularPaymentToRegularPayment(createdRegularPayment);
+    return this.mapPrismaRegularPaymentToRegularPayment(createdRegularPayment!);
   }
 
   @CatchErrors(handlePrismaError)
-  async update(id: string, data: IRegularPaymentUpdateInput): Promise<IRegularPayment> {
+  async update(
+    id: string,
+    data: IRegularPaymentUpdateInput,
+  ): Promise<IRegularPayment | null> {
     const { amount, dateOfCharge, createdAt, updatedAt } = data;
 
-    const [updatedRegularPayment] = await this.prismaService.$drizzle
+    return await this.prismaService.$drizzle
       .update(RegularPayment)
       .set({
         ...data,
@@ -116,23 +119,25 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
         updatedAt: updatedAt ? new Date(updatedAt) : undefined,
       })
       .where(eq(RegularPayment.id, id))
-      .returning();
-
-    return this.mapPrismaRegularPaymentToRegularPayment(updatedRegularPayment);
+      .returning()
+      .then(([updatedRegularPayment]) =>
+        updatedRegularPayment
+          ? this.mapPrismaRegularPaymentToRegularPayment(updatedRegularPayment)
+          : null,
+      );
   }
 
   @CatchErrors(handlePrismaError)
   async delete(id: string): Promise<IRegularPayment | null> {
-    const [deletedRegularPayment] = await this.prismaService.$drizzle
+    return await this.prismaService.$drizzle
       .delete(RegularPayment)
       .where(eq(RegularPayment.id, id))
-      .returning();
-
-    if (!deletedRegularPayment) {
-      return null;
-    }
-
-    return this.mapPrismaRegularPaymentToRegularPayment(deletedRegularPayment);
+      .returning()
+      .then(([deletedRegularPayment]) =>
+        deletedRegularPayment
+          ? this.mapPrismaRegularPaymentToRegularPayment(deletedRegularPayment)
+          : null,
+      );
   }
 
   private mapPrismaRegularPaymentsToRegularPayments(

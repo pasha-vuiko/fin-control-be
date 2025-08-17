@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 
+import { BindContext } from '@shared/decorators/bind-context.decorator';
 import { PagePaginationDto } from '@shared/dto/page-pagination.dto';
 import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-output.entity';
 
@@ -7,6 +8,7 @@ import { CustomersService } from '@api/customers/services/customers.service';
 import { ExpenseEntity } from '@api/expenses/entities/expense.entity';
 import { ExpenseIsNotFoundException } from '@api/expenses/exceptions/exception-classes';
 import { IExpenseCreateInput } from '@api/expenses/interfaces/expense-create-input.interface';
+import { IExpense } from '@api/expenses/interfaces/expense.interface';
 import { IExpensesRepository } from '@api/expenses/interfaces/expenses-repository.interface';
 import { ExpensesRepository } from '@api/expenses/repositories/expenses.repository';
 
@@ -62,13 +64,10 @@ export class ExpensesService {
   }
 
   async findOneAsAdmin(id: string): Promise<ExpenseEntity> {
-    const foundExpense = await this.expensesRepository.findOne(id);
-
-    if (!foundExpense) {
-      throw new ExpenseIsNotFoundException();
-    }
-
-    return ExpenseEntity.fromExpenseObj(foundExpense);
+    return await this.expensesRepository
+      .findOne(id)
+      .then(this.throwNotFoundIfExpenseNotDefined)
+      .then(ExpenseEntity.fromExpenseObj);
   }
 
   async createMany(
@@ -115,6 +114,7 @@ export class ExpensesService {
         amount: updateExpenseDto.amount?.toString(),
         date: updateExpenseDto.date ? new Date(updateExpenseDto.date) : undefined,
       })
+      .then(this.throwNotFoundIfExpenseNotDefined)
       .then(ExpenseEntity.fromExpenseObj);
   }
 
@@ -130,6 +130,18 @@ export class ExpensesService {
       throw new ExpenseIsNotFoundException();
     }
 
-    return await this.expensesRepository.delete(id).then(ExpenseEntity.fromExpenseObj);
+    return await this.expensesRepository
+      .delete(id)
+      .then(this.throwNotFoundIfExpenseNotDefined)
+      .then(ExpenseEntity.fromExpenseObj);
+  }
+
+  @BindContext()
+  private throwNotFoundIfExpenseNotDefined(expense: IExpense | null): IExpense {
+    if (!expense) {
+      throw new ExpenseIsNotFoundException();
+    }
+
+    return expense;
   }
 }

@@ -92,7 +92,10 @@ export class CustomersRepository implements ICustomersRepository {
         updatedAt: typeof updatedAt === 'string' ? new Date(updatedAt) : updatedAt,
       })
       .returning()
-      .then(([createdCustomer]) => this.mapCustomerFromPrismaToCustomer(createdCustomer));
+      .then(([createdCustomer]) =>
+        // createdCustomer is always defined as we are inserting new data
+        this.mapCustomerFromPrismaToCustomer(createdCustomer!),
+      );
   }
 
   @CatchErrors(handlePrismaError)

@@ -100,7 +100,7 @@ export class ExpensesRepository implements IExpensesRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async update(id: string, data: IExpenseUpdateInput): Promise<IExpense> {
+  async update(id: string, data: IExpenseUpdateInput): Promise<IExpense | null> {
     const dataWithoutCustomerId = omitObjKeys(data, 'customerId');
 
     const { amount, date } = dataWithoutCustomerId;
@@ -116,16 +116,20 @@ export class ExpensesRepository implements IExpensesRepository {
       .set(expenseToUpdate)
       .where(eq(Expense.id, id))
       .returning()
-      .then(([updatedExpense]) => this.mapExpenseFromPrismaToExpense(updatedExpense));
+      .then(([updatedExpense]) =>
+        updatedExpense ? this.mapExpenseFromPrismaToExpense(updatedExpense) : null,
+      );
   }
 
   @CatchErrors(handlePrismaError)
-  async delete(id: string): Promise<IExpense> {
+  async delete(id: string): Promise<IExpense | null> {
     return await this.prismaService.$drizzle
       .delete(Expense)
       .where(eq(Expense.id, id))
       .returning()
-      .then(([deletedExpense]) => this.mapExpenseFromPrismaToExpense(deletedExpense));
+      .then(([deletedExpense]) =>
+        deletedExpense ? this.mapExpenseFromPrismaToExpense(deletedExpense) : null,
+      );
   }
 
   private mapExpensesFromPrismaToExpenses(expenses: IExpenseFromDb[]): IExpense[] {

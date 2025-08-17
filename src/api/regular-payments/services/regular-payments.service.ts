@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 
+import { BindContext } from '@shared/decorators/bind-context.decorator';
 import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-output.entity';
 import { IPagePaginationInput } from '@shared/interfaces/page-pagination-input.interface';
 
@@ -112,6 +113,7 @@ export class RegularPaymentsService {
 
     return await this.regularPaymentsRepository
       .update(id, updateInput)
+      .then(this.throwNotFoundIfRegularPaymentNotDefined)
       .then(RegularPaymentEntity.fromPlainObj);
   }
 
@@ -120,7 +122,8 @@ export class RegularPaymentsService {
 
     return await this.regularPaymentsRepository
       .delete(id)
-      .then(deleted => (deleted ? RegularPaymentEntity.fromPlainObj(deleted) : null));
+      .then(this.throwNotFoundIfRegularPaymentNotDefined)
+      .then(RegularPaymentEntity.fromPlainObj);
   }
 
   async applyRegularPayments(_monthYear: string): Promise<void> {
@@ -138,5 +141,16 @@ export class RegularPaymentsService {
 
     // TODO in future use msg broker to create expenses instead of a transaction
     await this.expensesService.createManyViaTransaction(expensesToCreate);
+  }
+
+  @BindContext()
+  private throwNotFoundIfRegularPaymentNotDefined(
+    regularPayment: IRegularPayment | null,
+  ): IRegularPayment {
+    if (!regularPayment) {
+      throw new RegularPaymentNotFoundException();
+    }
+
+    return regularPayment;
   }
 }

@@ -17,7 +17,7 @@ export interface IRegularPaymentsRepository {
 
   create(data: IRegularPaymentCreateInput): Promise<IRegularPayment>;
 
-  update(id: string, data: IRegularPaymentUpdateInput): Promise<IRegularPayment>;
+  update(id: string, data: IRegularPaymentUpdateInput): Promise<IRegularPayment | null>;
 
   delete(id: string): Promise<IRegularPayment | null>;
 }

@@ -76,8 +76,8 @@ function mapRedisSentinels(
     const [sentinelHost, sentinelPort] = hostPort.split(':', 2);
 
     return {
-      host: sentinelHost,
-      port: Number(sentinelPort),
+      host: sentinelHost!,
+      port: Number(sentinelPort!),
     };
   });
 }

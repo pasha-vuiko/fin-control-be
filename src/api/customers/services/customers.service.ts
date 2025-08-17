@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 
+import { BindContext } from '@shared/decorators/bind-context.decorator';
 import { PagePaginationDto } from '@shared/dto/page-pagination.dto';
 import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-output.entity';
 import { IUser } from '@shared/modules/auth/interfaces/user.interface';
@@ -35,23 +36,17 @@ export class CustomersService {
   }
 
   async findOneByIdAsAdmin(id: string): Promise<CustomerEntity> {
-    const foundCustomer = await this.customerRepository.findOneById(id);
-
-    if (!foundCustomer) {
-      throw new CustomerNotFoundException();
-    }
-
-    return CustomerEntity.fromCustomerObj(foundCustomer);
+    return await this.customerRepository
+      .findOneById(id)
+      .then(this.throwNotFoundIfCustomerNotDefined)
+      .then(CustomerEntity.fromCustomerObj);
   }
 
   async findOneByUserId(userId: string): Promise<CustomerEntity> {
-    const foundCustomer = await this.customerRepository.findOneByUserId(userId);
-
-    if (!foundCustomer) {
-      throw new CustomerNotFoundException();
-    }
-
-    return CustomerEntity.fromCustomerObj(foundCustomer);
+    return await this.customerRepository
+      .findOneByUserId(userId)
+      .then(this.throwNotFoundIfCustomerNotDefined)
+      .then(CustomerEntity.fromCustomerObj);
   }
 
   async create(
@@ -60,14 +55,14 @@ export class CustomersService {
   ): Promise<CustomerEntity> {
     const { id, email } = user;
 
-    const createdCustomer = await this.customerRepository.create({
-      ...createCustomerDto,
-      birthdate: new Date(createCustomerDto.birthdate),
-      userId: id,
-      email,
-    });
-
-    return CustomerEntity.fromCustomerObj(createdCustomer);
+    return await this.customerRepository
+      .create({
+        ...createCustomerDto,
+        birthdate: new Date(createCustomerDto.birthdate),
+        userId: id,
+        email,
+      })
+      .then(CustomerEntity.fromCustomerObj);
   }
 
   async updateAsCustomer(
@@ -83,7 +78,8 @@ export class CustomersService {
 
     return await this.customerRepository
       .update(id, updateCustomerDto)
-      .then(customer => CustomerEntity.fromCustomerObj(customer as ICustomer));
+      .then(this.throwNotFoundIfCustomerNotDefined)
+      .then(CustomerEntity.fromCustomerObj);
   }
 
   async updateAsAdmin(
@@ -98,7 +94,8 @@ export class CustomersService {
 
     return await this.customerRepository
       .update(id, updateCustomerDto)
-      .then(customer => CustomerEntity.fromCustomerObj(customer as ICustomer));
+      .then(this.throwNotFoundIfCustomerNotDefined)
+      .then(CustomerEntity.fromCustomerObj);
   }
 
   async removeAsCustomer(id: string, userId: string): Promise<CustomerEntity> {
@@ -114,12 +111,23 @@ export class CustomersService {
 
     return await this.customerRepository
       .remove(id)
-      .then(customer => CustomerEntity.fromCustomerObj(customer as ICustomer));
+      .then(this.throwNotFoundIfCustomerNotDefined)
+      .then(CustomerEntity.fromCustomerObj);
   }
 
   async removeAsAdmin(id: string): Promise<CustomerEntity> {
     return await this.customerRepository
       .remove(id)
-      .then(customer => CustomerEntity.fromCustomerObj(customer as ICustomer));
+      .then(this.throwNotFoundIfCustomerNotDefined)
+      .then(CustomerEntity.fromCustomerObj);
+  }
+
+  @BindContext()
+  private throwNotFoundIfCustomerNotDefined(customer: ICustomer | null): ICustomer {
+    if (!customer) {
+      throw new CustomerNotFoundException();
+    }
+
+    return customer;
   }
 }

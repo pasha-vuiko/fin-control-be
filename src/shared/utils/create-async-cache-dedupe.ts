@@ -14,6 +14,7 @@ export function createAsyncCacheDedupe<T, F extends (arg: any) => Promise<T>>(
 
   const cacheInstance = cache.define(cacheFuncName, asyncFn);
 
+  // always defined as we define it above
   // eslint-disable-next-line security/detect-object-injection
-  return cacheInstance[cacheFuncName];
+  return cacheInstance[cacheFuncName]!;
 }

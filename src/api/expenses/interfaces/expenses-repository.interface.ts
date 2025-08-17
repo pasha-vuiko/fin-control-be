@@ -17,7 +17,7 @@ export interface IExpensesRepository {
 
   createMany(createExpenseInputs: IExpenseCreateInput[]): Promise<IExpense[]>;
 
-  update(id: string, data: IExpenseUpdateInput): Promise<IExpense>;
+  update(id: string, data: IExpenseUpdateInput): Promise<IExpense | null>;
 
-  delete(id: string): Promise<IExpense>;
+  delete(id: string): Promise<IExpense | null>;
 }
