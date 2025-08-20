@@ -23,22 +23,27 @@ import { Logger } from '@shared/modules/logger/loggers/logger';
 
 @Injectable()
 export class DKronService {
-  private logger = new Logger(DKronService.name);
+  private readonly logger = new Logger(DKronService.name);
 
   constructor(
     @Inject(JOB_SCHEDULED_MODULE_OPTIONS)
-    private moduleOptions: IDKronModuleOptions,
-    private httpService: HttpService,
+    private readonly moduleOptions: IDKronModuleOptions,
+    private readonly httpService: HttpService,
   ) {}
 
   async createHttpCronJob(
     name: string,
     scheduleParamsArr: ICronJobScheduleParams[],
-    jobBody: ISchedulerJobBody,
+    jobBody: Omit<ISchedulerJobBody, 'jobName'>,
     options?: IAdditionalJobOptions,
   ): Promise<void> {
     const { executeJobEndpoint } = this.moduleOptions;
     const { retriesNumber = 5, expiresAt } = options ?? {};
+
+    const jobBodyWithJobName = {
+      ...jobBody,
+      jobName: name,
+    };
 
     const jobPayload: IHttpExecutorCreateJobData = {
       name,
@@ -49,10 +54,10 @@ export class DKronService {
         url: executeJobEndpoint,
         method: ExecutorHttpMethod.POST,
         headers: '["Content-Type: application/json"]',
-        body: JSON.stringify(jobBody),
+        body: JSON.stringify(jobBodyWithJobName),
         expectCode: HttpStatus.CREATED.toString(),
       },
-      metadata: this.mapJobBodyToMetadata(jobBody),
+      metadata: this.mapJobBodyToMetadata(jobBodyWithJobName),
       retries: retriesNumber,
       disabled: false,
     };
@@ -63,11 +68,16 @@ export class DKronService {
   async createHttpJobForDate(
     name: string,
     date: Date,
-    jobBody: ISchedulerJobBody,
+    jobBody: Omit<ISchedulerJobBody, 'jobName'>,
     retriesNumber = 5,
   ): Promise<void> {
     const { executeJobEndpoint } = this.moduleOptions;
     const ONE_HOUR = 60 * 60 * 1000;
+
+    const jobBodyWithJobName = {
+      ...jobBody,
+      jobName: name,
+    };
 
     const jobPayload: IHttpExecutorCreateJobData = {
       name,
@@ -79,10 +89,10 @@ export class DKronService {
         url: executeJobEndpoint,
         method: ExecutorHttpMethod.POST,
         headers: '["Content-Type: application/json"]',
-        body: JSON.stringify(jobBody),
+        body: JSON.stringify(jobBodyWithJobName),
         expectCode: HttpStatus.CREATED.toString(),
       },
-      metadata: this.mapJobBodyToMetadata(jobBody),
+      metadata: this.mapJobBodyToMetadata(jobBodyWithJobName),
       retries: retriesNumber,
       disabled: false,
     };
@@ -93,11 +103,16 @@ export class DKronService {
   async createHttpIntervalJob(
     name: string,
     intervalParams: IIntervalJobScheduleParams,
-    jobBody: ISchedulerJobBody,
+    jobBody: Omit<ISchedulerJobBody, 'jobName'>,
     options?: IAdditionalJobOptions,
   ): Promise<void> {
     const { executeJobEndpoint } = this.moduleOptions;
     const { retriesNumber = 5, expiresAt } = options ?? {};
+
+    const jobBodyWithJobName = {
+      ...jobBody,
+      jobName: name,
+    };
 
     const jobPayload: IHttpExecutorCreateJobData = {
       name,
@@ -108,10 +123,10 @@ export class DKronService {
         url: executeJobEndpoint,
         method: ExecutorHttpMethod.POST,
         headers: '["Content-Type: application/json"]',
-        body: JSON.stringify(jobBody),
+        body: JSON.stringify(jobBodyWithJobName),
         expectCode: HttpStatus.CREATED.toString(),
       },
-      metadata: this.mapJobBodyToMetadata(jobBody),
+      metadata: this.mapJobBodyToMetadata(jobBodyWithJobName),
       retries: retriesNumber,
       disabled: false,
     };

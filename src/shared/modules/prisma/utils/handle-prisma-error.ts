@@ -84,40 +84,40 @@ function handlePrismaClientKnownRequestError(
     case PrismaError.TLSConnectionError:
       throw new TLSConnectionErrorException('DB TLS connection error', { cause: err });
     case PrismaError.ValueTooLongForColumnType: {
-      const targetField = Array.isArray(err.meta?.target)
+      const targetField: string = Array.isArray(err.meta?.target)
         ? err.meta?.target.join(', ')
-        : (err.meta?.target ?? 'unknown field');
+        : ((err.meta?.target as string | undefined) ?? 'unknown field');
       throw new ValueTooLongForColumnTypeException(
         `Value is too long for column type in: [${targetField}]`,
         { cause: err },
       );
     }
     case PrismaError.InvalidValue: {
-      const fieldName = err.meta?.field_name || err.meta?.target || 'unknown field';
+      const fieldName = extractTargerFieldNameFromPrismaDbError(err);
       throw new InvalidValueException(`Invalid value in: [${fieldName}]`, {
         cause: err,
       });
     }
     case PrismaError.ValidationError: {
-      const fieldName = err.meta?.field_name || err.meta?.target || 'unknown field';
+      const fieldName = extractTargerFieldNameFromPrismaDbError(err);
       throw new ValidationErrorException(`Validation error in: [${fieldName}]`, {
         cause: err,
       });
     }
     case PrismaError.QueryParsingError: {
-      const query = err.meta?.query || 'unknown query';
+      const query = (err.meta?.query as string | undefined) || 'unknown query';
       throw new QueryParsingErrorException(`Query parsing error in: ${query}`, {
         cause: err,
       });
     }
     case PrismaError.QueryValidationError: {
-      const query = err.meta?.query || 'unknown query';
+      const query = (err.meta?.query as string | undefined) || 'unknown query';
       throw new QueryValidationErrorException(`Query validation error in: ${query}`, {
         cause: err,
       });
     }
     case PrismaError.NullConstraintViolation: {
-      const fieldName = err.meta?.field_name || err.meta?.target || 'unknown field';
+      const fieldName = extractTargerFieldNameFromPrismaDbError(err);
       throw new NullConstraintViolationException(
         `Null constraint violation in: [${fieldName}]`,
         { cause: err },
@@ -194,10 +194,23 @@ function handlePgDatabaseError(err: PgDatabaseError, logger: Logger): void {
 }
 
 function handleDrizzleQueryError(err: DrizzleQueryError, logger: Logger): void {
-  if (err.cause instanceof PgDatabaseError) {
-    return handlePgDatabaseError(err.cause, logger);
+  if (
+    err.cause instanceof PgDatabaseError ||
+    (err.cause instanceof Error && (err.cause as PgDatabaseError)?.code)
+  ) {
+    return handlePgDatabaseError(err.cause as PgDatabaseError, logger);
   }
 
   logger.error('Unhandled Drizzle error', err);
   throw new UnknownDatabaseErrorException('Database error', { cause: err });
+}
+
+function extractTargerFieldNameFromPrismaDbError(
+  err: PrismaClientKnownRequestError,
+): string {
+  return (
+    (err.meta?.field_name as string | undefined) ||
+    (err.meta?.target as string | undefined) ||
+    'unknown field'
+  );
 }
