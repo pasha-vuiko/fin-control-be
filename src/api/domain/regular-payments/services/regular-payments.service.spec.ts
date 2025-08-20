@@ -105,7 +105,7 @@ describe('RegularPaymentsService', () => {
         items: [regularPayment],
       };
 
-      vitest.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
+      vi.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
       vitest
         .spyOn(regularPaymentsRepository, 'findMany')
         .mockResolvedValueOnce(dbResponse);
@@ -139,7 +139,7 @@ describe('RegularPaymentsService', () => {
       }; // Mock create DTO
       const createdRegularPayment = structuredClone(mockRegularPayment); // Mocked created entity
 
-      vitest.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
+      vi.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
       vitest
         .spyOn(regularPaymentsRepository, 'create')
         .mockResolvedValueOnce(createdRegularPayment);

@@ -3,16 +3,14 @@ import Redis from 'ioredis';
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
+
+
 import { CACHE_KEY_METADATA, CACHE_TTL_METADATA } from '@nestjs/cache-manager';
-import {
-  CallHandler,
-  ExecutionContext,
-  Inject,
-  Injectable,
-  NestInterceptor,
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Inject, Injectable, NestInterceptor } from '@nestjs/common';
 import { isFunction, isNil } from '@nestjs/common/utils/shared.utils';
 import { HttpAdapterHost, Reflector } from '@nestjs/core';
+
+
 
 import { USER_REQ_PROPERTY } from '@shared/modules/auth/constants/user-req-property';
 import { IAuth0User } from '@shared/modules/auth/interfaces/auth0-user.interface';
@@ -22,10 +20,14 @@ import { REDIS_MODULE_OPTIONS } from '@shared/modules/redis/providers/redis-modu
 import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 import { createAsyncCacheDedupe } from '@shared/utils/create-async-cache-dedupe';
 
+
+
+
+
 @Injectable()
 export class JsonCacheInterceptor implements NestInterceptor {
-  private ioRedisInstance: Redis;
-  private logger = new Logger(JsonCacheInterceptor.name);
+  private readonly ioRedisInstance: Redis;
+  private readonly logger = new Logger(JsonCacheInterceptor.name);
   private readonly getCachedResponse: (key: string) => Promise<string | null>;
 
   protected allowedMethods = ['GET'];
@@ -33,7 +35,7 @@ export class JsonCacheInterceptor implements NestInterceptor {
   constructor(
     protected readonly reflector: Reflector,
     protected readonly httpAdapterHost: HttpAdapterHost,
-    @Inject(REDIS_MODULE_OPTIONS) private moduleOptions: IRedisModuleOptions,
+    @Inject(REDIS_MODULE_OPTIONS) private readonly moduleOptions: IRedisModuleOptions,
   ) {
     this.ioRedisInstance = RedisConfigService.getIoRedisInstance();
     this.getCachedResponse = createAsyncCacheDedupe(key => this.ioRedisInstance.get(key));

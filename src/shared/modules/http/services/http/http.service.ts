@@ -23,7 +23,7 @@ const defaultHeaders = {
  */
 @Injectable()
 export class HttpService {
-  private logger = new Logger(HttpService.name);
+  private readonly logger = new Logger(HttpService.name);
 
   public async get<T>(
     url: string | URL | UrlObject,
@@ -140,11 +140,11 @@ export class HttpService {
       : {};
 
     return {
-      ...(options ? options : {}),
+      ...(options ?? {}),
       ...abortSignalOptions,
       headers: {
         ...defaultHeaders,
-        ...(options?.headers ? options.headers : {}),
+        ...(options?.headers ?? {}),
       },
     };
   }

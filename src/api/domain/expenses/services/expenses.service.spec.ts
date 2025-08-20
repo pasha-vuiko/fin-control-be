@@ -83,7 +83,7 @@ describe('ExpensesService', () => {
         items: expenses,
       };
 
-      vitest.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
+      vi.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
       vitest
         .spyOn(expensesRepository, 'findManyByCustomer')
         .mockResolvedValueOnce(paginatedExpenses);
@@ -133,8 +133,8 @@ describe('ExpensesService', () => {
       const expense = structuredClone(mockExpense);
       const customer = structuredClone(mockCustomer);
 
-      vitest.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
-      vitest.spyOn(expensesRepository, 'findOne').mockResolvedValueOnce(expense);
+      vi.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
+      vi.spyOn(expensesRepository, 'findOne').mockResolvedValueOnce(expense);
 
       const result = await expensesService.findOneAsCustomer(expenseId, userId);
       const expectedResult = ExpenseEntity.fromExpenseObj(expense);
@@ -153,8 +153,8 @@ describe('ExpensesService', () => {
       };
       const expense = structuredClone(mockExpense);
 
-      vitest.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
-      vitest.spyOn(expensesRepository, 'findOne').mockResolvedValueOnce(expense);
+      vi.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
+      vi.spyOn(expensesRepository, 'findOne').mockResolvedValueOnce(expense);
 
       await expect(expensesService.findOneAsCustomer(expenseId, userId)).rejects.toThrow(
         ExpenseIsNotFoundException,
@@ -167,7 +167,7 @@ describe('ExpensesService', () => {
       const expenseId = 'expense-id';
       const expense = structuredClone(mockExpense); // Mock expense object
 
-      vitest.spyOn(expensesRepository, 'findOne').mockResolvedValueOnce(expense);
+      vi.spyOn(expensesRepository, 'findOne').mockResolvedValueOnce(expense);
 
       const result = await expensesService.findOneAsAdmin(expenseId);
       const expectedResult = ExpenseEntity.fromExpenseObj(expense);
@@ -179,7 +179,7 @@ describe('ExpensesService', () => {
     it('should throw NotFoundException if expense is not found', async () => {
       const expenseId = 'expense-id';
 
-      vitest.spyOn(expensesRepository, 'findOne').mockResolvedValueOnce(null);
+      vi.spyOn(expensesRepository, 'findOne').mockResolvedValueOnce(null);
 
       await expect(expensesService.findOneAsAdmin(expenseId)).rejects.toThrow(
         ExpenseIsNotFoundException,
@@ -194,7 +194,7 @@ describe('ExpensesService', () => {
       const expensesToCreate = [structuredClone(mockExpenseToCreate)]; // Mock array of expenses to create
       const createdExpenses = [structuredClone(mockExpense)]; // Mock array of created expenses
 
-      vitest.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
+      vi.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
       vitest
         .spyOn(expensesRepository, 'createMany')
         .mockResolvedValueOnce(createdExpenses);
@@ -221,11 +221,11 @@ describe('ExpensesService', () => {
         date: new Date(updateExpenseDto.date),
       }; // Mock updated expense
 
-      vitest.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
+      vi.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
       vitest
         .spyOn(expensesService, 'findOneAsCustomer')
         .mockResolvedValueOnce({ customerId: customer } as any);
-      vitest.spyOn(expensesRepository, 'update').mockResolvedValueOnce(updatedExpense);
+      vi.spyOn(expensesRepository, 'update').mockResolvedValueOnce(updatedExpense);
 
       const result = await expensesService.update(id, updateExpenseDto, userId);
       const expectedResult = ExpenseEntity.fromExpenseObj(updatedExpense);
@@ -260,7 +260,7 @@ describe('ExpensesService', () => {
       const customer = structuredClone(mockCustomer);
       const updateExpenseDto = {}; // Mock update object
 
-      vitest.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
+      vi.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
       vitest
         .spyOn(expensesService, 'findOneAsCustomer')
         .mockRejectedValueOnce(new NotFoundException());
@@ -286,11 +286,11 @@ describe('ExpensesService', () => {
       const customer = structuredClone(mockCustomer);
       const expense = structuredClone(mockExpense);
 
-      vitest.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
+      vi.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
       vitest
         .spyOn(expensesService, 'findOneAsCustomer')
         .mockResolvedValueOnce(expense as any);
-      vitest.spyOn(expensesRepository, 'delete').mockResolvedValueOnce(expense);
+      vi.spyOn(expensesRepository, 'delete').mockResolvedValueOnce(expense);
 
       const result = await expensesService.delete(id, userId);
       const expectedResult = ExpenseEntity.fromExpenseObj(expense);
@@ -308,8 +308,8 @@ describe('ExpensesService', () => {
       };
       const expense = structuredClone(mockExpense);
 
-      vitest.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
-      vitest.spyOn(expensesService, 'findOneAsCustomer').mockResolvedValueOnce(expense);
+      vi.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
+      vi.spyOn(expensesService, 'findOneAsCustomer').mockResolvedValueOnce(expense);
       vitest
         .spyOn(expensesRepository, 'delete')
         .mockResolvedValueOnce(structuredClone(mockExpense));
