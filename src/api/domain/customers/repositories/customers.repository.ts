@@ -19,9 +19,6 @@ import { ICustomerUpdateInput } from '@api/domain/customers/interfaces/customer-
 import { ICustomer } from '@api/domain/customers/interfaces/customer.interface';
 import { ICustomersRepository } from '@api/domain/customers/interfaces/customers.repository.interface';
 
-import { Customer } from '../../../../../prisma/drizzle/schema';
-import * as drizzleSchema from '../../../../../prisma/drizzle/schema';
-
 @Injectable()
 export class CustomersRepository implements ICustomersRepository {
   private readonly drizzle: NodePgDatabase<typeof drizzleSchema, typeof relations>;
