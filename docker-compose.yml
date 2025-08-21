@@ -26,7 +26,7 @@ services:
     restart: unless-stopped
     ports:
       - '6379:6379'
-#    network_mode: host  # Required for clustering, optional otherwise
+    # network_mode: host, Required for clustering, optional otherwise
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
       - VALKEY_IO_THREADS_DO_READS=yes
@@ -47,14 +47,14 @@ services:
   localstack:
     image: localstack/localstack
     ports:
-      - "127.0.0.1:4566:4566"            # LocalStack Gateway
-      - "127.0.0.1:4510-4559:4510-4559"  # external services port range
+      - '127.0.0.1:4566:4566' # LocalStack Gateway
+      - '127.0.0.1:4510-4559:4510-4559' # external services port range
     environment:
       # LocalStack configuration: https://docs.localstack.cloud/references/configuration/
       - DEBUG=${DEBUG:-0}
     volumes:
-      - "./local-infrastructure/data/localstack-data:/var/lib/localstack"
-      - "/var/run/docker.sock:/var/run/docker.sock"
+      - './local-infrastructure/data/localstack-data:/var/lib/localstack'
+      - '/var/run/docker.sock:/var/run/docker.sock'
 
   sonarqube:
     image: sonarqube
@@ -73,6 +73,6 @@ services:
     command: agent --server --bootstrap-expect=1 --node-name=node1
     restart: unless-stopped
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     ports:
-      - "8085:8080"
+      - '8085:8080'

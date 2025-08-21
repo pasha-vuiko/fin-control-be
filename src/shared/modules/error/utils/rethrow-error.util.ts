@@ -43,9 +43,9 @@ class ThrowErrorWhenService {
 }
 
 class RethrowErrorService {
-  private errRethrowMap = new Map<TConstructor<Error>, Error>();
+  private readonly errRethrowMap = new Map<TConstructor<Error>, Error>();
 
-  constructor(private error: Error) {}
+  constructor(private readonly error: Error) {}
 
   when(ErrorConstructor: TConstructor<Error>): ThrowErrorWhenService {
     return new ThrowErrorWhenService(this, ErrorConstructor);

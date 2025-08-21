@@ -21,15 +21,15 @@ import { Auth0Guard } from './auth0.guard';
 // Mocks
 const mockContext = {
   switchToHttp: () => ({
-    getRequest: vitest.fn(),
-    getResponse: vitest.fn(),
+    getRequest: vi.fn(),
+    getResponse: vi.fn(),
   }),
-  getHandler: vitest.fn(),
-  getClass: vitest.fn(),
+  getHandler: vi.fn(),
+  getClass: vi.fn(),
 } as unknown as ExecutionContext;
 
 const mockReflector = {
-  get: vitest.fn(),
+  get: vi.fn(),
 } as unknown as Reflector;
 
 // eslint-disable-next-line max-lines-per-function
@@ -52,7 +52,7 @@ describe('Auth0Guard', () => {
   describe('canActivate()', () => {
     it('should allow access when no roles are required', async () => {
       // @ts-expect-error not all methods are implemented
-      vitest.spyOn(mockContext, 'switchToHttp').mockReturnValueOnce({
+      vi.spyOn(mockContext, 'switchToHttp').mockReturnValueOnce({
         getRequest: (): any => ({
           user: { [AUTH0_ROLES_KEY]: [Roles.CUSTOMER] },
           headers: {
@@ -61,14 +61,14 @@ describe('Auth0Guard', () => {
         }),
         getResponse: (): any => ({}),
       });
-      vitest.spyOn(jwtVerifierService, 'verify').mockResolvedValue({});
+      vi.spyOn(jwtVerifierService, 'verify').mockResolvedValue({});
 
       expect(await authGuard.canActivate(mockContext)).toBe(true);
     });
 
     it('should throw UnauthorizedException if authentication fails', async () => {
       // @ts-expect-error not all methods are implemented
-      vitest.spyOn(mockContext, 'switchToHttp').mockReturnValueOnce({
+      vi.spyOn(mockContext, 'switchToHttp').mockReturnValueOnce({
         getRequest: (): any => ({
           user: { [AUTH0_ROLES_KEY]: [Roles.CUSTOMER] },
           headers: {
@@ -77,7 +77,7 @@ describe('Auth0Guard', () => {
         }),
         getResponse: (): any => ({}),
       });
-      vitest.spyOn(jwtVerifierService, 'verify').mockRejectedValue(new Error());
+      vi.spyOn(jwtVerifierService, 'verify').mockRejectedValue(new Error());
 
       const resultPromise = authGuard.canActivate(mockContext);
 
@@ -86,7 +86,7 @@ describe('Auth0Guard', () => {
 
     it('should throw ForbiddenException when user does not have the required roles', async () => {
       // @ts-expect-error not all methods are implemented
-      vitest.spyOn(mockContext, 'switchToHttp').mockReturnValueOnce({
+      vi.spyOn(mockContext, 'switchToHttp').mockReturnValueOnce({
         getRequest: (): any => ({
           user: { [AUTH0_ROLES_KEY]: [Roles.CUSTOMER] },
           headers: {
@@ -95,8 +95,8 @@ describe('Auth0Guard', () => {
         }),
         getResponse: (): any => ({}),
       });
-      vitest.spyOn(jwtVerifierService, 'verify').mockResolvedValue({});
-      vitest.spyOn(mockReflector, 'get').mockReturnValueOnce([Roles.ADMIN]);
+      vi.spyOn(jwtVerifierService, 'verify').mockResolvedValue({});
+      vi.spyOn(mockReflector, 'get').mockReturnValueOnce([Roles.ADMIN]);
 
       await expect(authGuard.canActivate(mockContext)).rejects.toThrow(
         AuthForbiddenException,

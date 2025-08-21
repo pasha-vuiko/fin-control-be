@@ -24,8 +24,8 @@ import { createAsyncCacheDedupe } from '@shared/utils/create-async-cache-dedupe'
 
 @Injectable()
 export class JsonCacheInterceptor implements NestInterceptor {
-  private ioRedisInstance: Redis;
-  private logger = new Logger(JsonCacheInterceptor.name);
+  private readonly ioRedisInstance: Redis;
+  private readonly logger = new Logger(JsonCacheInterceptor.name);
   private readonly getCachedResponse: (key: string) => Promise<string | null>;
 
   protected allowedMethods = ['GET'];
@@ -33,7 +33,7 @@ export class JsonCacheInterceptor implements NestInterceptor {
   constructor(
     protected readonly reflector: Reflector,
     protected readonly httpAdapterHost: HttpAdapterHost,
-    @Inject(REDIS_MODULE_OPTIONS) private moduleOptions: IRedisModuleOptions,
+    @Inject(REDIS_MODULE_OPTIONS) private readonly moduleOptions: IRedisModuleOptions,
   ) {
     this.ioRedisInstance = RedisConfigService.getIoRedisInstance();
     this.getCachedResponse = createAsyncCacheDedupe(key => this.ioRedisInstance.get(key));

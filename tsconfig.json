@@ -2,6 +2,7 @@
   "compilerOptions": {
     "strict": true,
     "strictPropertyInitialization": false,
+    "noUncheckedIndexedAccess": true,
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "noImplicitOverride": true,

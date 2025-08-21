@@ -3,6 +3,8 @@ import { Pool } from 'pg';
 import undici from 'undici';
 import { vi } from 'vitest';
 
+import { Logger } from '@shared/modules/logger/loggers/logger';
+
 beforeEach(() => {
   // 1) Block outbound HTTP by default (unit tests should stub per-test)
   vi.spyOn(undici, 'request').mockRejectedValue(
@@ -18,6 +20,13 @@ beforeEach(() => {
   );
   // Be lenient on pool shutdown to avoid unhandled rejections during teardown
   vi.spyOn(Pool.prototype, 'end').mockResolvedValue(undefined as unknown as void);
+
+  // 3) Avoid logging
+  vi.spyOn(Logger.prototype, 'verbose').mockReturnValue();
+  vi.spyOn(Logger.prototype, 'debug').mockReturnValue();
+  vi.spyOn(Logger.prototype, 'log').mockReturnValue();
+  vi.spyOn(Logger.prototype, 'warn').mockReturnValue();
+  vi.spyOn(Logger.prototype, 'error').mockReturnValue();
 });
 
 afterEach(() => {

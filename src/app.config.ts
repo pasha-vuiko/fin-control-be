@@ -1,4 +1,5 @@
 import path from 'node:path';
+import * as process from 'node:process';
 
 import { FastifyServerOptions } from 'fastify';
 
@@ -16,6 +17,7 @@ setUtcTimezone();
 // TODO Add config validation
 export const config = {
   app: {
+    baseUrl: process.env.BASE_URL as string,
     port: process.env.PORT as string,
     version: process.env.APP_VERSION || packageJsonInfo.version,
     mode: process.env.NODE_ENV,
@@ -25,7 +27,7 @@ export const config = {
       prettyPrint: process.env.LOG_FORMAT === 'pretty',
       requestLoggerIgnorePaths: [
         '/',
-        '/favicon.ico',
+        'favicon.ico',
         '/metrics',
         '/docs',
         '/docs/favicon-32x32.png',
@@ -63,6 +65,11 @@ export const config = {
     auth0ClientId: process.env.AUTH_CLIENT_ID,
     auth0ClientSecret: process.env.AUTH_CLIENT_SECRET,
   },
+  jobScheduler: {
+    dkron: {
+      url: process.env.DKRON_URL as string,
+    },
+  },
 } as const;
 
 function mapRedisSentinels(
@@ -76,8 +83,8 @@ function mapRedisSentinels(
     const [sentinelHost, sentinelPort] = hostPort.split(':', 2);
 
     return {
-      host: sentinelHost,
-      port: Number(sentinelPort),
+      host: sentinelHost!,
+      port: Number(sentinelPort!),
     };
   });
 }
