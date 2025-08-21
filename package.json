@@ -64,7 +64,7 @@
     "@nestjs/testing": "^11.1.6",
     "@semantic-release/git": "^10.0.1",
     "@sonar/scan": "^4.3.0",
-    "@swc/core": "^1.13.3",
+    "@swc/core": "^1.13.4",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/k6": "^1.2.0",
     "@types/node": "^24.3.0",
