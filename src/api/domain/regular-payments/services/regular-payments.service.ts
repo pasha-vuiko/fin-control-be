@@ -6,7 +6,6 @@ import { IPagePaginationInput } from '@shared/interfaces/page-pagination-input.i
 import { DKronService } from '@shared/modules/d-kron/services/d-kron/d-kron.service';
 
 import { CustomersService } from '@api/domain/customers/services/customers.service';
-import { ExpensesService } from '@api/domain/expenses/services/expenses.service';
 import { RegularPaymentEntity } from '@api/domain/regular-payments/entities/regular-payment.entity';
 import { RegularPaymentNotFoundException } from '@api/domain/regular-payments/exceptions/exception-classes';
 import { IRegularPaymentUpdateInput } from '@api/domain/regular-payments/interfaces/regular-payment-update-input.interface';
@@ -24,7 +23,6 @@ export class RegularPaymentsService {
     @Inject(RegularPaymentsRepository)
     private readonly regularPaymentsRepository: IRegularPaymentsRepository,
     private readonly customersService: CustomersService,
-    private readonly expensesService: ExpensesService,
     private readonly dKronService: DKronService,
   ) {}
 

@@ -8,7 +8,6 @@ import { DKronService } from '@shared/modules/d-kron/services/d-kron/d-kron.serv
 
 import { CustomerEntity } from '@api/domain/customers/entities/customer.entity';
 import { CustomersService } from '@api/domain/customers/services/customers.service';
-import { ExpensesService } from '@api/domain/expenses/services/expenses.service';
 import { RegularPaymentCreateDto } from '@api/domain/regular-payments/dto/regular-payment-create.dto';
 import { RegularPaymentUpdateDto } from '@api/domain/regular-payments/dto/regular-payment-update.dto';
 import { RegularPaymentEntity } from '@api/domain/regular-payments/entities/regular-payment.entity';
@@ -45,18 +44,16 @@ describe('RegularPaymentsService', () => {
   let regularPaymentsService: RegularPaymentsService;
   let regularPaymentsRepository: RegularPaymentsRepository;
   let customersService: CustomersService;
-  let expensesService: ExpensesService;
   let dKronService: DKronService;
 
   beforeEach(async () => {
     regularPaymentsRepository = getMockedInstance(RegularPaymentsRepository);
     customersService = getMockedInstance(CustomersService);
-    expensesService = getMockedInstance(ExpensesService);
     dKronService = getMockedInstance(DKronService);
+
     regularPaymentsService = new RegularPaymentsService(
       regularPaymentsRepository,
       customersService,
-      expensesService,
       dKronService,
     );
   });
