@@ -5,6 +5,7 @@ import { Reflector } from '@nestjs/core';
 
 import { Roles } from '@shared/modules/auth/enums/roles';
 import {
+  AuthExpiredTokenException,
   AuthForbiddenException,
   AuthInvalidTokenException,
 } from '@shared/modules/auth/exceptions/exception-classes';
@@ -101,6 +102,53 @@ describe('Auth0Guard', () => {
       await expect(authGuard.canActivate(mockContext)).rejects.toThrow(
         AuthForbiddenException,
       );
+    });
+
+    it('should throw AuthExpiredTokenException when token is expired', async () => {
+      // @ts-expect-error not all methods are implemented
+      vi.spyOn(mockContext, 'switchToHttp').mockReturnValueOnce({
+        getRequest: (): any => ({
+          headers: { authorization: 'Bearer expiredtoken' },
+        }),
+        getResponse: (): any => ({}),
+      });
+      vi.spyOn(jwtVerifierService, 'verify').mockRejectedValue(
+        new Error('Token expired'),
+      );
+
+      await expect(authGuard.canActivate(mockContext)).rejects.toThrow(
+        AuthExpiredTokenException,
+      );
+    });
+
+    it('should throw AuthInvalidTokenException when authorization header is missing', async () => {
+      // @ts-expect-error not all methods are implemented
+      vi.spyOn(mockContext, 'switchToHttp').mockReturnValueOnce({
+        getRequest: (): any => ({
+          headers: {},
+        }),
+        getResponse: (): any => ({}),
+      });
+
+      await expect(authGuard.canActivate(mockContext)).rejects.toThrow(
+        AuthInvalidTokenException,
+      );
+    });
+
+    it('should allow access when user has required role', async () => {
+      // @ts-expect-error not all methods are implemented
+      vi.spyOn(mockContext, 'switchToHttp').mockReturnValueOnce({
+        getRequest: (): any => ({
+          headers: { authorization: 'Bearer valid' },
+        }),
+        getResponse: (): any => ({}),
+      });
+      vi.spyOn(jwtVerifierService, 'verify').mockResolvedValue({
+        [AUTH0_ROLES_KEY]: ['ADMIN'],
+      } as unknown as IAuth0User);
+      vi.spyOn(mockReflector, 'get').mockReturnValueOnce([Roles.ADMIN]);
+
+      expect(await authGuard.canActivate(mockContext)).toBe(true);
     });
   });
 
