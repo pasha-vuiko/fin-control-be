@@ -71,6 +71,7 @@ describe('AppExceptionsRegistry', () => {
     });
   });
 
+  // eslint-disable-next-line max-lines-per-function
   describe('registerException()', () => {
     it('rejects non-AppException constructors/instances', () => {
       const registry = new AppExceptionsRegistry();
