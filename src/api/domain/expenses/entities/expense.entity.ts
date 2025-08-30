@@ -2,9 +2,10 @@ import { ExpenseCategory } from '@prisma/client';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { IExpense } from '@api/domain/expenses/interfaces/expense.interface';
+import { ClassFields } from '@shared/types/exclude-methods.type';
+import { Prettify } from '@shared/types/prettify.type';
 
-export class ExpenseEntity implements IExpense {
+export class ExpenseEntity {
   id: string;
 
   customerId: string;
@@ -20,7 +21,7 @@ export class ExpenseEntity implements IExpense {
 
   updatedAt: Date;
 
-  constructor(data: IExpense) {
+  constructor(data: Prettify<ClassFields<ExpenseEntity>>) {
     this.id = data.id;
     this.customerId = data.customerId;
     this.date = data.date;
@@ -30,7 +31,9 @@ export class ExpenseEntity implements IExpense {
     this.updatedAt = data.updatedAt;
   }
 
-  public static fromExpenseObj(data: IExpense): ExpenseEntity {
+  public static fromExpenseObj(
+    data: Prettify<ClassFields<ExpenseEntity>>,
+  ): ExpenseEntity {
     return new ExpenseEntity({
       id: data.id,
       customerId: data.customerId,
