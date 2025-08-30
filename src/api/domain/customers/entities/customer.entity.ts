@@ -2,9 +2,10 @@ import { Sex } from '@prisma-definitions/client/client';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ICustomer } from '@api/domain/customers/interfaces/customer.interface';
+import { ClassFields } from '@shared/types/exclude-methods.type';
+import { Prettify } from '@shared/types/prettify.type';
 
-export class CustomerEntity implements ICustomer {
+export class CustomerEntity {
   id: string;
 
   userId: string;
@@ -26,7 +27,7 @@ export class CustomerEntity implements ICustomer {
 
   updatedAt: Date;
 
-  constructor(data: ICustomer) {
+  constructor(data: Prettify<ClassFields<CustomerEntity>>) {
     this.id = data.id;
     this.userId = data.userId;
     this.firstName = data.firstName;
@@ -39,7 +40,9 @@ export class CustomerEntity implements ICustomer {
     this.updatedAt = data.updatedAt;
   }
 
-  public static fromCustomerObj(data: ICustomer): CustomerEntity {
+  public static fromCustomerObj(
+    data: Prettify<ClassFields<CustomerEntity>>,
+  ): CustomerEntity {
     return new CustomerEntity({
       id: data.id,
       userId: data.userId,

@@ -2,9 +2,10 @@ import { ExpenseCategory } from '@prisma-definitions/client/client';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { IRegularPayment } from '@api/domain/regular-payments/interfaces/regular-payment.interface';
+import { ClassFields } from '@shared/types/exclude-methods.type';
+import { Prettify } from '@shared/types/prettify.type';
 
-export class RegularPaymentEntity implements IRegularPayment {
+export class RegularPaymentEntity {
   id: string;
 
   customerId: string;
@@ -20,7 +21,7 @@ export class RegularPaymentEntity implements IRegularPayment {
 
   updatedAt: Date;
 
-  constructor(data: IRegularPayment) {
+  constructor(data: Prettify<ClassFields<RegularPaymentEntity>>) {
     this.id = data.id;
     this.customerId = data.customerId;
     this.amount = data.amount;
@@ -30,7 +31,9 @@ export class RegularPaymentEntity implements IRegularPayment {
     this.updatedAt = data.updatedAt;
   }
 
-  public static fromPlainObj(data: IRegularPayment): RegularPaymentEntity {
+  public static fromPlainObj(
+    data: Prettify<ClassFields<RegularPaymentEntity>>,
+  ): RegularPaymentEntity {
     return new RegularPaymentEntity(data);
   }
 }
