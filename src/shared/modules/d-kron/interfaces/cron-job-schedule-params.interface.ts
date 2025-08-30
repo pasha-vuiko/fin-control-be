@@ -1,4 +1,4 @@
-export interface ICronJobScheduleParams {
+export interface CronJobScheduleParams {
   // 0-59 or '*'
   second?: '*' | number;
   // 0-59 or '*'

@@ -2,7 +2,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { DynamicModule, Module } from '@nestjs/common';
 
 import { JsonCacheInterceptor } from '@shared/modules/redis/interceptors/json-cache/json-cache.interceptor';
-import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
+import { RedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
 import { redisModuleOptionsProvider } from '@shared/modules/redis/providers/redis-module-options.provider';
 import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 import { RedisService } from '@shared/modules/redis/services/redis/redis.service';
@@ -11,7 +11,7 @@ import { RedisService } from '@shared/modules/redis/services/redis/redis.service
   exports: [CacheModule, RedisService, RedisConfigService],
 })
 export class RedisModule {
-  static forRoot(opts: IRedisModuleOptions = {}): DynamicModule {
+  static forRoot(opts: RedisModuleOptions = {}): DynamicModule {
     const filteredOptions = filterModuleOptions(opts);
     const moduleOptionsProvider = redisModuleOptionsProvider(filteredOptions);
 
@@ -35,7 +35,7 @@ export class RedisModule {
   }
 }
 
-function filterModuleOptions(options: IRedisModuleOptions): IRedisModuleOptions {
+function filterModuleOptions(options: RedisModuleOptions): RedisModuleOptions {
   const resultConfig = {};
 
   for (const key of Object.getOwnPropertyNames(options)) {

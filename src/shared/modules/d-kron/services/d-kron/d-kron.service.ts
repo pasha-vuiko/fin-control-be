@@ -4,17 +4,17 @@ import {
   FailedToCreateJobException,
   FailedToDeleteJobException,
 } from '@shared/modules/d-kron/exceptions/exception-classes';
-import { IAdditionalJobOptions } from '@shared/modules/d-kron/interfaces/additional-job-options.interface';
-import { ICronJobScheduleParams } from '@shared/modules/d-kron/interfaces/cron-job-schedule-params.interface';
-import { IDkronJob } from '@shared/modules/d-kron/interfaces/dkron-job.interface';
+import { AdditionalJobOptions } from '@shared/modules/d-kron/interfaces/additional-job-options.interface';
+import { CronJobScheduleParams } from '@shared/modules/d-kron/interfaces/cron-job-schedule-params.interface';
+import { DkronJob } from '@shared/modules/d-kron/interfaces/dkron-job.interface';
 import {
   ExecutorHttpMethod,
-  IHttpExecutorCreateJobData,
+  HttpExecutorCreateJobData,
 } from '@shared/modules/d-kron/interfaces/http-executor-create-job-data.interface';
-import { IIntervalJobScheduleParams } from '@shared/modules/d-kron/interfaces/interval-job-schedule-params.interface';
-import { IDKronModuleOptions } from '@shared/modules/d-kron/interfaces/job-scheduler-module-options.interface';
+import { IntervalJobScheduleParams } from '@shared/modules/d-kron/interfaces/interval-job-schedule-params.interface';
+import { DKronModuleOptions } from '@shared/modules/d-kron/interfaces/job-scheduler-module-options.interface';
 import { ISchedulerJobBody } from '@shared/modules/d-kron/interfaces/scheduler-job-body.interface';
-import { ISchedulerJob } from '@shared/modules/d-kron/interfaces/scheduler-job.interface';
+import { SchedulerJob } from '@shared/modules/d-kron/interfaces/scheduler-job.interface';
 import { JOB_SCHEDULED_MODULE_OPTIONS } from '@shared/modules/d-kron/providers/job-scheduler-module-options.provider';
 import { buildCronJobSchedule } from '@shared/modules/d-kron/utils/build-cron-job-schedule.util';
 import { buildIntervalJobSchedule } from '@shared/modules/d-kron/utils/build-interval-job-schedule.util';
@@ -27,15 +27,15 @@ export class DKronService {
 
   constructor(
     @Inject(JOB_SCHEDULED_MODULE_OPTIONS)
-    private readonly moduleOptions: IDKronModuleOptions,
+    private readonly moduleOptions: DKronModuleOptions,
     private readonly httpService: HttpService,
   ) {}
 
   async createHttpCronJob(
     name: string,
-    scheduleParamsArr: ICronJobScheduleParams[],
+    scheduleParamsArr: CronJobScheduleParams[],
     jobBody: Omit<ISchedulerJobBody, 'jobName'>,
-    options?: IAdditionalJobOptions,
+    options?: AdditionalJobOptions,
   ): Promise<void> {
     const { executeJobEndpoint } = this.moduleOptions;
     const { retriesNumber = 5, expiresAt } = options ?? {};
@@ -45,7 +45,7 @@ export class DKronService {
       jobName: name,
     };
 
-    const jobPayload: IHttpExecutorCreateJobData = {
+    const jobPayload: HttpExecutorCreateJobData = {
       name,
       schedule: buildCronJobSchedule(scheduleParamsArr),
       expires_at: expiresAt ? expiresAt.toISOString() : undefined,
@@ -79,7 +79,7 @@ export class DKronService {
       jobName: name,
     };
 
-    const jobPayload: IHttpExecutorCreateJobData = {
+    const jobPayload: HttpExecutorCreateJobData = {
       name,
       schedule: `@at ${date.toISOString()}`,
       expires_at: new Date(date.getTime() + ONE_HOUR).toISOString(),
@@ -102,9 +102,9 @@ export class DKronService {
 
   async createHttpIntervalJob(
     name: string,
-    intervalParams: IIntervalJobScheduleParams,
+    intervalParams: IntervalJobScheduleParams,
     jobBody: Omit<ISchedulerJobBody, 'jobName'>,
-    options?: IAdditionalJobOptions,
+    options?: AdditionalJobOptions,
   ): Promise<void> {
     const { executeJobEndpoint } = this.moduleOptions;
     const { retriesNumber = 5, expiresAt } = options ?? {};
@@ -114,7 +114,7 @@ export class DKronService {
       jobName: name,
     };
 
-    const jobPayload: IHttpExecutorCreateJobData = {
+    const jobPayload: HttpExecutorCreateJobData = {
       name,
       schedule: buildIntervalJobSchedule(intervalParams),
       expires_at: expiresAt ? expiresAt.toISOString() : undefined,
@@ -134,12 +134,12 @@ export class DKronService {
     await this.createJob(jobPayload);
   }
 
-  async createJob(jobPayload: IHttpExecutorCreateJobData): Promise<void> {
+  async createJob(jobPayload: HttpExecutorCreateJobData): Promise<void> {
     const { dKronUrl } = this.moduleOptions;
     const createJobPath = `${dKronUrl}/v1/jobs`;
 
     const { data } = await this.httpService
-      .post<IDkronJob>(createJobPath, jobPayload, { retries: 5, retryIntervalMs: 10 })
+      .post<DkronJob>(createJobPath, jobPayload, { retries: 5, retryIntervalMs: 10 })
       .catch(err => {
         throw new FailedToCreateJobException({ cause: err });
       });
@@ -147,12 +147,12 @@ export class DKronService {
     this.logger.verbose(`Job created successfully: ${data.name}`);
   }
 
-  async searchByName(name: string): Promise<ISchedulerJob[]> {
+  async searchByName(name: string): Promise<SchedulerJob[]> {
     const { dKronUrl } = this.moduleOptions;
     const searchJobsUrl = new URL(`${dKronUrl}/v1/jobs`);
     searchJobsUrl.searchParams.set('q', name);
 
-    const { data } = await this.httpService.get<IDkronJob[]>(searchJobsUrl.toString());
+    const { data } = await this.httpService.get<DkronJob[]>(searchJobsUrl.toString());
 
     return data.map(dkronJob => {
       return {

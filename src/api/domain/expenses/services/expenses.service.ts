@@ -7,8 +7,8 @@ import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-out
 import { CustomersService } from '@api/domain/customers/services/customers.service';
 import { ExpenseEntity } from '@api/domain/expenses/entities/expense.entity';
 import { ExpenseIsNotFoundException } from '@api/domain/expenses/exceptions/exception-classes';
-import { IExpenseCreateInput } from '@api/domain/expenses/interfaces/expense-create-input.interface';
-import { IExpenseFromDb } from '@api/domain/expenses/interfaces/expense-from-db.interface';
+import { ExpenseCreateInput } from '@api/domain/expenses/interfaces/expense-create-input.interface';
+import { ExpenseFromDb } from '@api/domain/expenses/interfaces/expense-from-db.interface';
 import { IExpensesRepository } from '@api/domain/expenses/interfaces/expenses-repository.interface';
 import { ExpensesRepository } from '@api/domain/expenses/repositories/expenses.repository';
 
@@ -74,7 +74,7 @@ export class ExpensesService {
     expenseToCreate: ExpenseCreateDto,
     customerId: string,
   ): Promise<ExpenseEntity> {
-    const createExpensesDataWithCustomerId: IExpenseCreateInput = {
+    const createExpensesDataWithCustomerId: ExpenseCreateInput = {
       ...expenseToCreate,
       customerId,
       amount: expenseToCreate.amount.toString(),
@@ -91,7 +91,7 @@ export class ExpensesService {
     userId: string,
   ): Promise<ExpenseEntity[]> {
     const customer = await this.customersService.findOneByUserId(userId);
-    const createExpensesDataWithCustomerId: IExpenseCreateInput[] = expensesToCreate.map(
+    const createExpensesDataWithCustomerId: ExpenseCreateInput[] = expensesToCreate.map(
       dto => ({
         ...dto,
         customerId: customer.id,
@@ -145,9 +145,7 @@ export class ExpensesService {
   }
 
   @BindContext()
-  private throwNotFoundIfExpenseNotDefined(
-    expense: IExpenseFromDb | null,
-  ): IExpenseFromDb {
+  private throwNotFoundIfExpenseNotDefined(expense: ExpenseFromDb | null): ExpenseFromDb {
     if (!expense) {
       throw new ExpenseIsNotFoundException();
     }

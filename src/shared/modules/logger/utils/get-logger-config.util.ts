@@ -2,16 +2,16 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import pino, { LevelWithSilent } from 'pino';
 
 import {
-  ILoggerOptions,
   LogFormat,
+  LoggerOptions,
 } from '@shared/modules/logger/interfaces/logger-options.interface';
-import { ISerializedRequest } from '@shared/modules/logger/interfaces/serialized-request.interface';
+import { SerializedRequest } from '@shared/modules/logger/interfaces/serialized-request.interface';
 import pinoPrettyTransport from '@shared/modules/logger/utils/pino-pretty-transport';
 
 export function getDefaultLoggerConfig(
   level: LevelWithSilent,
   logFormat = LogFormat.JSON,
-): ILoggerOptions {
+): LoggerOptions {
   const isDevelopment = process.env.NODE_ENV === 'development';
 
   return {
@@ -46,7 +46,7 @@ export function getDefaultLoggerConfig(
   };
 }
 
-function serializeReq(req: FastifyRequest): ISerializedRequest {
+function serializeReq(req: FastifyRequest): SerializedRequest {
   return {
     id: req.id,
     method: req.method,

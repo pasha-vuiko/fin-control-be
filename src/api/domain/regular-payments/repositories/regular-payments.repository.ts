@@ -10,9 +10,9 @@ import { PrismaService } from '@shared/modules/prisma/prisma.service';
 import { getPrismaPaginationParams } from '@shared/modules/prisma/utils/get-prisma-pagination-params';
 import { handlePrismaError } from '@shared/modules/prisma/utils/handle-prisma-error';
 
-import { IRegularPaymentCreateInput } from '@api/domain/regular-payments/interfaces/regular-payment-create-input.interface';
-import { IRegularPaymentFromDb } from '@api/domain/regular-payments/interfaces/regular-payment-from-db.interface';
-import { IRegularPaymentUpdateInput } from '@api/domain/regular-payments/interfaces/regular-payment-update-input.interface';
+import { RegularPaymentCreateInput } from '@api/domain/regular-payments/interfaces/regular-payment-create-input.interface';
+import { RegularPaymentFromDb } from '@api/domain/regular-payments/interfaces/regular-payment-from-db.interface';
+import { RegularPaymentUpdateInput } from '@api/domain/regular-payments/interfaces/regular-payment-update-input.interface';
 import {
   IRegularPaymentsFilter,
   IRegularPaymentsRepository,
@@ -28,7 +28,7 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
   async findMany(
     filter: IRegularPaymentsFilter,
     pagination: IPagePaginationInput,
-  ): Promise<IPagePaginationOutput<IRegularPaymentFromDb>> {
+  ): Promise<IPagePaginationOutput<RegularPaymentFromDb>> {
     const { take, skip } = getPrismaPaginationParams(pagination);
     const { customerId } = filter;
 
@@ -60,7 +60,7 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async findAll(): Promise<IRegularPaymentFromDb[]> {
+  async findAll(): Promise<RegularPaymentFromDb[]> {
     const regularPayments = await this.prismaService.$drizzle
       .select()
       .from(RegularPayment);
@@ -71,7 +71,7 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async findOne(id: string): Promise<IRegularPaymentFromDb | null> {
+  async findOne(id: string): Promise<RegularPaymentFromDb | null> {
     const [regularPayment] = await this.prismaService.$drizzle
       .select()
       .from(RegularPayment)
@@ -85,7 +85,7 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async create(data: IRegularPaymentCreateInput): Promise<IRegularPaymentFromDb> {
+  async create(data: RegularPaymentCreateInput): Promise<RegularPaymentFromDb> {
     const { amount, dateOfCharge, createdAt, updatedAt } = data;
 
     const [createdRegularPayment] = await this.prismaService.$drizzle
@@ -106,8 +106,8 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
   @CatchErrors(handlePrismaError)
   async update(
     id: string,
-    data: IRegularPaymentUpdateInput,
-  ): Promise<IRegularPaymentFromDb | null> {
+    data: RegularPaymentUpdateInput,
+  ): Promise<RegularPaymentFromDb | null> {
     const { amount, dateOfCharge, createdAt, updatedAt } = data;
 
     return await this.prismaService.$drizzle
@@ -129,7 +129,7 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async delete(id: string): Promise<IRegularPaymentFromDb | null> {
+  async delete(id: string): Promise<RegularPaymentFromDb | null> {
     return await this.prismaService.$drizzle
       .delete(RegularPayment)
       .where(eq(RegularPayment.id, id))
@@ -143,7 +143,7 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
 
   private mapPrismaRegularPaymentsToRegularPayments(
     prismaRegularPayments: IRegularPaymentFromPrisma[],
-  ): IRegularPaymentFromDb[] {
+  ): RegularPaymentFromDb[] {
     return prismaRegularPayments.map(prismaRegularPayment =>
       this.mapPrismaRegularPaymentToRegularPayment(prismaRegularPayment),
     );
@@ -151,7 +151,7 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
 
   private mapPrismaRegularPaymentToRegularPayment(
     prismaRegularPayment: IRegularPaymentFromPrisma,
-  ): IRegularPaymentFromDb {
+  ): RegularPaymentFromDb {
     return {
       ...prismaRegularPayment,
       amount: Number(prismaRegularPayment.amount),

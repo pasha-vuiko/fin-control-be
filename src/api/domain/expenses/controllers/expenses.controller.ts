@@ -16,7 +16,7 @@ import { PagePaginationResEntity } from '@shared/entities/page-pagination-res.en
 import { Auth } from '@shared/modules/auth/decorators/auth.decorator';
 import { User } from '@shared/modules/auth/decorators/user.decorator';
 import { Roles } from '@shared/modules/auth/enums/roles';
-import { IUser } from '@shared/modules/auth/interfaces/user.interface';
+import { User as UserType } from '@shared/modules/auth/interfaces/user.interface';
 import { ApiAppExceptionsRes } from '@shared/modules/error/open-api/api-app-exceptions-response.decorator';
 import { JsonCache } from '@shared/modules/redis/decorators/json-cache.decorator';
 
@@ -39,7 +39,7 @@ export class ExpensesController {
   @Get()
   async findMany(
     @Query() findDto: ExpensesFindDto,
-    @User() user: IUser,
+    @User() user: UserType,
   ): Promise<PagePaginationResEntity<ExpenseEntity>> {
     const { page, numOfItems } = findDto;
 
@@ -54,7 +54,7 @@ export class ExpensesController {
   @ApiAppExceptionsRes(ExpenseIsNotFoundException)
   @JsonCache()
   @Get(':id')
-  findOne(@Param('id') id: string, @User() user: IUser): Promise<ExpenseEntity> {
+  findOne(@Param('id') id: string, @User() user: UserType): Promise<ExpenseEntity> {
     return this.expensesService.findOneAsCustomer(id, user.id);
   }
 
@@ -62,7 +62,7 @@ export class ExpensesController {
   @Post()
   create(
     @Body() expensesToCreate: ExpenseCreateDto[],
-    @User() user: IUser,
+    @User() user: UserType,
   ): Promise<ExpenseEntity[]> {
     if (!Array.isArray(expensesToCreate)) {
       throw new BadRequestException('body should be an array');
@@ -76,14 +76,14 @@ export class ExpensesController {
   update(
     @Param('id') id: string,
     @Body() updateExpenseDto: ExpenseUpdateDto,
-    @User() user: IUser,
+    @User() user: UserType,
   ): Promise<ExpenseEntity> {
     return this.expensesService.update(id, updateExpenseDto, user.id);
   }
 
   @ApiAppExceptionsRes(ExpenseIsNotFoundException)
   @Delete(':id')
-  remove(@Param('id') id: string, @User() user: IUser): Promise<ExpenseEntity> {
+  remove(@Param('id') id: string, @User() user: UserType): Promise<ExpenseEntity> {
     return this.expensesService.delete(id, user.id);
   }
 }

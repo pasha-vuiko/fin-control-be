@@ -11,11 +11,11 @@ export class AppException extends Error {
   readonly errorCode: TAppErrorCode;
   // override readonly message: string;
 
-  constructor(options: IOptionsWithCause);
-  constructor(message?: string, options?: IAppExceptionsOptions);
+  constructor(options: OptionsWithCause);
+  constructor(message?: string, options?: AppExceptionsOptions);
   constructor(
-    messageOrCause: string | IOptionsWithCause | undefined,
-    options?: IAppExceptionsOptions,
+    messageOrCause: string | OptionsWithCause | undefined,
+    options?: AppExceptionsOptions,
   ) {
     if (typeof messageOrCause === 'string' || typeof messageOrCause === 'undefined') {
       messageOrCause = messageOrCause ?? defaultMessage;
@@ -67,12 +67,12 @@ export const ERR_CODE_ERR_ID_INDEX = 2;
 
 export type TAppErrorCode = `${number}.${HttpStatus | number}.${number}`;
 
-export interface IAppExceptionsOptions {
+export interface AppExceptionsOptions {
   cause?: Error | any;
   name?: string;
   errorCode?: TAppErrorCode;
 }
 
-export interface IOptionsWithCause {
+export interface OptionsWithCause {
   cause?: Error | any;
 }

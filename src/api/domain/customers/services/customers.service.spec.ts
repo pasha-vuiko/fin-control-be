@@ -5,7 +5,7 @@ import { PagePaginationDto } from '@shared/dto/page-pagination.dto';
 import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-output.entity';
 import { IPagePaginationOutput } from '@shared/interfaces/page-pagination-output.interface';
 import { Roles } from '@shared/modules/auth/enums/roles';
-import { IUser } from '@shared/modules/auth/interfaces/user.interface';
+import { User as UserType } from '@shared/modules/auth/interfaces/user.interface';
 
 import { CustomerCreateDto } from '@api/domain/customers/dto/customer-create.dto';
 import { CustomerUpdateDto } from '@api/domain/customers/dto/customer-update.dto';
@@ -14,7 +14,7 @@ import {
   CustomerNotFoundException,
   ForbiddenToDeleteCustomerException,
 } from '@api/domain/customers/exceptions/exception-classes';
-import { ICustomerFromDb } from '@api/domain/customers/interfaces/customer-from-db.interface';
+import { CustomerFromDb } from '@api/domain/customers/interfaces/customer-from-db.interface';
 import { ICustomersRepository } from '@api/domain/customers/interfaces/customers.repository.interface';
 import { CustomersRepository } from '@api/domain/customers/repositories/customers.repository';
 
@@ -33,7 +33,7 @@ const mockCustomerUpdateDto: CustomerUpdateDto = {
   lastName: 'test',
   phone: '+38234902834',
 };
-const mockUser: IUser = {
+const mockUser: UserType = {
   id: '1',
   email: 'test@example.com',
   emailVerified: true,
@@ -43,7 +43,7 @@ const mockUser: IUser = {
   nickname: 'test',
   roles: [Roles.CUSTOMER],
 };
-const mockCustomer: ICustomerFromDb = {
+const mockCustomer: CustomerFromDb = {
   id: '1',
   userId: '1',
   firstName: 'test',
@@ -81,7 +81,7 @@ describe('CustomerService', () => {
         numOfItems: 1,
       };
       const customer = structuredClone(mockCustomer);
-      const dbResponse: IPagePaginationOutput<ICustomerFromDb> = {
+      const dbResponse: IPagePaginationOutput<CustomerFromDb> = {
         items: [customer],
         total: 1,
       };
@@ -179,7 +179,7 @@ describe('CustomerService', () => {
       const userId = '1';
       const foundCustomer = structuredClone(mockCustomer);
       // @ts-expect-error types of birthdate from foundCustomer and updateCustomerDto are not compatible (string to string|Date)
-      const updatedCustomer: ICustomerFromDb = {
+      const updatedCustomer: CustomerFromDb = {
         ...foundCustomer,
         ...updateCustomerDto,
       };
@@ -212,7 +212,7 @@ describe('CustomerService', () => {
       const updateCustomerDto: CustomerUpdateDto = {};
       const foundCustomer = structuredClone(mockCustomer);
       // @ts-expect-error types of birthdate from foundCustomer and updateCustomerDto are not compatible (string to string|Date)
-      const updatedCustomer: ICustomerFromDb = {
+      const updatedCustomer: CustomerFromDb = {
         ...foundCustomer,
         ...updateCustomerDto,
       };
@@ -269,7 +269,7 @@ describe('CustomerService', () => {
     it('should throw ForbiddenException if user is not authorized to delete customer', async () => {
       const id = '1';
       const userId = '2';
-      const foundCustomer: ICustomerFromDb = {
+      const foundCustomer: CustomerFromDb = {
         ...mockCustomer,
         userId: '3',
       };

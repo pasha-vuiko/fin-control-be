@@ -6,7 +6,7 @@ import { PagePaginationResEntity } from '@shared/entities/page-pagination-res.en
 import { Auth } from '@shared/modules/auth/decorators/auth.decorator';
 import { User } from '@shared/modules/auth/decorators/user.decorator';
 import { Roles } from '@shared/modules/auth/enums/roles';
-import { IUser } from '@shared/modules/auth/interfaces/user.interface';
+import { User as UserType } from '@shared/modules/auth/interfaces/user.interface';
 import { ApiAppExceptionsRes } from '@shared/modules/error/open-api/api-app-exceptions-response.decorator';
 import { JsonCache } from '@shared/modules/redis/decorators/json-cache.decorator';
 
@@ -29,7 +29,7 @@ export class RegularPaymentsController {
   @Get()
   async findMany(
     @Query() findDto: RegularPaymentSearchDto,
-    @User() user: IUser,
+    @User() user: UserType,
   ): Promise<PagePaginationResEntity<RegularPaymentEntity>> {
     const { numOfItems, page } = findDto;
 
@@ -45,7 +45,10 @@ export class RegularPaymentsController {
   @JsonCache()
   @Auth(Roles.CUSTOMER)
   @Get(':id')
-  findOne(@Param('id') id: string, @User() user: IUser): Promise<RegularPaymentEntity> {
+  findOne(
+    @Param('id') id: string,
+    @User() user: UserType,
+  ): Promise<RegularPaymentEntity> {
     return this.regularPaymentsService.findOneAsCustomer(id, user.id);
   }
 
@@ -53,7 +56,7 @@ export class RegularPaymentsController {
   @Post()
   create(
     @Body() createRegularPaymentDto: RegularPaymentCreateDto,
-    @User() user: IUser,
+    @User() user: UserType,
   ): Promise<RegularPaymentEntity> {
     return this.regularPaymentsService.create(createRegularPaymentDto, user.id);
   }
@@ -63,7 +66,7 @@ export class RegularPaymentsController {
   async update(
     @Param('id') id: string,
     @Body() updateRegularPaymentDto: RegularPaymentUpdateDto,
-    @User() user: IUser,
+    @User() user: UserType,
   ): Promise<RegularPaymentEntity> {
     return await this.regularPaymentsService.update(id, updateRegularPaymentDto, user.id);
   }
@@ -72,7 +75,7 @@ export class RegularPaymentsController {
   @Delete(':id')
   async delete(
     @Param('id') id: string,
-    @User() user: IUser,
+    @User() user: UserType,
   ): Promise<RegularPaymentEntity | null> {
     return await this.regularPaymentsService.delete(id, user.id);
   }

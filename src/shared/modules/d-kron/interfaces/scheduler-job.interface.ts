@@ -1,4 +1,4 @@
-export interface ISchedulerJob {
+export interface SchedulerJob {
   name: string;
   timezone: string;
   schedule: string;

@@ -1,4 +1,4 @@
-export interface IAdditionalJobOptions {
+export interface AdditionalJobOptions {
   retriesNumber?: number;
   expiresAt?: Date;
 }

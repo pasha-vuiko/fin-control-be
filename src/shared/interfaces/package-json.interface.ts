@@ -1,24 +1,24 @@
 /**
  * Describes data of package.json
  */
-export interface IPackageJson {
+export interface PackageJson {
   name: string;
   version: string;
   description: string;
   private: boolean;
   scripts: Record<string, string>;
   author: string;
-  engines: IEngines;
+  engines: Engines;
   dependencies: Record<string, string>;
   devDependencies: Record<string, string>;
-  jest: IJest;
+  jest: Jest;
 }
 
-export interface IEngines {
+export interface Engines {
   node: string;
 }
 
-export interface IJest {
+export interface Jest {
   moduleFileExtensions: string[];
   rootDir: string;
   testRegex: string;

@@ -1,8 +1,8 @@
 import { Prisma } from '@prisma/client';
 
-import CustomerCreateInput = Prisma.CustomerCreateInput;
+import CustomerCreateInputPrisma = Prisma.CustomerCreateInput;
 
-export interface ICustomerCreateInput
-  extends Omit<CustomerCreateInput, 'id' | 'auth0Id'> {
+export interface CustomerCreateInput
+  extends Omit<CustomerCreateInputPrisma, 'id' | 'auth0Id'> {
   userId: string;
 }

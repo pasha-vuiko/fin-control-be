@@ -1,4 +1,4 @@
-export interface IDkronJob {
+export interface DkronJob {
   id: string;
   name: string;
   displayname: string;

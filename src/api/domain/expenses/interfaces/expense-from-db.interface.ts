@@ -1,6 +1,6 @@
 import { ExpenseCategory } from '@prisma/client';
 
-export interface IExpenseFromDb {
+export interface ExpenseFromDb {
   id: string;
   customerId: string;
   date: Date;

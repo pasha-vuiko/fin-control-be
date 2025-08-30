@@ -11,9 +11,9 @@ import {
 } from '@shared/modules/auth/exceptions/exception-classes';
 import {
   AUTH0_ROLES_KEY,
-  IAuth0User,
+  Auth0User,
 } from '@shared/modules/auth/interfaces/auth0-user.interface';
-import { IAuthModuleOptions } from '@shared/modules/auth/interfaces/auth-module-options.interface';
+import { AuthModuleOptions } from '@shared/modules/auth/interfaces/auth-module-options.interface';
 import { JWTVerifierService } from '@shared/modules/auth/services/jwt-verifier.service';
 
 import { getMockedInstance } from '../../../../../../test/utils/get-mocked-instance.util';
@@ -40,7 +40,7 @@ describe('Auth0Guard', () => {
 
   beforeEach(async () => {
     jwtVerifierService = getMockedInstance(JWTVerifierService);
-    authGuard = new Auth0Guard(mockReflector, {} as IAuthModuleOptions);
+    authGuard = new Auth0Guard(mockReflector, {} as AuthModuleOptions);
     //@ts-expect-error access to private property
     authGuard.jwtVerifierService = jwtVerifierService;
   });
@@ -145,7 +145,7 @@ describe('Auth0Guard', () => {
       });
       vi.spyOn(jwtVerifierService, 'verify').mockResolvedValue({
         [AUTH0_ROLES_KEY]: ['ADMIN'],
-      } as unknown as IAuth0User);
+      } as unknown as Auth0User);
       vi.spyOn(mockReflector, 'get').mockReturnValueOnce([Roles.ADMIN]);
 
       expect(await authGuard.canActivate(mockContext)).toBe(true);
@@ -156,14 +156,14 @@ describe('Auth0Guard', () => {
     it('should correctly transform user roles from Auth0', () => {
       const user = {
         [AUTH0_ROLES_KEY]: [Roles.ADMIN, Roles.CUSTOMER],
-      } as IAuth0User;
+      } as Auth0User;
       const userRoles = Auth0Guard.getRolesFromAuth0User(user);
 
       expect(userRoles).toEqual(expect.arrayContaining([Roles.ADMIN, Roles.CUSTOMER]));
     });
 
     it('should return [Roles.CUSTOMER] if user has no roles', () => {
-      const noRolesUser = Auth0Guard.getRolesFromAuth0User({} as IAuth0User);
+      const noRolesUser = Auth0Guard.getRolesFromAuth0User({} as Auth0User);
 
       expect(noRolesUser).toEqual([Roles.CUSTOMER]);
     });

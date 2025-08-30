@@ -11,9 +11,9 @@ import { getPrismaPaginationParams } from '@shared/modules/prisma/utils/get-pris
 import { handlePrismaError } from '@shared/modules/prisma/utils/handle-prisma-error';
 import { omitObjKeys } from '@shared/utils/omit-obj-keys.util';
 
-import { IExpenseCreateInput } from '@api/domain/expenses/interfaces/expense-create-input.interface';
-import { IExpenseFromDb } from '@api/domain/expenses/interfaces/expense-from-db.interface';
-import { IExpenseUpdateInput } from '@api/domain/expenses/interfaces/expense-update-input.interface';
+import { ExpenseCreateInput } from '@api/domain/expenses/interfaces/expense-create-input.interface';
+import { ExpenseFromDb } from '@api/domain/expenses/interfaces/expense-from-db.interface';
+import { ExpenseUpdateInput } from '@api/domain/expenses/interfaces/expense-update-input.interface';
 import { IExpensesRepository } from '@api/domain/expenses/interfaces/expenses-repository.interface';
 
 import { Expense } from '../../../../../prisma/drizzle/schema';
@@ -25,7 +25,7 @@ export class ExpensesRepository implements IExpensesRepository {
   @CatchErrors(handlePrismaError)
   async findMany(
     pagination: IPagePaginationInput,
-  ): Promise<IPagePaginationOutput<IExpenseFromDb>> {
+  ): Promise<IPagePaginationOutput<ExpenseFromDb>> {
     const { take, skip } = getPrismaPaginationParams(pagination);
 
     return await this.prismaService.$drizzle
@@ -45,7 +45,7 @@ export class ExpensesRepository implements IExpensesRepository {
   async findManyByCustomer(
     customerId: string,
     pagination: IPagePaginationInput,
-  ): Promise<IPagePaginationOutput<IExpenseFromDb>> {
+  ): Promise<IPagePaginationOutput<ExpenseFromDb>> {
     const { take, skip } = getPrismaPaginationParams(pagination);
 
     return await this.prismaService.$drizzle
@@ -67,7 +67,7 @@ export class ExpensesRepository implements IExpensesRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async findOne(id: string): Promise<IExpenseFromDb | null> {
+  async findOne(id: string): Promise<ExpenseFromDb | null> {
     const [foundExpense] = await this.prismaService.$drizzle
       .select()
       .from(Expense)
@@ -81,7 +81,7 @@ export class ExpensesRepository implements IExpensesRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async createOne(createExpenseInputs: IExpenseCreateInput): Promise<IExpenseFromDb> {
+  async createOne(createExpenseInputs: ExpenseCreateInput): Promise<ExpenseFromDb> {
     const { amount, date } = createExpenseInputs;
 
     return await this.prismaService.$drizzle
@@ -97,9 +97,7 @@ export class ExpensesRepository implements IExpensesRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async createMany(
-    createExpenseInputs: IExpenseCreateInput[],
-  ): Promise<IExpenseFromDb[]> {
+  async createMany(createExpenseInputs: ExpenseCreateInput[]): Promise<ExpenseFromDb[]> {
     const expensesToCreate = createExpenseInputs.map(expenseToCreate => {
       const { amount, date } = expenseToCreate;
 
@@ -119,7 +117,7 @@ export class ExpensesRepository implements IExpensesRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async update(id: string, data: IExpenseUpdateInput): Promise<IExpenseFromDb | null> {
+  async update(id: string, data: ExpenseUpdateInput): Promise<ExpenseFromDb | null> {
     const dataWithoutCustomerId = omitObjKeys(data, 'customerId');
 
     const { amount, date } = dataWithoutCustomerId;
@@ -141,7 +139,7 @@ export class ExpensesRepository implements IExpensesRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async delete(id: string): Promise<IExpenseFromDb | null> {
+  async delete(id: string): Promise<ExpenseFromDb | null> {
     return await this.prismaService.$drizzle
       .delete(Expense)
       .where(eq(Expense.id, id))
@@ -153,11 +151,11 @@ export class ExpensesRepository implements IExpensesRepository {
 
   private mapExpensesFromPrismaToExpenses(
     expenses: IExpenseFromPrisma[],
-  ): IExpenseFromDb[] {
+  ): ExpenseFromDb[] {
     return expenses.map(expense => this.mapExpenseFromPrismaToExpense(expense));
   }
 
-  private mapExpenseFromPrismaToExpense(expense: IExpenseFromPrisma): IExpenseFromDb {
+  private mapExpenseFromPrismaToExpense(expense: IExpenseFromPrisma): ExpenseFromDb {
     return {
       id: expense.id,
       customerId: expense.customerId,

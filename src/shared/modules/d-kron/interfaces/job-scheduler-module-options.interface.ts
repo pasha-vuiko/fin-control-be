@@ -1,4 +1,4 @@
-export interface IDKronModuleOptions {
+export interface DKronModuleOptions {
   dKronUrl: string;
   executeJobEndpoint: string;
 }

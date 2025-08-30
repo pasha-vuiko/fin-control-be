@@ -36,17 +36,9 @@ export default [
         { argsIgnorePattern: '^_', destructuredArrayIgnorePattern: '^_' },
       ],
       'max-lines-per-function': ['error', 40],
-      '@typescript-eslint/naming-convention': [
-        'warn',
-        {
-          selector: 'interface',
-          format: ['PascalCase'],
-          custom: {
-            regex: '^I[A-Z]',
-            match: true,
-          },
-        },
-      ],
+      // Removed enforced `I`-prefix for interfaces; interface names can be PascalCase
+      // with or without an `I` prefix depending on use. Implementable interfaces
+      // may keep the `I` prefix; type-only interfaces should not.
     },
   },
   {

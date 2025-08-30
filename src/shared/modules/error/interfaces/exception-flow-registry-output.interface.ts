@@ -1,10 +1,10 @@
-export interface IAppExceptionFlowRegistryOutput {
+export interface AppExceptionFlowRegistryOutput {
   name: string;
   code: number;
-  exceptions: IAppExceptionRegistryOutput[];
+  exceptions: AppExceptionRegistryOutput[];
 }
 
-export interface IAppExceptionRegistryOutput {
+export interface AppExceptionRegistryOutput {
   code: string;
   name: string;
   description: string;

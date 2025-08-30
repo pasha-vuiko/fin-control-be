@@ -1,6 +1,6 @@
 import { Roles } from '@shared/modules/auth/enums/roles';
 
-export interface IUser {
+export interface User {
   id: string;
   name: string;
   firstName: string;

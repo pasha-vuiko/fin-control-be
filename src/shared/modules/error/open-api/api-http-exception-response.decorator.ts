@@ -76,7 +76,7 @@ function getContent<E extends TConstructor<HttpException>>(
   };
 }
 
-function getExceptionResponse(exception: HttpException): IExceptionResponse {
+function getExceptionResponse(exception: HttpException): ExceptionResponse {
   const exceptionResponse = exception.getResponse();
 
   if (typeof exceptionResponse === 'string') {
@@ -86,10 +86,10 @@ function getExceptionResponse(exception: HttpException): IExceptionResponse {
     };
   }
 
-  return exceptionResponse as IExceptionResponse;
+  return exceptionResponse as ExceptionResponse;
 }
 
-interface IExceptionResponse {
+interface ExceptionResponse {
   error: string;
   message: string;
 }

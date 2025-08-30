@@ -7,8 +7,8 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { executeWithRetries } from '@shared/modules/http/util/execute-with-retries';
 import { Logger } from '@shared/modules/logger/loggers/logger';
 
-import { IHttpReqOptions } from '../../interfaces/http-req-options.interface';
-import { IHttpResponse } from '../../interfaces/http-response.interface';
+import { HttpReqOptions } from '../../interfaces/http-req-options.interface';
+import { HttpResponse } from '../../interfaces/http-response.interface';
 
 import HttpMethod = Dispatcher.HttpMethod;
 import ResponseData = Dispatcher.ResponseData;
@@ -27,48 +27,48 @@ export class HttpService {
 
   public async get<T>(
     url: string | URL | UrlObject,
-    options?: IHttpReqOptions,
-  ): Promise<IHttpResponse<T>> {
+    options?: HttpReqOptions,
+  ): Promise<HttpResponse<T>> {
     return await this.executeRequest('GET', url, options);
   }
 
   public async post<T>(
     url: string | URL | UrlObject,
     body: any,
-    options?: IHttpReqOptions,
-  ): Promise<IHttpResponse<T>> {
+    options?: HttpReqOptions,
+  ): Promise<HttpResponse<T>> {
     return await this.executeRequest('POST', url, options, body);
   }
 
   public async put<T>(
     url: string | URL | UrlObject,
     body: any,
-    options?: IHttpReqOptions,
-  ): Promise<IHttpResponse<T>> {
+    options?: HttpReqOptions,
+  ): Promise<HttpResponse<T>> {
     return await this.executeRequest('PUT', url, options, body);
   }
 
   public async patch<T>(
     url: string | URL | UrlObject,
     body: any,
-    options?: IHttpReqOptions,
-  ): Promise<IHttpResponse<T>> {
+    options?: HttpReqOptions,
+  ): Promise<HttpResponse<T>> {
     return await this.executeRequest('PATCH', url, options, body);
   }
 
   public async delete<T>(
     url: string | URL | UrlObject,
-    options?: IHttpReqOptions,
-  ): Promise<IHttpResponse<T>> {
+    options?: HttpReqOptions,
+  ): Promise<HttpResponse<T>> {
     return await this.executeRequest('DELETE', url, options);
   }
 
   private async executeRequest<T>(
     method: HttpMethod,
     url: string | URL | UrlObject,
-    options?: IHttpReqOptions,
+    options?: HttpReqOptions,
     body?: any,
-  ): Promise<IHttpResponse<T>> {
+  ): Promise<HttpResponse<T>> {
     if (options?.retries) {
       return await executeWithRetries(
         () => this.executeSingleRequest(method, url, options, body),
@@ -83,9 +83,9 @@ export class HttpService {
   private async executeSingleRequest<T>(
     method: HttpMethod,
     url: string | URL | UrlObject,
-    options?: IHttpReqOptions,
+    options?: HttpReqOptions,
     body?: any,
-  ): Promise<IHttpResponse<T>> {
+  ): Promise<HttpResponse<T>> {
     if (body) {
       return await undici
         .request(url, {
@@ -118,11 +118,11 @@ export class HttpService {
     return response;
   }
 
-  private async addDataToResponse<T>(response: ResponseData): Promise<IHttpResponse<T>> {
+  private async addDataToResponse<T>(response: ResponseData): Promise<HttpResponse<T>> {
     try {
       (response as any).data = await response.body.json();
 
-      return response as IHttpResponse<T>;
+      return response as HttpResponse<T>;
     } catch {
       this.logger.debug(
         `Failed to parse JSON response data for response: ${JSON.stringify(response)}`,
@@ -130,11 +130,11 @@ export class HttpService {
 
       (response as any).data = await response.body.text();
 
-      return response as IHttpResponse<T>;
+      return response as HttpResponse<T>;
     }
   }
 
-  private mergeOptionsWithDefaultOnes(options?: IHttpReqOptions): IHttpReqOptions {
+  private mergeOptionsWithDefaultOnes(options?: HttpReqOptions): HttpReqOptions {
     const abortSignalOptions = options?.timeout
       ? { signal: AbortSignal.timeout(options.timeout) }
       : {};

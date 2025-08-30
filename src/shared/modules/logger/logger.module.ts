@@ -2,7 +2,7 @@ import { DynamicModule, Module } from '@nestjs/common';
 import { Provider } from '@nestjs/common/interfaces';
 
 import { LOGGER_MODULE_OPTIONS } from '@shared/modules/logger/constants/logger-options-provider-token';
-import { ILoggerOptions } from '@shared/modules/logger/interfaces/logger-options.interface';
+import { LoggerOptions } from '@shared/modules/logger/interfaces/logger-options.interface';
 import { InternalPinoLogger } from '@shared/modules/logger/loggers/internal-pino-logger.service';
 import { PinoLogger } from '@shared/modules/logger/loggers/pino-logger.service';
 import { LoggerConfigService } from '@shared/modules/logger/services/logger-config.service';
@@ -11,10 +11,10 @@ import { getDefaultLoggerConfig } from '@shared/modules/logger/utils/get-logger-
 
 @Module({})
 export class LoggerModule {
-  static forRoot(loggerLevel: LogLevel, options?: ILoggerOptions): DynamicModule {
+  static forRoot(loggerLevel: LogLevel, options?: LoggerOptions): DynamicModule {
     const optionsWithDefault = this.getOptsMergedWithDefault(loggerLevel, options);
 
-    const paramsProvider: Provider<ILoggerOptions> = {
+    const paramsProvider: Provider<LoggerOptions> = {
       provide: LOGGER_MODULE_OPTIONS,
       useValue: optionsWithDefault,
     };
@@ -28,8 +28,8 @@ export class LoggerModule {
 
   private static getOptsMergedWithDefault(
     loggerLevel: LogLevel,
-    options?: ILoggerOptions,
-  ): ILoggerOptions {
+    options?: LoggerOptions,
+  ): LoggerOptions {
     const defaultOptions = getDefaultLoggerConfig(loggerLevel, options?.logFormat);
 
     if (options) {

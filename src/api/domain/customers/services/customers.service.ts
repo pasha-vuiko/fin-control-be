@@ -3,14 +3,14 @@ import { Inject, Injectable } from '@nestjs/common';
 import { BindContext } from '@shared/decorators/bind-context.decorator';
 import { PagePaginationDto } from '@shared/dto/page-pagination.dto';
 import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-output.entity';
-import { IUser } from '@shared/modules/auth/interfaces/user.interface';
+import { User as UserType } from '@shared/modules/auth/interfaces/user.interface';
 
 import { CustomerEntity } from '@api/domain/customers/entities/customer.entity';
 import {
   CustomerNotFoundException,
   ForbiddenToDeleteCustomerException,
 } from '@api/domain/customers/exceptions/exception-classes';
-import { ICustomerFromDb } from '@api/domain/customers/interfaces/customer-from-db.interface';
+import { CustomerFromDb } from '@api/domain/customers/interfaces/customer-from-db.interface';
 import { ICustomersRepository } from '@api/domain/customers/interfaces/customers.repository.interface';
 import { CustomersRepository } from '@api/domain/customers/repositories/customers.repository';
 
@@ -51,7 +51,7 @@ export class CustomersService {
 
   async create(
     createCustomerDto: CustomerCreateDto,
-    user: IUser,
+    user: UserType,
   ): Promise<CustomerEntity> {
     const { id, email } = user;
 
@@ -124,8 +124,8 @@ export class CustomersService {
 
   @BindContext()
   private throwNotFoundIfCustomerNotDefined(
-    customer: ICustomerFromDb | null,
-  ): ICustomerFromDb {
+    customer: CustomerFromDb | null,
+  ): CustomerFromDb {
     if (!customer) {
       throw new CustomerNotFoundException();
     }

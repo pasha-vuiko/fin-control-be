@@ -1,10 +1,8 @@
-import { IAppExceptionFlowRegistryOutput } from '@shared/modules/error/interfaces/exception-flow-registry-output.interface';
+import { AppExceptionFlowRegistryOutput } from '@shared/modules/error/interfaces/exception-flow-registry-output.interface';
 
 // Function to generate HTML using template strings
 // eslint-disable-next-line max-lines-per-function
-export function getAppExceptionDocHtml(
-  errors: IAppExceptionFlowRegistryOutput[],
-): string {
+export function getAppExceptionDocHtml(errors: AppExceptionFlowRegistryOutput[]): string {
   return `
     <!DOCTYPE html>
     <html lang="en">

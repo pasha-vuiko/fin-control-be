@@ -6,7 +6,7 @@ import {
   ERR_CODE_FLOW_ID_INDEX,
   TAppErrorCode,
 } from '@shared/modules/error/exceptions/exception-classes/app.exception';
-import { IAppExceptionFlowRegistryOutput } from '@shared/modules/error/interfaces/exception-flow-registry-output.interface';
+import { AppExceptionFlowRegistryOutput } from '@shared/modules/error/interfaces/exception-flow-registry-output.interface';
 import { getAppExceptionDocHtml } from '@shared/modules/error/utils/get-app-exception-doc-html.util';
 import { getConstructorName } from '@shared/modules/logger/utils/get-constructor-name.util';
 import { TConstructor } from '@shared/types/constructor.type';
@@ -177,7 +177,7 @@ export class AppExceptionsRegistry {
    *
    * @returns An array of flow descriptors with their registered exceptions, sorted by `flow.code`.
    */
-  getRegistryObject(): IAppExceptionFlowRegistryOutput[] {
+  getRegistryObject(): AppExceptionFlowRegistryOutput[] {
     const exceptionsByFlowIds = Map.groupBy(
       this.exceptionsRegistry.entries(),
       ([exceptionCode]) => {
@@ -185,7 +185,7 @@ export class AppExceptionsRegistry {
       },
     );
 
-    const result: IAppExceptionFlowRegistryOutput[] = [];
+    const result: AppExceptionFlowRegistryOutput[] = [];
 
     for (const [code, name] of this.exceptionFlowsRegistry.entries()) {
       const flowExceptions = exceptionsByFlowIds.get(code.toString()) ?? [];

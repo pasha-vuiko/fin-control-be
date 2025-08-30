@@ -4,7 +4,7 @@ import * as process from 'node:process';
 import { FastifyServerOptions } from 'fastify';
 
 import { packageJsonInfo } from '@shared/constants/package-json-info';
-import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
+import { RedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
 import { checkEnvVarsSet } from '@shared/utils/check-env-vars-set';
 import { generateRequestId } from '@shared/utils/generate-request-id.util';
 
@@ -58,7 +58,7 @@ export const config = {
       sentinels: mapRedisSentinels(process.env.REDIS_CONFIG_SENTINELS),
       ttl: Number(process.env.REDIS_TTL), // seconds
       enableAutoPipelining: true,
-    } satisfies IRedisModuleOptions,
+    } satisfies RedisModuleOptions,
   },
   auth: {
     auth0Domain: process.env.AUTH_AUTH0_DOMAIN as string,

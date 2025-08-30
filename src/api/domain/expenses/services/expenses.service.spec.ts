@@ -8,18 +8,18 @@ import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-out
 import { IPagePaginationOutput } from '@shared/interfaces/page-pagination-output.interface';
 
 import { CustomerEntity } from '@api/domain/customers/entities/customer.entity';
-import { ICustomerFromDb } from '@api/domain/customers/interfaces/customer-from-db.interface';
+import { CustomerFromDb } from '@api/domain/customers/interfaces/customer-from-db.interface';
 import { CustomersService } from '@api/domain/customers/services/customers.service';
 import { ExpenseCreateDto } from '@api/domain/expenses/dto/expense-create.dto';
 import { ExpenseEntity } from '@api/domain/expenses/entities/expense.entity';
 import { ExpenseIsNotFoundException } from '@api/domain/expenses/exceptions/exception-classes';
-import { IExpenseFromDb } from '@api/domain/expenses/interfaces/expense-from-db.interface';
+import { ExpenseFromDb } from '@api/domain/expenses/interfaces/expense-from-db.interface';
 import { ExpensesRepository } from '@api/domain/expenses/repositories/expenses.repository';
 
 import { getMockedInstance } from '../../../../../test/utils/get-mocked-instance.util';
 import { ExpensesService } from './expenses.service';
 
-const mockCustomer: ICustomerFromDb = {
+const mockCustomer: CustomerFromDb = {
   id: '1',
   userId: '2',
   firstName: 'John',
@@ -31,7 +31,7 @@ const mockCustomer: ICustomerFromDb = {
   createdAt: new Date(),
   updatedAt: new Date(),
 };
-const mockExpense: IExpenseFromDb = {
+const mockExpense: ExpenseFromDb = {
   id: '1',
   customerId: '1',
   date: new Date(),
@@ -78,7 +78,7 @@ describe('ExpensesService', () => {
       const customer = structuredClone(mockCustomer);
       const pagination = { ...mockPagination };
       const expenses = [structuredClone(mockExpense)];
-      const paginatedExpenses: IPagePaginationOutput<IExpenseFromDb> = {
+      const paginatedExpenses: IPagePaginationOutput<ExpenseFromDb> = {
         total: 1,
         items: expenses,
       };
@@ -106,7 +106,7 @@ describe('ExpensesService', () => {
   describe('findManyAsAdmin()', () => {
     it('should return all expenses', async () => {
       const expenses = [structuredClone(mockExpense)]; // Mock expenses array
-      const paginatedExpenses: IPagePaginationOutput<IExpenseFromDb> = {
+      const paginatedExpenses: IPagePaginationOutput<ExpenseFromDb> = {
         total: 1,
         items: expenses,
       };

@@ -6,7 +6,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CatchErrors } from '@shared/modules/error/decorators/catch-errors/catch-errors.decorator';
 import { internalErrHandler } from '@shared/modules/error/handlers/internal-err-handler';
 import { DEFAULT_CACHE_TTL } from '@shared/modules/redis/constants/defaults';
-import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
+import { RedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
 import { REDIS_MODULE_OPTIONS } from '@shared/modules/redis/providers/redis-module-options.provider';
 import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 
@@ -16,7 +16,7 @@ export class RedisService {
 
   constructor(
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-    @Inject(REDIS_MODULE_OPTIONS) private readonly moduleOptions: IRedisModuleOptions,
+    @Inject(REDIS_MODULE_OPTIONS) private readonly moduleOptions: RedisModuleOptions,
   ) {
     this.ioRedisInstance = RedisConfigService.getIoRedisInstance();
   }

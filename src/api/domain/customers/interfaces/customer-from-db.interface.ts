@@ -1,6 +1,6 @@
 import { Sex } from '@prisma/client';
 
-export interface ICustomerFromDb {
+export interface CustomerFromDb {
   id: string;
   userId: string;
   firstName: string;

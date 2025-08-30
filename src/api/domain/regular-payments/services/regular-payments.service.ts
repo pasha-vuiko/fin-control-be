@@ -8,8 +8,8 @@ import { DKronService } from '@shared/modules/d-kron/services/d-kron/d-kron.serv
 import { CustomersService } from '@api/domain/customers/services/customers.service';
 import { RegularPaymentEntity } from '@api/domain/regular-payments/entities/regular-payment.entity';
 import { RegularPaymentNotFoundException } from '@api/domain/regular-payments/exceptions/exception-classes';
-import { IRegularPaymentFromDb } from '@api/domain/regular-payments/interfaces/regular-payment-from-db.interface';
-import { IRegularPaymentUpdateInput } from '@api/domain/regular-payments/interfaces/regular-payment-update-input.interface';
+import { RegularPaymentFromDb } from '@api/domain/regular-payments/interfaces/regular-payment-from-db.interface';
+import { RegularPaymentUpdateInput } from '@api/domain/regular-payments/interfaces/regular-payment-update-input.interface';
 import { IRegularPaymentsRepository } from '@api/domain/regular-payments/interfaces/regular-payments-repository.interface';
 import { RegularPaymentsRepository } from '@api/domain/regular-payments/repositories/regular-payments.repository';
 import { JobType } from '@api/shared/jobs/enums/job-type.enum';
@@ -102,10 +102,10 @@ export class RegularPaymentsService {
     id: string,
     updateRegularPaymentDto: RegularPaymentUpdateDto,
     userId: string,
-  ): Promise<IRegularPaymentFromDb> {
+  ): Promise<RegularPaymentFromDb> {
     await this.findOneAsCustomer(id, userId); // check if regular payment exists
 
-    const updateInput: IRegularPaymentUpdateInput = {
+    const updateInput: RegularPaymentUpdateInput = {
       ...updateRegularPaymentDto,
       amount: updateRegularPaymentDto.amount?.toString(),
       dateOfCharge: updateRegularPaymentDto.dateOfCharge
@@ -122,7 +122,7 @@ export class RegularPaymentsService {
     return RegularPaymentEntity.fromPlainObj(regularExpense);
   }
 
-  async delete(id: string, userId: string): Promise<IRegularPaymentFromDb | null> {
+  async delete(id: string, userId: string): Promise<RegularPaymentFromDb | null> {
     await this.findOneAsCustomer(id, userId); // check if regular payment exists
 
     return await this.regularPaymentsRepository
@@ -133,8 +133,8 @@ export class RegularPaymentsService {
 
   @BindContext()
   private throwNotFoundIfRegularPaymentNotDefined(
-    regularPayment: IRegularPaymentFromDb | null,
-  ): IRegularPaymentFromDb {
+    regularPayment: RegularPaymentFromDb | null,
+  ): RegularPaymentFromDb {
     if (!regularPayment) {
       throw new RegularPaymentNotFoundException();
     }

@@ -1,4 +1,4 @@
-export interface ICreateJobDataBasic {
+export interface CreateJobDataBasic {
   name: string;
   displayname?: string;
   parent_job?: string;

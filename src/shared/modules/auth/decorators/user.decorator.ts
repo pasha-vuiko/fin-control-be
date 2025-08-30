@@ -6,11 +6,11 @@ import {
 
 import { USER_REQ_PROPERTY } from '@shared/modules/auth/constants/user-req-property';
 import { Auth0Guard } from '@shared/modules/auth/guards/auth/auth0.guard';
-import { IAuth0User } from '@shared/modules/auth/interfaces/auth0-user.interface';
-import { IUser } from '@shared/modules/auth/interfaces/user.interface';
+import { Auth0User } from '@shared/modules/auth/interfaces/auth0-user.interface';
+import { User as UserType } from '@shared/modules/auth/interfaces/user.interface';
 
 export const User = createParamDecorator(
-  (_data: unknown, ctx: ExecutionContext): IUser => {
+  (_data: unknown, ctx: ExecutionContext): UserType => {
     // eslint-disable-next-line security/detect-object-injection
     const auth0User = ctx.switchToHttp().getRequest()[USER_REQ_PROPERTY];
 
@@ -19,7 +19,7 @@ export const User = createParamDecorator(
     }
 
     const { sub, name, nickname, given_name, family_name, email, email_verified } =
-      auth0User as IAuth0User;
+      auth0User as Auth0User;
 
     return {
       id: sub,

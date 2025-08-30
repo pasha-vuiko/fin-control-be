@@ -11,10 +11,10 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { NotRequired } from '@shared/decorators/validation/not-required.decorator';
 
-import { ICustomerCreateInput } from '@api/domain/customers/interfaces/customer-create-input.interface';
+import { CustomerCreateInput } from '@api/domain/customers/interfaces/customer-create-input.interface';
 
 export class CustomerCreateDto
-  implements Omit<ICustomerCreateInput, 'id' | 'userId' | 'email'>
+  implements Omit<CustomerCreateInput, 'id' | 'userId' | 'email'>
 {
   @IsNotEmpty()
   @IsString()

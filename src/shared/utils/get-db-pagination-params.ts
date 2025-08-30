@@ -2,7 +2,7 @@ import { IPagePaginationInput } from '@shared/interfaces/page-pagination-input.i
 
 export function getDbPaginationParams(
   pagination: Required<IPagePaginationInput>,
-): Required<IPagination> {
+): Required<Pagination> {
   const { page, numOfItems } = pagination;
 
   return {
@@ -11,7 +11,7 @@ export function getDbPaginationParams(
   };
 }
 
-export interface IPagination {
+export interface Pagination {
   take: number;
   skip: number;
 }

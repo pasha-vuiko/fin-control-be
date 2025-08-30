@@ -1,4 +1,4 @@
-export interface IPrismaPagination {
+export interface PrismaPagination {
   skip?: number;
   take?: number;
 }

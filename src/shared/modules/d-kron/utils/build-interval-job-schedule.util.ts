@@ -1,7 +1,7 @@
-import { IIntervalJobScheduleParams } from '@shared/modules/d-kron/interfaces/interval-job-schedule-params.interface';
+import { IntervalJobScheduleParams } from '@shared/modules/d-kron/interfaces/interval-job-schedule-params.interface';
 
 export function buildIntervalJobSchedule(
-  intervalParams: IIntervalJobScheduleParams,
+  intervalParams: IntervalJobScheduleParams,
 ): string {
   const { seconds = 0, minutes = 0, hours = 0, days = 0, weeks = 0 } = intervalParams;
 

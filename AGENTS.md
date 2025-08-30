@@ -22,7 +22,10 @@
 - Formatter: Prettier (2 spaces, `printWidth: 90`, single quotes, sorted imports).
 - Lint: ESLint (security + TypeScript rules; function return types encouraged).
 - Paths: use `@api`/`@shared` aliases; relative paths last.
-- Naming: classes/DTOs `PascalCase`; variables/functions `camelCase`; interfaces `IPascalCase` (enforced); env vars `UPPER_SNAKE_CASE`.
+- Naming: classes/DTOs `PascalCase`; variables/functions `camelCase`; interfaces:
+  - Implementable interfaces (used with `implements`, define behavior) may keep `IPascalCase`.
+  - Type-only interfaces (data shapes) should be `PascalCase` without the `I` prefix.
+  - Env vars `UPPER_SNAKE_CASE`.
 - Keep functions small (rule: max ~40 lines).
 
 ## Testing Guidelines
