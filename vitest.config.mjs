@@ -36,7 +36,7 @@ export default defineConfig({
         // Repositories (data access wrappers)
         'src/**/repositories/**',
         // Controllers (thin transport layer)
-        'src/**/controllers/**',
+        'src/**/*.controller.ts',
         // Nest modules and app/bootstrap/setup files
         'src/**/*.module.ts',
         'src/main.ts',
@@ -44,6 +44,8 @@ export default defineConfig({
         'src/app.module.ts',
         'src/app.controller.ts',
         'src/shared/bootstrap/**',
+        // Logger module
+        'src/shared/modules/logger/**',
       ],
       reporter: ['text', 'text-summary', 'html', 'lcov'],
     },
