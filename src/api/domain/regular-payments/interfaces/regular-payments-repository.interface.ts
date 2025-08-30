@@ -2,8 +2,8 @@ import { IPagePaginationInput } from '@shared/interfaces/page-pagination-input.i
 import { IPagePaginationOutput } from '@shared/interfaces/page-pagination-output.interface';
 
 import { RegularPaymentCreateInput } from '@api/domain/regular-payments/interfaces/regular-payment-create-input.interface';
+import { IRegularPayment } from '@api/domain/regular-payments/interfaces/regular-payment-from-db.interface';
 import { RegularPaymentUpdateInput } from '@api/domain/regular-payments/interfaces/regular-payment-update-input.interface';
-import { IRegularPayment } from '@api/domain/regular-payments/interfaces/regular-payment.interface';
 
 export interface IRegularPaymentsRepository {
   findAll(): Promise<IRegularPayment[]>;

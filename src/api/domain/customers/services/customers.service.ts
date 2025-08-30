@@ -10,7 +10,7 @@ import {
   CustomerNotFoundException,
   ForbiddenToDeleteCustomerException,
 } from '@api/domain/customers/exceptions/exception-classes';
-import { ICustomer } from '@api/domain/customers/interfaces/customer.interface';
+import { CustomerFromDb } from '@api/domain/customers/interfaces/customer-from-db.interface';
 import { ICustomersRepository } from '@api/domain/customers/interfaces/customers.repository.interface';
 import { CustomersRepository } from '@api/domain/customers/repositories/customers.repository';
 
@@ -123,7 +123,9 @@ export class CustomersService {
   }
 
   @BindContext()
-  private throwNotFoundIfCustomerNotDefined(customer: ICustomer | null): ICustomer {
+  private throwNotFoundIfCustomerNotDefined(
+    customer: CustomerFromDb | null,
+  ): CustomerFromDb {
     if (!customer) {
       throw new CustomerNotFoundException();
     }

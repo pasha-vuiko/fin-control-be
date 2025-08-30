@@ -9,8 +9,8 @@ import { CustomersService } from '@api/domain/customers/services/customers.servi
 import { ExpensesService } from '@api/domain/expenses/services/expenses.service';
 import { RegularPaymentEntity } from '@api/domain/regular-payments/entities/regular-payment.entity';
 import { RegularPaymentNotFoundException } from '@api/domain/regular-payments/exceptions/exception-classes';
+import { IRegularPayment } from '@api/domain/regular-payments/interfaces/regular-payment-from-db.interface';
 import { RegularPaymentUpdateInput } from '@api/domain/regular-payments/interfaces/regular-payment-update-input.interface';
-import { IRegularPayment } from '@api/domain/regular-payments/interfaces/regular-payment.interface';
 import { IRegularPaymentsRepository } from '@api/domain/regular-payments/interfaces/regular-payments-repository.interface';
 import { RegularPaymentsRepository } from '@api/domain/regular-payments/repositories/regular-payments.repository';
 import { JobType } from '@api/shared/jobs/enums/job-type.enum';

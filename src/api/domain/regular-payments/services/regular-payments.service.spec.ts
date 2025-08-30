@@ -12,7 +12,7 @@ import { ExpensesService } from '@api/domain/expenses/services/expenses.service'
 import { RegularPaymentCreateDto } from '@api/domain/regular-payments/dto/regular-payment-create.dto';
 import { RegularPaymentUpdateDto } from '@api/domain/regular-payments/dto/regular-payment-update.dto';
 import { RegularPaymentEntity } from '@api/domain/regular-payments/entities/regular-payment.entity';
-import { IRegularPayment } from '@api/domain/regular-payments/interfaces/regular-payment.interface';
+import { IRegularPayment } from '@api/domain/regular-payments/interfaces/regular-payment-from-db.interface';
 import { RegularPaymentsRepository } from '@api/domain/regular-payments/repositories/regular-payments.repository';
 
 import { getMockedInstance } from '../../../../../test/utils/get-mocked-instance.util';

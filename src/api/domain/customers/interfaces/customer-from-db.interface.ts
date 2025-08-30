@@ -1,5 +1,5 @@
 import { Customer } from '@prisma-definitions/client/client';
 
-export interface ICustomer extends Omit<Customer, 'auth0Id'> {
+export interface CustomerFromDb extends Omit<Customer, 'auth0Id'> {
   userId: string;
 }

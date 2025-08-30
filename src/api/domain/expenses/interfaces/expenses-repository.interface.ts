@@ -2,24 +2,26 @@ import { IPagePaginationInput } from '@shared/interfaces/page-pagination-input.i
 import { IPagePaginationOutput } from '@shared/interfaces/page-pagination-output.interface';
 
 import { ExpenseCreateInput } from '@api/domain/expenses/interfaces/expense-create-input.interface';
+import { ExpenseFromDb } from '@api/domain/expenses/interfaces/expense-from-db.interface';
 import { ExpenseUpdateInput } from '@api/domain/expenses/interfaces/expense-update-input.interface';
-import { IExpense } from '@api/domain/expenses/interfaces/expense.interface';
 
 export interface IExpensesRepository {
-  findMany(pagination: IPagePaginationInput): Promise<IPagePaginationOutput<IExpense>>;
+  findMany(
+    pagination: IPagePaginationInput,
+  ): Promise<IPagePaginationOutput<ExpenseFromDb>>;
 
   findManyByCustomer(
     customerId: string,
     pagination?: IPagePaginationInput,
-  ): Promise<IPagePaginationOutput<IExpense>>;
+  ): Promise<IPagePaginationOutput<ExpenseFromDb>>;
 
-  findOne(id: string): Promise<IExpense | null>;
+  findOne(id: string): Promise<ExpenseFromDb | null>;
 
-  createOne(createExpenseInputs: ExpenseCreateInput): Promise<IExpense>;
+  createOne(createExpenseInputs: ExpenseCreateInput): Promise<ExpenseFromDb>;
 
-  createMany(createExpenseInputs: ExpenseCreateInput[]): Promise<IExpense[]>;
+  createMany(createExpenseInputs: ExpenseCreateInput[]): Promise<ExpenseFromDb[]>;
 
-  update(id: string, data: ExpenseUpdateInput): Promise<IExpense | null>;
+  update(id: string, data: ExpenseUpdateInput): Promise<ExpenseFromDb | null>;
 
-  delete(id: string): Promise<IExpense | null>;
+  delete(id: string): Promise<ExpenseFromDb | null>;
 }

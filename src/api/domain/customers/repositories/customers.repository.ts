@@ -15,8 +15,8 @@ import { getPrismaPaginationParams } from '@shared/modules/prisma/utils/get-pris
 import { handlePrismaError } from '@shared/modules/prisma/utils/handle-prisma-error';
 
 import { CustomerCreateInput } from '@api/domain/customers/interfaces/customer-create-input.interface';
+import { CustomerFromDb } from '@api/domain/customers/interfaces/customer-from-db.interface';
 import { CustomerUpdateInput } from '@api/domain/customers/interfaces/customer-update-input.interface';
-import { ICustomer } from '@api/domain/customers/interfaces/customer.interface';
 import { ICustomersRepository } from '@api/domain/customers/interfaces/customers.repository.interface';
 
 @Injectable()
@@ -35,7 +35,7 @@ export class CustomersRepository implements ICustomersRepository {
   @CatchErrors(handlePrismaError)
   async findMany(
     pagination: IPagePaginationInput,
-  ): Promise<IPagePaginationOutput<ICustomer>> {
+  ): Promise<IPagePaginationOutput<CustomerFromDb>> {
     const { skip, take } = getPrismaPaginationParams(pagination);
 
     return await this.drizzle
@@ -55,7 +55,7 @@ export class CustomersRepository implements ICustomersRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async findOneById(id: string): Promise<ICustomer | null> {
+  async findOneById(id: string): Promise<CustomerFromDb | null> {
     const [foundCustomer] = await this.getOneByIdPreparedQuery.execute({ id });
 
     if (!foundCustomer) {
@@ -66,7 +66,7 @@ export class CustomersRepository implements ICustomersRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async findOneByUserId(userId: string): Promise<ICustomer | null> {
+  async findOneByUserId(userId: string): Promise<CustomerFromDb | null> {
     const foundCustomer = await this.drizzle.query.Customer.findFirst({
       where: { userId },
       with: { expense: true },
@@ -80,7 +80,7 @@ export class CustomersRepository implements ICustomersRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async create(data: CustomerCreateInput): Promise<ICustomer> {
+  async create(data: CustomerCreateInput): Promise<CustomerFromDb> {
     const { birthdate, createdAt, updatedAt } = data;
 
     return await this.prismaService.$drizzle
@@ -100,7 +100,7 @@ export class CustomersRepository implements ICustomersRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async update(id: string, data: CustomerUpdateInput): Promise<ICustomer | null> {
+  async update(id: string, data: CustomerUpdateInput): Promise<CustomerFromDb | null> {
     const { birthdate, createdAt, updatedAt } = data;
 
     return await this.drizzle
@@ -122,7 +122,7 @@ export class CustomersRepository implements ICustomersRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async remove(id: string): Promise<ICustomer | null> {
+  async remove(id: string): Promise<CustomerFromDb | null> {
     return await this.drizzle
       .delete(Customer)
       .where(eq(Customer.id, id))
@@ -135,11 +135,13 @@ export class CustomersRepository implements ICustomersRepository {
       });
   }
 
-  private mapCustomersFromPrismaToCustomers(customers: PrismaCustomer[]): ICustomer[] {
+  private mapCustomersFromPrismaToCustomers(
+    customers: PrismaCustomer[],
+  ): CustomerFromDb[] {
     return customers.map(customer => this.mapCustomerFromPrismaToCustomer(customer));
   }
 
-  private mapCustomerFromPrismaToCustomer(customer: PrismaCustomer): ICustomer {
+  private mapCustomerFromPrismaToCustomer(customer: PrismaCustomer): CustomerFromDb {
     return {
       id: customer.id,
       userId: customer.userId,

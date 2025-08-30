@@ -1,4 +1,5 @@
 import { ExpenseCategory } from '@prisma-definitions/client/client';
+import { RegularPayment } from '@prisma-definitions/drizzle/schema';
 import { SQLWrapper, and, eq } from 'drizzle-orm';
 
 import { Injectable } from '@nestjs/common';
@@ -11,14 +12,12 @@ import { getPrismaPaginationParams } from '@shared/modules/prisma/utils/get-pris
 import { handlePrismaError } from '@shared/modules/prisma/utils/handle-prisma-error';
 
 import { RegularPaymentCreateInput } from '@api/domain/regular-payments/interfaces/regular-payment-create-input.interface';
+import { IRegularPayment } from '@api/domain/regular-payments/interfaces/regular-payment-from-db.interface';
 import { RegularPaymentUpdateInput } from '@api/domain/regular-payments/interfaces/regular-payment-update-input.interface';
-import { IRegularPayment } from '@api/domain/regular-payments/interfaces/regular-payment.interface';
 import {
   IRegularPaymentsFilter,
   IRegularPaymentsRepository,
 } from '@api/domain/regular-payments/interfaces/regular-payments-repository.interface';
-
-import { RegularPayment } from '../../../../../prisma/drizzle/schema';
 
 @Injectable()
 export class RegularPaymentsRepository implements IRegularPaymentsRepository {
