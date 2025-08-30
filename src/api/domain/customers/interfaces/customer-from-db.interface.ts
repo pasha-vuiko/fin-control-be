@@ -1,5 +1,14 @@
-import { Customer } from '@prisma-definitions/client/client';
+import { Sex } from '@prisma-definitions/client/enums';
 
-export interface CustomerFromDb extends Omit<Customer, 'auth0Id'> {
+export interface CustomerFromDb {
+  id: string;
   userId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  birthdate: Date;
+  phone: string | null;
+  sex: Sex;
+  createdAt: Date;
+  updatedAt: Date;
 }

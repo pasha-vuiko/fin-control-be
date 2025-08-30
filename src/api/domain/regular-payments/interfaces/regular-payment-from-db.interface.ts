@@ -1,5 +1,11 @@
-import { RegularPayment } from '@prisma-definitions/client/client';
+import { ExpenseCategory } from '@prisma-definitions/client/client';
 
-export interface IRegularPayment extends Omit<RegularPayment, 'amount'> {
+export interface IRegularPayment {
+  id: string;
+  customerId: string;
   amount: number;
+  category: ExpenseCategory;
+  dateOfCharge: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
