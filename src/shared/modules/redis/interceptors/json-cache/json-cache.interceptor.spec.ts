@@ -61,12 +61,32 @@ describe('JsonCacheInterceptor', () => {
       const cachedValue = `{"data":"test"}`;
 
       vi.spyOn(ioRedisInstance, 'get').mockResolvedValue(cachedValue);
+      const replyHeaderSpy = vi.fn();
+      // inject reply with header spy
+      context = {
+        switchToHttp: () => ({
+          getRequest: (): FastifyRequest =>
+            ({
+              method: 'GET',
+              [USER_REQ_PROPERTY]: { sub: '123' },
+            }) as unknown as FastifyRequest,
+          getResponse: (): FastifyReply =>
+            ({ header: replyHeaderSpy }) as unknown as FastifyReply,
+        }),
+        getHandler: () => {},
+      } as any;
 
       const result$ = await interceptor.intercept(context, next);
       const resultPromise = await lastValueFrom(result$);
 
       expect(resultPromise).toEqual(cachedValue);
       expect(ioRedisInstance.get).toHaveBeenCalledWith('user_123:/test-url');
+      // x-cache=HIT set and content-type forced for cached response
+      expect(replyHeaderSpy).toHaveBeenCalledWith('x-cache', 'HIT');
+      expect(replyHeaderSpy).toHaveBeenCalledWith(
+        'content-type',
+        'application/json; charset=utf-8',
+      );
     });
 
     it('should call next.handle() and do not set cache if request is not cacheable', async () => {
@@ -145,5 +165,74 @@ describe('JsonCacheInterceptor', () => {
       expect(resultPromise).toEqual({ data: 'test' });
       expect(ioRedisInstance.get).toHaveBeenCalledWith('user_123:/test-url');
     });
+
+    it('should respect TTL factory function and use setex', async () => {
+      vi.spyOn(ioRedisInstance, 'get').mockResolvedValue(null);
+      vi.spyOn(ioRedisInstance, 'setex').mockResolvedValue('OK' as any);
+      const ttlFactory = vi.fn().mockResolvedValue(42);
+      const getSpy = vi.spyOn(reflector, 'get');
+      getSpy.mockReturnValueOnce(null); // for CACHE_KEY_METADATA
+      getSpy.mockReturnValue(ttlFactory); // for CACHE_TTL_METADATA
+
+      const result$ = await interceptor.intercept(context, next);
+      await lastValueFrom(result$);
+
+      expect(ttlFactory).toHaveBeenCalled();
+      expect(ioRedisInstance.setex).toHaveBeenCalledWith(
+        'user_123:/test-url',
+        42,
+        `{"data":"test"}`,
+      );
+    });
+
+    it('should derive key from CACHE_KEY_METADATA when not HTTP app and no user', async () => {
+      vi.spyOn(ioRedisInstance, 'get').mockResolvedValue(null);
+      vi.spyOn(ioRedisInstance, 'set').mockResolvedValue('OK' as any);
+
+      // not HTTP app
+      httpAdapterHost = { httpAdapter: undefined as any } as unknown as HttpAdapterHost;
+      interceptor = new JsonCacheInterceptor(reflector, httpAdapterHost, {} as any);
+
+      // set explicit metadata key
+      const getSpy = vi.spyOn(reflector, 'get');
+      getSpy.mockReturnValueOnce('custom-key'); // CACHE_KEY_METADATA
+      getSpy.mockReturnValue(null); // CACHE_TTL_METADATA
+
+      // context without user property
+      const localCtx = {
+        switchToHttp: () => ({
+          getRequest: (): FastifyRequest => ({ method: 'GET' }) as any,
+          getResponse: (): FastifyReply => ({ header: vi.fn() }) as any,
+        }),
+        getHandler: () => {},
+      } as any;
+
+      const result$ = await interceptor.intercept(localCtx, next);
+      await lastValueFrom(result$);
+
+      expect(ioRedisInstance.set).toHaveBeenCalledWith(
+        'publicUser:custom-key',
+        `{"data":"test"}`,
+      );
+    });
+
+    it('should not attempt to set headers when reply is null and cache hit', async () => {
+      vi.spyOn(ioRedisInstance, 'get').mockResolvedValue('{"a":1}');
+      const localCtx = {
+        switchToHttp: () => ({
+          getRequest: (): FastifyRequest => ({ method: 'GET' }) as any,
+          getResponse: (): FastifyReply | null => null,
+        }),
+        getHandler: () => {},
+      } as any;
+
+      const result$ = await interceptor.intercept(localCtx, next);
+      const result = await lastValueFrom(result$);
+      expect(result).toEqual('{"a":1}');
+    });
+
+    // Note: serializeResponseBody throws inside an async function;
+    // the rejection is unhandled by design (fire-and-forget). We instead
+    // cover the catch branch by simulating setex failure in a previous test.
   });
 });
