@@ -137,4 +137,109 @@ describe('RedisService()', () => {
       expect(ioRedisInstance.ttl).toHaveBeenCalledWith(cacheKey);
     });
   });
+
+  // eslint-disable-next-line max-lines-per-function
+  describe('update()', () => {
+    it('should swallow error via decorator when value is not cachable (undefined)', async () => {
+      const setSpy = vi.spyOn(ioRedisInstance, 'set');
+
+      const result = await service.update('k', undefined as unknown as any);
+
+      expect(result).toBeUndefined();
+      expect(setSpy).not.toHaveBeenCalled();
+    });
+
+    it('should swallow error via decorator when value is not cachable (function)', async () => {
+      const setSpy = vi.spyOn(ioRedisInstance, 'set');
+      const result = await service.update('k', () => {});
+
+      expect(result).toBeUndefined();
+      expect(setSpy).not.toHaveBeenCalled();
+    });
+
+    it('should set stringified object with KEEPTTL and return value', async () => {
+      const key = 'obj-key';
+      const value = { a: 1 };
+      vi.spyOn(ioRedisInstance, 'set').mockResolvedValue('OK' as any);
+
+      const result = await service.update(key, value);
+
+      expect(result).toEqual(value);
+      expect(ioRedisInstance.set).toHaveBeenCalledWith(
+        key,
+        JSON.stringify(value),
+        'KEEPTTL',
+      );
+    });
+
+    it('should set string value with KEEPTTL and return value', async () => {
+      const key = 'str-key';
+      const value = 'hello';
+      vi.spyOn(ioRedisInstance, 'set').mockResolvedValue('OK' as any);
+
+      const result = await service.update(key, value as any);
+
+      expect(result).toEqual(value);
+      expect(ioRedisInstance.set).toHaveBeenCalledWith(key, value as any, 'KEEPTTL');
+    });
+
+    it('should stringify boolean and set with KEEPTTL', async () => {
+      const key = 'bool-key';
+      const value = true;
+      vi.spyOn(ioRedisInstance, 'set').mockResolvedValue('OK' as any);
+
+      const result = await service.update(key, value as any);
+
+      expect(result).toEqual(value);
+      expect(ioRedisInstance.set).toHaveBeenCalledWith(
+        key,
+        JSON.stringify(value),
+        'KEEPTTL',
+      );
+    });
+  });
+
+  describe('checkIfExists()', () => {
+    it('should return true when exists > 0', async () => {
+      const key = 'exists-key';
+      vi.spyOn(ioRedisInstance, 'exists').mockResolvedValue(1 as any);
+
+      const result = await service.checkIfExists(key);
+
+      expect(result).toBe(true);
+      expect(ioRedisInstance.exists).toHaveBeenCalledWith(key);
+    });
+
+    it('should return false when exists == 0', async () => {
+      const key = 'not-exists-key';
+      vi.spyOn(ioRedisInstance, 'exists').mockResolvedValue(0 as any);
+
+      const result = await service.checkIfExists(key);
+
+      expect(result).toBe(false);
+      expect(ioRedisInstance.exists).toHaveBeenCalledWith(key);
+    });
+  });
+
+  describe('delete()', () => {
+    it('should return true when del returns > 0', async () => {
+      const key = 'del-key';
+      vi.spyOn(ioRedisInstance, 'del').mockResolvedValue(1 as any);
+
+      const result = await service.delete(key);
+
+      expect(result).toBe(true);
+      expect(ioRedisInstance.del).toHaveBeenCalledWith(key);
+    });
+
+    it('should return false when del returns 0', async () => {
+      const key = 'del-missing';
+      vi.spyOn(ioRedisInstance, 'del').mockResolvedValue(0 as any);
+
+      const result = await service.delete(key);
+
+      expect(result).toBe(false);
+      expect(ioRedisInstance.del).toHaveBeenCalledWith(key);
+    });
+  });
 });

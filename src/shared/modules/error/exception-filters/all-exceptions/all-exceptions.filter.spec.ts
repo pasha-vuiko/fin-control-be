@@ -2,13 +2,14 @@ import { createError as createFastifyError } from '@fastify/error';
 import type { FastifyError, FastifyReply, FastifyRequest } from 'fastify';
 import { afterEach, beforeEach, describe, expect } from 'vitest';
 
-import { ArgumentsHost, NotFoundException } from '@nestjs/common';
+import { ArgumentsHost, HttpException, NotFoundException } from '@nestjs/common';
 import { HttpArgumentsHost } from '@nestjs/common/interfaces';
 
 import {
   AllExceptionsFilter,
   ErrorResponse,
 } from '@shared/modules/error/exception-filters/all-exceptions/all-exceptions.filter';
+import { AppException } from '@shared/modules/error/exceptions/exception-classes/app.exception';
 import { mapHttpStatusCodeToCommonAppErrorCode } from '@shared/modules/error/utils/map-http-status-code-to-common-app-error-code.util';
 
 let allExceptionsFilter: AllExceptionsFilter;
@@ -33,6 +34,53 @@ describe('AllExceptionsFilter', () => {
 
   // eslint-disable-next-line max-lines-per-function
   describe('catch()', async () => {
+    it('should send err response from AppException (4xx) and log warn', () => {
+      class MyAppException extends AppException {}
+      const err = new MyAppException('Boom', {
+        errorCode: '1.404.1',
+        name: 'MyAppException',
+      });
+
+      // @ts-expect-error private logger access for spy
+      vi.spyOn(allExceptionsFilter.logger, 'warn').mockReturnValue(undefined);
+      vi.spyOn(response, 'status');
+      vi.spyOn(response, 'send');
+
+      allExceptionsFilter.catch(err, argumentHost);
+
+      const expectedResponse = new ErrorResponse({
+        code: '1.404.1',
+        description: 'Boom',
+        message: 'MyAppException',
+        reqId: getRequestId(),
+      });
+      expect(response.status).toBeCalledWith(404);
+      expect(response.send).toBeCalledWith(expectedResponse);
+    });
+
+    it('should send err response from AppException (5xx) and log error', () => {
+      class MyAppException extends AppException {}
+      const err = new MyAppException('Server down', {
+        errorCode: '1.500.1',
+        name: 'MyAppException',
+      });
+
+      // @ts-expect-error private logger access for spy
+      vi.spyOn(allExceptionsFilter.logger, 'error').mockReturnValue(undefined);
+      vi.spyOn(response, 'status');
+      vi.spyOn(response, 'send');
+
+      allExceptionsFilter.catch(err, argumentHost);
+
+      const expectedResponse = new ErrorResponse({
+        code: '1.500.1',
+        description: 'Server down',
+        message: 'MyAppException',
+        reqId: getRequestId(),
+      });
+      expect(response.status).toBeCalledWith(500);
+      expect(response.send).toBeCalledWith(expectedResponse);
+    });
     it('should send err response from HttpException and track error', () => {
       const errMessage = 'The record is not found';
       const notFoundException = new NotFoundException(errMessage);
@@ -110,6 +158,78 @@ describe('AllExceptionsFilter', () => {
       });
 
       expect(response.status).toBeCalledWith(errStatusCode);
+      expect(response.send).toBeCalledWith(expectedResponse);
+    });
+
+    it('should send err response and log error for FastifyError with 5xx', () => {
+      const errCode = 'FST_ERR_INTERNAL_SERVER';
+      const errMessage = 'Internal';
+      const errStatusCode = 500;
+
+      const FastifyError = createFastifyError(errCode, errMessage, errStatusCode);
+      const fastifyError = new FastifyError();
+
+      // @ts-expect-error access to private field 'logger'
+      vi.spyOn(allExceptionsFilter.logger, 'error').mockReturnValue(undefined);
+      vi.spyOn(response, 'status');
+      vi.spyOn(response, 'send');
+
+      allExceptionsFilter.catch(fastifyError as any as FastifyError, argumentHost);
+
+      const expectedResponse = new ErrorResponse({
+        code: mapHttpStatusCodeToCommonAppErrorCode(500),
+        description: errMessage,
+        message: errCode,
+        reqId: getRequestId(),
+      });
+
+      expect(response.status).toBeCalledWith(errStatusCode);
+      expect(response.send).toBeCalledWith(expectedResponse);
+    });
+
+    it('should default to 500 and log error when FastifyError has no statusCode', () => {
+      const err = {
+        name: 'FastifyError',
+        code: 'FST_ERR_UNKNOWN',
+        message: 'oops',
+      } as unknown as FastifyError;
+
+      // @ts-expect-error private logger spy
+      vi.spyOn(allExceptionsFilter.logger, 'error').mockReturnValue(undefined);
+      vi.spyOn(response, 'status');
+      vi.spyOn(response, 'send');
+
+      allExceptionsFilter.catch(err, argumentHost);
+
+      const expectedResponse = new ErrorResponse({
+        code: mapHttpStatusCodeToCommonAppErrorCode(500),
+        description: 'oops',
+        message: 'FST_ERR_UNKNOWN',
+        reqId: getRequestId(),
+      });
+      expect(response.status).toBeCalledWith(500);
+      expect(response.send).toBeCalledWith(expectedResponse);
+    });
+
+    it('should log error for HttpException 5xx', () => {
+      const ex = new HttpException('bad', 500);
+      const errorSpy = vi
+        // @ts-expect-error private logger
+        .spyOn(allExceptionsFilter.logger, 'error')
+        .mockReturnValue(undefined);
+      vi.spyOn(response, 'status');
+      vi.spyOn(response, 'send');
+
+      allExceptionsFilter.catch(ex, argumentHost);
+
+      expect(errorSpy).toHaveBeenCalled();
+      const expectedResponse = new ErrorResponse({
+        code: mapHttpStatusCodeToCommonAppErrorCode(500),
+        description: 'bad',
+        message: 'Internal Server Error',
+        reqId: getRequestId(),
+      });
+      expect(response.status).toBeCalledWith(500);
       expect(response.send).toBeCalledWith(expectedResponse);
     });
 
