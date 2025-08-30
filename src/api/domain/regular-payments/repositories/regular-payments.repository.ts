@@ -11,8 +11,8 @@ import { getPrismaPaginationParams } from '@shared/modules/prisma/utils/get-pris
 import { handlePrismaError } from '@shared/modules/prisma/utils/handle-prisma-error';
 
 import { IRegularPaymentCreateInput } from '@api/domain/regular-payments/interfaces/regular-payment-create-input.interface';
+import { IRegularPaymentFromDb } from '@api/domain/regular-payments/interfaces/regular-payment-from-db.interface';
 import { IRegularPaymentUpdateInput } from '@api/domain/regular-payments/interfaces/regular-payment-update-input.interface';
-import { IRegularPayment } from '@api/domain/regular-payments/interfaces/regular-payment.interface';
 import {
   IRegularPaymentsFilter,
   IRegularPaymentsRepository,
@@ -28,7 +28,7 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
   async findMany(
     filter: IRegularPaymentsFilter,
     pagination: IPagePaginationInput,
-  ): Promise<IPagePaginationOutput<IRegularPayment>> {
+  ): Promise<IPagePaginationOutput<IRegularPaymentFromDb>> {
     const { take, skip } = getPrismaPaginationParams(pagination);
     const { customerId } = filter;
 
@@ -60,7 +60,7 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async findAll(): Promise<IRegularPayment[]> {
+  async findAll(): Promise<IRegularPaymentFromDb[]> {
     const regularPayments = await this.prismaService.$drizzle
       .select()
       .from(RegularPayment);
@@ -71,7 +71,7 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async findOne(id: string): Promise<IRegularPayment | null> {
+  async findOne(id: string): Promise<IRegularPaymentFromDb | null> {
     const [regularPayment] = await this.prismaService.$drizzle
       .select()
       .from(RegularPayment)
@@ -85,7 +85,7 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async create(data: IRegularPaymentCreateInput): Promise<IRegularPayment> {
+  async create(data: IRegularPaymentCreateInput): Promise<IRegularPaymentFromDb> {
     const { amount, dateOfCharge, createdAt, updatedAt } = data;
 
     const [createdRegularPayment] = await this.prismaService.$drizzle
@@ -107,7 +107,7 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
   async update(
     id: string,
     data: IRegularPaymentUpdateInput,
-  ): Promise<IRegularPayment | null> {
+  ): Promise<IRegularPaymentFromDb | null> {
     const { amount, dateOfCharge, createdAt, updatedAt } = data;
 
     return await this.prismaService.$drizzle
@@ -129,7 +129,7 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async delete(id: string): Promise<IRegularPayment | null> {
+  async delete(id: string): Promise<IRegularPaymentFromDb | null> {
     return await this.prismaService.$drizzle
       .delete(RegularPayment)
       .where(eq(RegularPayment.id, id))
@@ -142,16 +142,16 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
   }
 
   private mapPrismaRegularPaymentsToRegularPayments(
-    prismaRegularPayments: IRegularPaymentFromDb[],
-  ): IRegularPayment[] {
+    prismaRegularPayments: IRegularPaymentFromPrisma[],
+  ): IRegularPaymentFromDb[] {
     return prismaRegularPayments.map(prismaRegularPayment =>
       this.mapPrismaRegularPaymentToRegularPayment(prismaRegularPayment),
     );
   }
 
   private mapPrismaRegularPaymentToRegularPayment(
-    prismaRegularPayment: IRegularPaymentFromDb,
-  ): IRegularPayment {
+    prismaRegularPayment: IRegularPaymentFromPrisma,
+  ): IRegularPaymentFromDb {
     return {
       ...prismaRegularPayment,
       amount: Number(prismaRegularPayment.amount),
@@ -159,7 +159,7 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
   }
 }
 
-interface IRegularPaymentFromDb {
+interface IRegularPaymentFromPrisma {
   id: string;
   customerId: string;
   amount: string;

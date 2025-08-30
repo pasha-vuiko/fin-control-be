@@ -8,7 +8,7 @@ import { CustomersService } from '@api/domain/customers/services/customers.servi
 import { ExpenseEntity } from '@api/domain/expenses/entities/expense.entity';
 import { ExpenseIsNotFoundException } from '@api/domain/expenses/exceptions/exception-classes';
 import { IExpenseCreateInput } from '@api/domain/expenses/interfaces/expense-create-input.interface';
-import { IExpense } from '@api/domain/expenses/interfaces/expense.interface';
+import { IExpenseFromDb } from '@api/domain/expenses/interfaces/expense-from-db.interface';
 import { IExpensesRepository } from '@api/domain/expenses/interfaces/expenses-repository.interface';
 import { ExpensesRepository } from '@api/domain/expenses/repositories/expenses.repository';
 
@@ -145,7 +145,9 @@ export class ExpensesService {
   }
 
   @BindContext()
-  private throwNotFoundIfExpenseNotDefined(expense: IExpense | null): IExpense {
+  private throwNotFoundIfExpenseNotDefined(
+    expense: IExpenseFromDb | null,
+  ): IExpenseFromDb {
     if (!expense) {
       throw new ExpenseIsNotFoundException();
     }

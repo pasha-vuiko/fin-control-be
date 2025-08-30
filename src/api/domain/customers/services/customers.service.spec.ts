@@ -14,7 +14,7 @@ import {
   CustomerNotFoundException,
   ForbiddenToDeleteCustomerException,
 } from '@api/domain/customers/exceptions/exception-classes';
-import { ICustomer } from '@api/domain/customers/interfaces/customer.interface';
+import { ICustomerFromDb } from '@api/domain/customers/interfaces/customer-from-db.interface';
 import { ICustomersRepository } from '@api/domain/customers/interfaces/customers.repository.interface';
 import { CustomersRepository } from '@api/domain/customers/repositories/customers.repository';
 
@@ -43,7 +43,7 @@ const mockUser: IUser = {
   nickname: 'test',
   roles: [Roles.CUSTOMER],
 };
-const mockCustomer: ICustomer = {
+const mockCustomer: ICustomerFromDb = {
   id: '1',
   userId: '1',
   firstName: 'test',
@@ -81,7 +81,7 @@ describe('CustomerService', () => {
         numOfItems: 1,
       };
       const customer = structuredClone(mockCustomer);
-      const dbResponse: IPagePaginationOutput<ICustomer> = {
+      const dbResponse: IPagePaginationOutput<ICustomerFromDb> = {
         items: [customer],
         total: 1,
       };
@@ -179,7 +179,7 @@ describe('CustomerService', () => {
       const userId = '1';
       const foundCustomer = structuredClone(mockCustomer);
       // @ts-expect-error types of birthdate from foundCustomer and updateCustomerDto are not compatible (string to string|Date)
-      const updatedCustomer: ICustomer = {
+      const updatedCustomer: ICustomerFromDb = {
         ...foundCustomer,
         ...updateCustomerDto,
       };
@@ -212,7 +212,7 @@ describe('CustomerService', () => {
       const updateCustomerDto: CustomerUpdateDto = {};
       const foundCustomer = structuredClone(mockCustomer);
       // @ts-expect-error types of birthdate from foundCustomer and updateCustomerDto are not compatible (string to string|Date)
-      const updatedCustomer: ICustomer = {
+      const updatedCustomer: ICustomerFromDb = {
         ...foundCustomer,
         ...updateCustomerDto,
       };
@@ -269,7 +269,7 @@ describe('CustomerService', () => {
     it('should throw ForbiddenException if user is not authorized to delete customer', async () => {
       const id = '1';
       const userId = '2';
-      const foundCustomer: ICustomer = {
+      const foundCustomer: ICustomerFromDb = {
         ...mockCustomer,
         userId: '3',
       };

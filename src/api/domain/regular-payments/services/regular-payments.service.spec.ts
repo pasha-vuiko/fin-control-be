@@ -11,7 +11,7 @@ import { CustomersService } from '@api/domain/customers/services/customers.servi
 import { RegularPaymentCreateDto } from '@api/domain/regular-payments/dto/regular-payment-create.dto';
 import { RegularPaymentUpdateDto } from '@api/domain/regular-payments/dto/regular-payment-update.dto';
 import { RegularPaymentEntity } from '@api/domain/regular-payments/entities/regular-payment.entity';
-import { IRegularPayment } from '@api/domain/regular-payments/interfaces/regular-payment.interface';
+import { IRegularPaymentFromDb } from '@api/domain/regular-payments/interfaces/regular-payment-from-db.interface';
 import { RegularPaymentsRepository } from '@api/domain/regular-payments/repositories/regular-payments.repository';
 
 import { getMockedInstance } from '../../../../../test/utils/get-mocked-instance.util';
@@ -29,7 +29,7 @@ const mockCustomer = CustomerEntity.fromCustomerObj({
   createdAt: new Date(),
   updatedAt: new Date(),
 });
-const mockRegularPayment: IRegularPayment = {
+const mockRegularPayment: IRegularPaymentFromDb = {
   id: '1',
   customerId: '1',
   amount: 50,
@@ -70,7 +70,7 @@ describe('RegularPaymentsService', () => {
     it('should return all regular payments for customer-admin with pagination', async () => {
       const pagination: IPagePaginationInput = { page: 1, numOfItems: 10 };
       const regularPayment = structuredClone(mockRegularPayment);
-      const dbResponse: IPagePaginationOutput<IRegularPayment> = {
+      const dbResponse: IPagePaginationOutput<IRegularPaymentFromDb> = {
         total: 1,
         items: [regularPayment],
       };
@@ -97,7 +97,7 @@ describe('RegularPaymentsService', () => {
       const customer = structuredClone(mockCustomer);
       const pagination: IPagePaginationInput = { page: 1, numOfItems: 10 };
       const regularPayment = structuredClone(mockRegularPayment);
-      const dbResponse: IPagePaginationOutput<IRegularPayment> = {
+      const dbResponse: IPagePaginationOutput<IRegularPaymentFromDb> = {
         total: 1,
         items: [regularPayment],
       };

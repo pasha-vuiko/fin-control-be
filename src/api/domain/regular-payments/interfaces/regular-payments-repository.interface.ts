@@ -2,24 +2,27 @@ import { IPagePaginationInput } from '@shared/interfaces/page-pagination-input.i
 import { IPagePaginationOutput } from '@shared/interfaces/page-pagination-output.interface';
 
 import { IRegularPaymentCreateInput } from '@api/domain/regular-payments/interfaces/regular-payment-create-input.interface';
+import { IRegularPaymentFromDb } from '@api/domain/regular-payments/interfaces/regular-payment-from-db.interface';
 import { IRegularPaymentUpdateInput } from '@api/domain/regular-payments/interfaces/regular-payment-update-input.interface';
-import { IRegularPayment } from '@api/domain/regular-payments/interfaces/regular-payment.interface';
 
 export interface IRegularPaymentsRepository {
-  findAll(): Promise<IRegularPayment[]>;
+  findAll(): Promise<IRegularPaymentFromDb[]>;
 
   findMany(
     filter: IRegularPaymentsFilter,
     pagination: IPagePaginationInput,
-  ): Promise<IPagePaginationOutput<IRegularPayment>>;
+  ): Promise<IPagePaginationOutput<IRegularPaymentFromDb>>;
 
-  findOne(id: string): Promise<IRegularPayment | null>;
+  findOne(id: string): Promise<IRegularPaymentFromDb | null>;
 
-  create(data: IRegularPaymentCreateInput): Promise<IRegularPayment>;
+  create(data: IRegularPaymentCreateInput): Promise<IRegularPaymentFromDb>;
 
-  update(id: string, data: IRegularPaymentUpdateInput): Promise<IRegularPayment | null>;
+  update(
+    id: string,
+    data: IRegularPaymentUpdateInput,
+  ): Promise<IRegularPaymentFromDb | null>;
 
-  delete(id: string): Promise<IRegularPayment | null>;
+  delete(id: string): Promise<IRegularPaymentFromDb | null>;
 }
 
 export interface IRegularPaymentsFilter {
