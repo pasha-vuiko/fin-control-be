@@ -125,8 +125,81 @@ describe('RegularPaymentsService', () => {
     });
   });
 
-  // Skipping findOneAsAdmin and findOneAsCustomer for brevity. Follow the pattern above.
+  describe('findOneAsAdmin()', () => {
+    it('returns a regular payment by id', async () => {
+      const id = 'rp-1';
+      const regularPaymentsRepositoryFindOneSpy = vitest
+        .spyOn(regularPaymentsRepository, 'findOne')
+        .mockResolvedValueOnce(structuredClone(mockRegularPayment));
 
+      const result = await regularPaymentsService.findOneAsAdmin(id);
+
+      expect(result).toStrictEqual(
+        RegularPaymentEntity.fromPlainObj(structuredClone(mockRegularPayment)),
+      );
+      expect(regularPaymentsRepositoryFindOneSpy).toHaveBeenCalledWith(id);
+    });
+
+    it('throws when regular payment not found', async () => {
+      const id = 'rp-missing';
+      vitest.spyOn(regularPaymentsRepository, 'findOne').mockResolvedValueOnce(null);
+
+      await expect(regularPaymentsService.findOneAsAdmin(id)).rejects.toBeDefined();
+    });
+  });
+
+  // eslint-disable-next-line max-lines-per-function
+  describe('findOneAsCustomer()', () => {
+    it('returns entity for matching customer', async () => {
+      const id = 'rp-1';
+      const userId = 'user-1';
+      const regularPayment = {
+        ...structuredClone(mockRegularPayment),
+        customerId: 'cust-1',
+      };
+      const customer = CustomerEntity.fromCustomerObj({
+        ...mockCustomer,
+        id: 'cust-1',
+      } as any);
+
+      const regularPaymentsRepositoryFindOneSpy = vitest
+        .spyOn(regularPaymentsRepository, 'findOne')
+        .mockResolvedValueOnce(regularPayment);
+      const customersServiceFindOneByUserIdSpy = vitest
+        .spyOn(customersService, 'findOneByUserId')
+        .mockResolvedValueOnce(customer);
+
+      const result = await regularPaymentsService.findOneAsCustomer(id, userId);
+
+      expect(result).toStrictEqual(RegularPaymentEntity.fromPlainObj(regularPayment));
+      expect(regularPaymentsRepositoryFindOneSpy).toHaveBeenCalledWith(id);
+      expect(customersServiceFindOneByUserIdSpy).toHaveBeenCalledWith(userId);
+    });
+
+    it('throws when not found or mismatch customer', async () => {
+      const id = 'rp-1';
+      const userId = 'user-1';
+      const regularPayment = {
+        ...structuredClone(mockRegularPayment),
+        customerId: 'cust-2',
+      };
+      const customer = CustomerEntity.fromCustomerObj({
+        ...mockCustomer,
+        id: 'cust-1',
+      } as any);
+
+      vitest
+        .spyOn(regularPaymentsRepository, 'findOne')
+        .mockResolvedValueOnce(regularPayment);
+      vitest.spyOn(customersService, 'findOneByUserId').mockResolvedValueOnce(customer);
+
+      await expect(
+        regularPaymentsService.findOneAsCustomer(id, userId),
+      ).rejects.toBeDefined();
+    });
+  });
+
+  // eslint-disable-next-line max-lines-per-function
   describe('create()', () => {
     it('should create a new regular payment for a customer', async () => {
       const userId = '1';
@@ -155,10 +228,21 @@ describe('RegularPaymentsService', () => {
         amount: createDto.amount.toString(),
         dateOfCharge: new Date(createDto.dateOfCharge),
       });
-      expect(dKronService.createHttpCronJob).toHaveBeenCalledOnce();
+      // Validate scheduler job creation args
+      const createdDate = new Date(createDto.dateOfCharge);
+      const expectedJobName = `regular-payment-apply-${createdRegularPayment.id}`;
+      expect(dKronService.createHttpCronJob).toHaveBeenCalledWith(
+        expectedJobName,
+        [{ dayOfMonth: createdDate.getMonth() + 1 }],
+        {
+          jobType: 'regular-payment-apply',
+          payload: { regularPaymentId: createdRegularPayment.id },
+        },
+      );
     });
   });
 
+  // eslint-disable-next-line max-lines-per-function
   describe('update()', () => {
     it('should update a regular payment for a customer', async () => {
       const id = 'payment-id';
@@ -187,7 +271,66 @@ describe('RegularPaymentsService', () => {
         ...updateDto,
         amount: updateDto.amount?.toString(),
       });
-      expect(dKronService.createHttpCronJob).toHaveBeenCalledOnce();
+      expect(dKronService.createHttpCronJob).toHaveBeenCalled();
+    });
+
+    // eslint-disable-next-line max-lines-per-function
+    it('maps dateOfCharge and upserts scheduler with correct args', async () => {
+      const id = 'payment-id';
+      const userId = '1';
+      const dateStr = '2024-03-28T00:00:00.000Z';
+      const updateDto: RegularPaymentUpdateDto = {
+        amount: 200,
+        dateOfCharge: dateStr,
+      };
+      const updatedRegularPayment = {
+        ...structuredClone(mockRegularPayment),
+        id,
+        amount: updateDto.amount as number,
+        dateOfCharge: new Date(dateStr),
+      };
+
+      vitest
+        .spyOn(regularPaymentsService, 'findOneAsCustomer')
+        .mockResolvedValueOnce({} as RegularPaymentEntity);
+      vitest
+        .spyOn(regularPaymentsRepository, 'update')
+        .mockResolvedValueOnce(updatedRegularPayment);
+
+      await regularPaymentsService.update(id, updateDto, userId);
+
+      // update called with mapped fields
+      expect(regularPaymentsRepository.update).toHaveBeenCalledWith(id, {
+        amount: updateDto.amount?.toString(),
+        dateOfCharge: new Date(updateDto.dateOfCharge as string),
+      });
+
+      // upsertSchedulerJob called via DKronService with correct args
+      const expectedJobName = `regular-payment-apply-${id}`;
+      expect(dKronService.createHttpCronJob).toHaveBeenCalledWith(
+        expectedJobName,
+        [{ dayOfMonth: new Date(dateStr).getMonth() + 1 }],
+        {
+          jobType: 'regular-payment-apply',
+          payload: { regularPaymentId: id },
+        },
+      );
+    });
+
+    it('throws when repository.update returns null', async () => {
+      const id = 'payment-id';
+      const userId = '1';
+      const updateDto: RegularPaymentUpdateDto = { amount: 100 };
+
+      vitest
+        .spyOn(regularPaymentsService, 'findOneAsCustomer')
+        .mockResolvedValueOnce({} as RegularPaymentEntity);
+      vitest.spyOn(regularPaymentsRepository, 'update').mockResolvedValueOnce(null);
+
+      await expect(
+        regularPaymentsService.update(id, updateDto, userId),
+      ).rejects.toBeDefined();
+      expect(dKronService.createHttpCronJob).not.toHaveBeenCalled();
     });
   });
 
@@ -209,6 +352,20 @@ describe('RegularPaymentsService', () => {
       expect(result).toStrictEqual(expectedResult);
       expect(regularPaymentsService.findOneAsCustomer).toHaveBeenCalledWith(id, userId);
       expect(regularPaymentsRepository.delete).toHaveBeenCalledWith(id);
+    });
+  });
+
+  describe('delete() when not found', () => {
+    it('throws when repository.delete returns null', async () => {
+      const id = 'payment-id';
+      const userId = '1';
+
+      vitest
+        .spyOn(regularPaymentsService, 'findOneAsCustomer')
+        .mockResolvedValueOnce({} as RegularPaymentEntity);
+      vitest.spyOn(regularPaymentsRepository, 'delete').mockResolvedValueOnce(null);
+
+      await expect(regularPaymentsService.delete(id, userId)).rejects.toBeDefined();
     });
   });
 });

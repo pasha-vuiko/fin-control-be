@@ -10,8 +10,8 @@ import { PrismaService } from '@shared/modules/prisma/prisma.service';
 import { getPrismaPaginationParams } from '@shared/modules/prisma/utils/get-prisma-pagination-params';
 import { handlePrismaError } from '@shared/modules/prisma/utils/handle-prisma-error';
 
-import { IRegularPaymentCreateInput } from '@api/domain/regular-payments/interfaces/regular-payment-create-input.interface';
-import { IRegularPaymentUpdateInput } from '@api/domain/regular-payments/interfaces/regular-payment-update-input.interface';
+import { RegularPaymentCreateInput } from '@api/domain/regular-payments/interfaces/regular-payment-create-input.interface';
+import { RegularPaymentUpdateInput } from '@api/domain/regular-payments/interfaces/regular-payment-update-input.interface';
 import { IRegularPayment } from '@api/domain/regular-payments/interfaces/regular-payment.interface';
 import {
   IRegularPaymentsFilter,
@@ -85,7 +85,7 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async create(data: IRegularPaymentCreateInput): Promise<IRegularPayment> {
+  async create(data: RegularPaymentCreateInput): Promise<IRegularPayment> {
     const { amount, dateOfCharge, createdAt, updatedAt } = data;
 
     const [createdRegularPayment] = await this.prismaService.$drizzle
@@ -106,7 +106,7 @@ export class RegularPaymentsRepository implements IRegularPaymentsRepository {
   @CatchErrors(handlePrismaError)
   async update(
     id: string,
-    data: IRegularPaymentUpdateInput,
+    data: RegularPaymentUpdateInput,
   ): Promise<IRegularPayment | null> {
     const { amount, dateOfCharge, createdAt, updatedAt } = data;
 

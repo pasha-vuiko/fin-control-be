@@ -1,3 +1,3 @@
-import { IRegularPaymentCreateInput } from '@api/domain/regular-payments/interfaces/regular-payment-create-input.interface';
+import { RegularPaymentCreateInput } from '@api/domain/regular-payments/interfaces/regular-payment-create-input.interface';
 
-export interface IRegularPaymentUpdateInput extends Partial<IRegularPaymentCreateInput> {}
+export interface RegularPaymentUpdateInput extends Partial<RegularPaymentCreateInput> {}

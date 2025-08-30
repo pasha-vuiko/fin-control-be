@@ -2,7 +2,7 @@ import { Roles } from '@shared/modules/auth/enums/roles';
 
 export const AUTH0_ROLES_KEY = 'https://meta.com/roles';
 
-export interface IAuth0User {
+export interface Auth0User {
   given_name: string;
   family_name: string;
   nickname: string;

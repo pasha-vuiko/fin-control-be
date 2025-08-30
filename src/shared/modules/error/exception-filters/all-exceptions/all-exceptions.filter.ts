@@ -17,7 +17,7 @@ import { Logger } from '@shared/modules/logger/loggers/logger';
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
 
-  constructor(private readonly config?: IAllExceptionsFilterConfig) {}
+  constructor(private readonly config?: AllExceptionsFilterConfig) {}
 
   catch(
     exception: AppException | HttpException | FastifyError | Error,
@@ -105,7 +105,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     };
   }
 
-  private getExceptionResponse(exception: HttpException): IExceptionResponse {
+  private getExceptionResponse(exception: HttpException): ExceptionResponse {
     const exceptionResponse = exception.getResponse();
 
     if (typeof exceptionResponse === 'string') {
@@ -115,7 +115,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       };
     }
 
-    return exceptionResponse as IExceptionResponse;
+    return exceptionResponse as ExceptionResponse;
   }
 
   private mapAppExceptionToErrorResponse(
@@ -166,7 +166,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
   }
 }
 
-export interface IAllExceptionsFilterConfig {
+export interface AllExceptionsFilterConfig {
   trackException?(
     exception: AppException | HttpException | FastifyError | Error,
     request: FastifyRequest,
@@ -174,7 +174,7 @@ export interface IAllExceptionsFilterConfig {
   ): void;
 }
 
-interface IExceptionResponse {
+interface ExceptionResponse {
   error: string;
   message: string;
 }

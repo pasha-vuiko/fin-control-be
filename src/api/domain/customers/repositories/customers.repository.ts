@@ -14,8 +14,8 @@ import { PrismaService } from '@shared/modules/prisma/prisma.service';
 import { getPrismaPaginationParams } from '@shared/modules/prisma/utils/get-prisma-pagination-params';
 import { handlePrismaError } from '@shared/modules/prisma/utils/handle-prisma-error';
 
-import { ICustomerCreateInput } from '@api/domain/customers/interfaces/customer-create-input.interface';
-import { ICustomerUpdateInput } from '@api/domain/customers/interfaces/customer-update-input.interface';
+import { CustomerCreateInput } from '@api/domain/customers/interfaces/customer-create-input.interface';
+import { CustomerUpdateInput } from '@api/domain/customers/interfaces/customer-update-input.interface';
 import { ICustomer } from '@api/domain/customers/interfaces/customer.interface';
 import { ICustomersRepository } from '@api/domain/customers/interfaces/customers.repository.interface';
 
@@ -80,7 +80,7 @@ export class CustomersRepository implements ICustomersRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async create(data: ICustomerCreateInput): Promise<ICustomer> {
+  async create(data: CustomerCreateInput): Promise<ICustomer> {
     const { birthdate, createdAt, updatedAt } = data;
 
     return await this.prismaService.$drizzle
@@ -100,7 +100,7 @@ export class CustomersRepository implements ICustomersRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async update(id: string, data: ICustomerUpdateInput): Promise<ICustomer | null> {
+  async update(id: string, data: CustomerUpdateInput): Promise<ICustomer | null> {
     const { birthdate, createdAt, updatedAt } = data;
 
     return await this.drizzle

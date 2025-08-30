@@ -1,9 +1,9 @@
 import { appExceptionsRegistry } from '@shared/modules/error/exceptions/app-exceptions-registry';
 import {
   AppException,
+  AppExceptionsOptions,
   ERR_CODE_HTTP_STATUS_INDEX,
-  IAppExceptionsOptions,
-  IOptionsWithCause,
+  OptionsWithCause,
   TAppErrorCode,
 } from '@shared/modules/error/exceptions/exception-classes/app.exception';
 import { TConstructor } from '@shared/types/constructor.type';
@@ -25,8 +25,8 @@ import { TConstructor } from '@shared/types/constructor.type';
  * - The decorated class must extend {@link AppException}.
  * - The generated class name is suffixed with `Generated` for clarity in stack traces.
  * - Supported constructor overloads for the decorated class instances:
- *   1. (options: {@link IOptionsWithCause})
- *   2. (message?: string, options?: {@link IAppExceptionsOptions})
+ *   1. (options: {@link OptionsWithCause})
+ *   2. (message?: string, options?: {@link AppExceptionsOptions})
  *
  * @throws {Error} If the HTTP code segment of error-code is not a number or is outside 400–599.
  * @throws {Error} If the decorated class does not extend {@link AppException}.
@@ -76,11 +76,11 @@ export const RegisterAppException = <T extends TConstructor<AppException>>(
 
     //@ts-expect-error mixing class constructor should have one argument which is any[]
     const GeneratedClass = class extends Constructor {
-      constructor(options: IOptionsWithCause);
-      constructor(message?: string, options?: IAppExceptionsOptions);
+      constructor(options: OptionsWithCause);
+      constructor(message?: string, options?: AppExceptionsOptions);
       constructor(
-        messageOrCause: string | IOptionsWithCause | undefined,
-        options?: IAppExceptionsOptions,
+        messageOrCause: string | OptionsWithCause | undefined,
+        options?: AppExceptionsOptions,
       ) {
         if (typeof messageOrCause === 'string' && typeof options === 'object') {
           super(message, {

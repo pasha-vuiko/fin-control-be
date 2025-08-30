@@ -1,11 +1,11 @@
-import { ICreateJobDataBasic } from '@shared/modules/d-kron/interfaces/create-job-data.interface';
+import { CreateJobDataBasic } from '@shared/modules/d-kron/interfaces/create-job-data.interface';
 
-export interface IHttpExecutorCreateJobData extends ICreateJobDataBasic {
+export interface HttpExecutorCreateJobData extends CreateJobDataBasic {
   executor: 'http';
-  executor_config: IHttpExecutorConfig;
+  executor_config: HttpExecutorConfig;
 }
 
-export interface IHttpExecutorConfig {
+export interface HttpExecutorConfig {
   url: string;
   method: ExecutorHttpMethod;
   headers?: string; // JSON string representing headers

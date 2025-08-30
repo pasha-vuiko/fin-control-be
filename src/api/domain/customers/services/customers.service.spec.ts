@@ -5,7 +5,7 @@ import { PagePaginationDto } from '@shared/dto/page-pagination.dto';
 import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-output.entity';
 import { IPagePaginationOutput } from '@shared/interfaces/page-pagination-output.interface';
 import { Roles } from '@shared/modules/auth/enums/roles';
-import { IUser } from '@shared/modules/auth/interfaces/user.interface';
+import { User as UserType } from '@shared/modules/auth/interfaces/user.interface';
 
 import { CustomerCreateDto } from '@api/domain/customers/dto/customer-create.dto';
 import { CustomerUpdateDto } from '@api/domain/customers/dto/customer-update.dto';
@@ -33,7 +33,7 @@ const mockCustomerUpdateDto: CustomerUpdateDto = {
   lastName: 'test',
   phone: '+38234902834',
 };
-const mockUser: IUser = {
+const mockUser: UserType = {
   id: '1',
   email: 'test@example.com',
   emailVerified: true,

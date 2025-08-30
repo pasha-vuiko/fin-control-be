@@ -15,9 +15,9 @@ import { isFunction, isNil } from '@nestjs/common/utils/shared.utils';
 import { HttpAdapterHost, Reflector } from '@nestjs/core';
 
 import { USER_REQ_PROPERTY } from '@shared/modules/auth/constants/user-req-property';
-import { IAuth0User } from '@shared/modules/auth/interfaces/auth0-user.interface';
+import { Auth0User } from '@shared/modules/auth/interfaces/auth0-user.interface';
 import { Logger } from '@shared/modules/logger/loggers/logger';
-import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
+import { RedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
 import { REDIS_MODULE_OPTIONS } from '@shared/modules/redis/providers/redis-module-options.provider';
 import { RedisConfigService } from '@shared/modules/redis/services/redis-config/redis-config.service';
 import { createAsyncCacheDedupe } from '@shared/utils/create-async-cache-dedupe';
@@ -33,7 +33,7 @@ export class JsonCacheInterceptor implements NestInterceptor {
   constructor(
     protected readonly reflector: Reflector,
     protected readonly httpAdapterHost: HttpAdapterHost,
-    @Inject(REDIS_MODULE_OPTIONS) private readonly moduleOptions: IRedisModuleOptions,
+    @Inject(REDIS_MODULE_OPTIONS) private readonly moduleOptions: RedisModuleOptions,
   ) {
     this.ioRedisInstance = RedisConfigService.getIoRedisInstance();
     this.getCachedResponse = createAsyncCacheDedupe(key => this.ioRedisInstance.get(key));
@@ -89,7 +89,7 @@ export class JsonCacheInterceptor implements NestInterceptor {
     const cacheMetadata = this.reflector.get(CACHE_KEY_METADATA, context.getHandler());
 
     // eslint-disable-next-line security/detect-object-injection
-    const user: IAuth0User | undefined = request[USER_REQ_PROPERTY];
+    const user: Auth0User | undefined = request[USER_REQ_PROPERTY];
     const userId = user?.sub;
     const cacheKeyPrefix = userId ? `user_${userId}:` : 'publicUser:';
 

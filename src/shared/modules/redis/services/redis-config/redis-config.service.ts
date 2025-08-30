@@ -6,18 +6,18 @@ import { CacheModuleOptions, CacheOptionsFactory } from '@nestjs/cache-manager';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 
 import { Logger } from '@shared/modules/logger/loggers/logger';
-import { IRedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
+import { RedisModuleOptions } from '@shared/modules/redis/interfaces/redis-module-options.interface';
 import { REDIS_MODULE_OPTIONS } from '@shared/modules/redis/providers/redis-module-options.provider';
 import { omitObjKeys } from '@shared/utils/omit-obj-keys.util';
 
 @Injectable()
 export class RedisConfigService implements CacheOptionsFactory, OnApplicationShutdown {
-  private static moduleOptions: IRedisModuleOptions;
+  private static moduleOptions: RedisModuleOptions;
   private static ioRedisInstance: Redis;
   private static readonly logger = new Logger('RedisConfigService');
 
   constructor(
-    @Inject(REDIS_MODULE_OPTIONS) private readonly moduleOptions: IRedisModuleOptions,
+    @Inject(REDIS_MODULE_OPTIONS) private readonly moduleOptions: RedisModuleOptions,
   ) {
     RedisConfigService.moduleOptions = moduleOptions;
   }

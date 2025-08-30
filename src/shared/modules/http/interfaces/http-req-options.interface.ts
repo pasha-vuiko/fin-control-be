@@ -6,8 +6,7 @@ import { IncomingHttpHeaders } from 'undici/types/header';
 /**
  * Describes options of HTTP request for HttpService
  */
-export interface IHttpReqOptions
-  extends Omit<RequestInit, 'method' | 'headers' | 'body'> {
+export interface HttpReqOptions extends Omit<RequestInit, 'method' | 'headers' | 'body'> {
   // milliseconds
   timeout?: number;
   body?:

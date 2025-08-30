@@ -5,7 +5,7 @@ import {
   LoggerOptions as PinoLoggerOptions,
 } from 'pino';
 
-export interface ILoggerOptions {
+export interface LoggerOptions {
   pinoOptions?: PinoLoggerOptions;
 
   stream?: DestinationStream;

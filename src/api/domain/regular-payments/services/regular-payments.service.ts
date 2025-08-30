@@ -9,7 +9,7 @@ import { CustomersService } from '@api/domain/customers/services/customers.servi
 import { ExpensesService } from '@api/domain/expenses/services/expenses.service';
 import { RegularPaymentEntity } from '@api/domain/regular-payments/entities/regular-payment.entity';
 import { RegularPaymentNotFoundException } from '@api/domain/regular-payments/exceptions/exception-classes';
-import { IRegularPaymentUpdateInput } from '@api/domain/regular-payments/interfaces/regular-payment-update-input.interface';
+import { RegularPaymentUpdateInput } from '@api/domain/regular-payments/interfaces/regular-payment-update-input.interface';
 import { IRegularPayment } from '@api/domain/regular-payments/interfaces/regular-payment.interface';
 import { IRegularPaymentsRepository } from '@api/domain/regular-payments/interfaces/regular-payments-repository.interface';
 import { RegularPaymentsRepository } from '@api/domain/regular-payments/repositories/regular-payments.repository';
@@ -107,7 +107,7 @@ export class RegularPaymentsService {
   ): Promise<IRegularPayment> {
     await this.findOneAsCustomer(id, userId); // check if regular payment exists
 
-    const updateInput: IRegularPaymentUpdateInput = {
+    const updateInput: RegularPaymentUpdateInput = {
       ...updateRegularPaymentDto,
       amount: updateRegularPaymentDto.amount?.toString(),
       dateOfCharge: updateRegularPaymentDto.dateOfCharge

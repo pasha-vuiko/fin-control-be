@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { BindContext } from '@shared/decorators/bind-context.decorator';
 import { PagePaginationDto } from '@shared/dto/page-pagination.dto';
 import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-output.entity';
-import { IUser } from '@shared/modules/auth/interfaces/user.interface';
+import { User as UserType } from '@shared/modules/auth/interfaces/user.interface';
 
 import { CustomerEntity } from '@api/domain/customers/entities/customer.entity';
 import {
@@ -51,7 +51,7 @@ export class CustomersService {
 
   async create(
     createCustomerDto: CustomerCreateDto,
-    user: IUser,
+    user: UserType,
   ): Promise<CustomerEntity> {
     const { id, email } = user;
 

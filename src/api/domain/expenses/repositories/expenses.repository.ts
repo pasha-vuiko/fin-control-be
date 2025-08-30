@@ -11,8 +11,8 @@ import { getPrismaPaginationParams } from '@shared/modules/prisma/utils/get-pris
 import { handlePrismaError } from '@shared/modules/prisma/utils/handle-prisma-error';
 import { omitObjKeys } from '@shared/utils/omit-obj-keys.util';
 
-import { IExpenseCreateInput } from '@api/domain/expenses/interfaces/expense-create-input.interface';
-import { IExpenseUpdateInput } from '@api/domain/expenses/interfaces/expense-update-input.interface';
+import { ExpenseCreateInput } from '@api/domain/expenses/interfaces/expense-create-input.interface';
+import { ExpenseUpdateInput } from '@api/domain/expenses/interfaces/expense-update-input.interface';
 import { IExpense } from '@api/domain/expenses/interfaces/expense.interface';
 import { IExpensesRepository } from '@api/domain/expenses/interfaces/expenses-repository.interface';
 
@@ -81,7 +81,7 @@ export class ExpensesRepository implements IExpensesRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async createOne(createExpenseInputs: IExpenseCreateInput): Promise<IExpense> {
+  async createOne(createExpenseInputs: ExpenseCreateInput): Promise<IExpense> {
     const { amount, date } = createExpenseInputs;
 
     return await this.prismaService.$drizzle
@@ -97,7 +97,7 @@ export class ExpensesRepository implements IExpensesRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async createMany(createExpenseInputs: IExpenseCreateInput[]): Promise<IExpense[]> {
+  async createMany(createExpenseInputs: ExpenseCreateInput[]): Promise<IExpense[]> {
     const expensesToCreate = createExpenseInputs.map(expenseToCreate => {
       const { amount, date } = expenseToCreate;
 
@@ -117,7 +117,7 @@ export class ExpensesRepository implements IExpensesRepository {
   }
 
   @CatchErrors(handlePrismaError)
-  async update(id: string, data: IExpenseUpdateInput): Promise<IExpense | null> {
+  async update(id: string, data: ExpenseUpdateInput): Promise<IExpense | null> {
     const dataWithoutCustomerId = omitObjKeys(data, 'customerId');
 
     const { amount, date } = dataWithoutCustomerId;

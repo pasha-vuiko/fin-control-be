@@ -1,4 +1,4 @@
-export interface ISerializedRequest {
+export interface SerializedRequest {
   id: string;
   method: string;
   url: string;

@@ -6,13 +6,13 @@ import { FastifyAdapter } from '@nestjs/platform-fastify';
 
 import { LOGGER_MODULE_OPTIONS } from '@shared/modules/logger/constants/logger-options-provider-token';
 import { loggerPlugin } from '@shared/modules/logger/fastify-plugins/logger-plugin';
-import { ILoggerOptions } from '@shared/modules/logger/interfaces/logger-options.interface';
+import { LoggerOptions } from '@shared/modules/logger/interfaces/logger-options.interface';
 
 @Injectable()
 export class LoggerConfigService implements OnModuleInit {
   constructor(
     @Inject(LOGGER_MODULE_OPTIONS)
-    private readonly loggerModuleOptions: ILoggerOptions,
+    private readonly loggerModuleOptions: LoggerOptions,
     private readonly adapterHost: HttpAdapterHost<FastifyAdapter>,
   ) {}
 

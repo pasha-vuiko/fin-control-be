@@ -1,6 +1,6 @@
 import { RedisOptions } from 'ioredis';
 
-export interface IRedisModuleOptions extends RedisOptions {
+export interface RedisModuleOptions extends RedisOptions {
   url?: string;
   ttl?: number; // default seconds
 }

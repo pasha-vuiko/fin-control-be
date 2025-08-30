@@ -4,7 +4,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Auth } from '@shared/modules/auth/decorators/auth.decorator';
 import { User } from '@shared/modules/auth/decorators/user.decorator';
 import { Roles } from '@shared/modules/auth/enums/roles';
-import { IUser } from '@shared/modules/auth/interfaces/user.interface';
+import { User as UserType } from '@shared/modules/auth/interfaces/user.interface';
 import { ApiAppExceptionsRes } from '@shared/modules/error/open-api/api-app-exceptions-response.decorator';
 
 import { CustomerEntity } from '@api/domain/customers/entities/customer.entity';
@@ -26,14 +26,14 @@ export class CustomersController {
 
   @ApiAppExceptionsRes(CustomerNotFoundException)
   @Get('self')
-  findSelf(@User() user: IUser): Promise<CustomerEntity> {
+  findSelf(@User() user: UserType): Promise<CustomerEntity> {
     return this.customerService.findOneByUserId(user.id);
   }
 
   @Post()
   create(
     @Body() createCustomerDto: CustomerCreateDto,
-    @User() user: IUser,
+    @User() user: UserType,
   ): Promise<CustomerEntity> {
     return this.customerService.create(createCustomerDto, user);
   }
@@ -42,7 +42,7 @@ export class CustomersController {
   @Patch(':id')
   update(
     @Param('id') id: string,
-    @User() user: IUser,
+    @User() user: UserType,
     @Body() updateCustomerDto: CustomerUpdateDto,
   ): Promise<CustomerEntity> {
     return this.customerService.updateAsCustomer(id, updateCustomerDto, user.id);
@@ -50,7 +50,7 @@ export class CustomersController {
 
   @ApiAppExceptionsRes(CustomerNotFoundException, ForbiddenToDeleteCustomerException)
   @Delete(':id')
-  remove(@Param('id') id: string, @User() user: IUser): Promise<CustomerEntity> {
+  remove(@Param('id') id: string, @User() user: UserType): Promise<CustomerEntity> {
     return this.customerService.removeAsCustomer(id, user.id);
   }
 }

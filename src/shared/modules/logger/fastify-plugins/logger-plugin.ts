@@ -2,14 +2,14 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import fastifyPlugin from 'fastify-plugin';
 import { Logger } from 'pino';
 
-import { ILoggerOptions } from '@shared/modules/logger/interfaces/logger-options.interface';
+import { LoggerOptions } from '@shared/modules/logger/interfaces/logger-options.interface';
 import { LogLevel } from '@shared/modules/logger/types';
 import {
   LoggerStore,
   loggerAsyncContext,
 } from '@shared/modules/logger/utils/logger-async-context';
 
-export interface ILoggerPluginOptions extends Omit<ILoggerOptions, 'pinoOptions'> {
+export interface LoggerPluginOptions extends Omit<LoggerOptions, 'pinoOptions'> {
   pinoLogger: Logger;
   ignorePaths?: string[];
 }
@@ -18,7 +18,7 @@ export const loggerPlugin = fastifyPlugin(loggerPluginFn);
 
 async function loggerPluginFn(
   fastify: FastifyInstance,
-  options: ILoggerPluginOptions,
+  options: LoggerPluginOptions,
 ): Promise<void> {
   const ignorePaths = new Set(options.ignorePaths);
   const { pinoLogger, reqResSerializers, customLogLevel = defaultResLogLevel } = options;

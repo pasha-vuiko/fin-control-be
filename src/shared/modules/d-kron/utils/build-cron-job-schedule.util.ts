@@ -1,8 +1,6 @@
-import { ICronJobScheduleParams } from '@shared/modules/d-kron/interfaces/cron-job-schedule-params.interface';
+import { CronJobScheduleParams } from '@shared/modules/d-kron/interfaces/cron-job-schedule-params.interface';
 
-export function buildCronJobSchedule(
-  scheduleParamsArr: ICronJobScheduleParams[],
-): string {
+export function buildCronJobSchedule(scheduleParamsArr: CronJobScheduleParams[]): string {
   // Initialize arrays to gather values for each cron field
   const cronFields = {
     second: [] as (string | number | undefined)[],
@@ -56,7 +54,7 @@ function combineFieldValues(values: (string | number | undefined)[]): string {
 }
 
 // Validate the entire schedule
-function validateScheduleParams(params: ICronJobScheduleParams): boolean {
+function validateScheduleParams(params: CronJobScheduleParams): boolean {
   const validSecond = validateCronField(params.second, 0, 59, 'second');
   const validMinute = validateCronField(params.minute, 0, 59, 'minute');
   const validHour = validateCronField(params.hour, 0, 23, 'hour');

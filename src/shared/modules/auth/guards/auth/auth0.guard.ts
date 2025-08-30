@@ -14,9 +14,9 @@ import {
 } from '@shared/modules/auth/exceptions/exception-classes';
 import {
   AUTH0_ROLES_KEY,
-  IAuth0User,
+  Auth0User,
 } from '@shared/modules/auth/interfaces/auth0-user.interface';
-import { IAuthModuleOptions } from '@shared/modules/auth/interfaces/auth-module-options.interface';
+import { AuthModuleOptions } from '@shared/modules/auth/interfaces/auth-module-options.interface';
 import { JWTVerifierService } from '@shared/modules/auth/services/jwt-verifier.service';
 
 @Injectable()
@@ -26,7 +26,7 @@ export class Auth0Guard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     @Inject(AUTH_MODULE_OPTIONS)
-    moduleOptions: IAuthModuleOptions,
+    moduleOptions: AuthModuleOptions,
   ) {
     this.jwtVerifierService = new JWTVerifierService(moduleOptions.domain);
   }
@@ -90,7 +90,7 @@ export class Auth0Guard implements CanActivate {
     return rolesMatch;
   }
 
-  public static getRolesFromAuth0User(user: IAuth0User): Roles[] {
+  public static getRolesFromAuth0User(user: Auth0User): Roles[] {
     // eslint-disable-next-line security/detect-object-injection
     if (user[AUTH0_ROLES_KEY]?.length) {
       // eslint-disable-next-line security/detect-object-injection
