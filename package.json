@@ -41,7 +41,7 @@
     "async-cache-dedupe": "^3.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
-    "drizzle-orm": "^1.0.0-beta.1-84d9a79",
+    "drizzle-orm": "^1.0.0-beta.1-578e9fd",
     "fastify": "^5.5.0",
     "fastify-metrics": "^12.1.0",
     "fastify-plugin": "^5.0.1",
