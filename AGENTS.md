@@ -8,7 +8,7 @@
 - Aliases: `@api/* -> src/api/*`, `@shared/* -> src/shared/*`.
 
 ## Build, Test, and Development Commands
-- Install: `npm install` (Node `22.19.0`).
+- Install: `npm install` (Node `24.11.1`).
 - Dev server: `npm run start:dev` (watch mode, loads `.env`).
 - Build: `npm run build` (outputs to `dist/`).
 - Run built app: `npm start` or `npm run start:prod`.
