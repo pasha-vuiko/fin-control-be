@@ -16,6 +16,7 @@ import { JobsModule } from '@api/shared/jobs/jobs.module';
 import { config } from './app.config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { TPrismaOptions } from '@shared/modules/prisma/types/prisma-options.type';
 
 const loggerConfig = config.app.logger;
 
@@ -30,8 +31,8 @@ const loggerConfig = config.app.logger;
 
     // shared modules
     PrismaModule.forRoot({
-      errorFormat: config.app.isDevelopment ? 'pretty' : 'minimal',
-    }),
+      applicationName: config.app.name,
+    } as TPrismaOptions),
     AuthModule.forRoot({
       domain: config.auth.auth0Domain,
       clientId: config.auth.auth0ClientId as string,

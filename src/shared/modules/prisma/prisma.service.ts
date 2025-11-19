@@ -26,7 +26,7 @@ export class PrismaService<
   public readonly $drizzle: NodePgDatabase<DrizzleSchema>;
 
   constructor(@Inject(PRISMA_MODULE_OPTIONS) options?: TPrismaOptions) {
-    const definedOptions = options ?? {};
+    const definedOptions: Partial<TPrismaOptions> = options ?? {};
     const { applicationName } = definedOptions;
     const connectionString = `${process.env.DATABASE_URL}`;
 
@@ -39,6 +39,7 @@ export class PrismaService<
 
     super({
       ...omitObjKeys(definedOptions, 'applicationName'),
+      accelerateUrl: undefined,
       adapter,
       log: [
         {
