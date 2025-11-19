@@ -1,5 +1,8 @@
+import { PrismaClient } from '@prisma-definitions/client/client';
+import { LogOptions } from '@prisma-definitions/client/internal/class';
+import { PrismaClientOptions } from '@prisma-definitions/client/internal/prismaNamespace';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '@prisma/client';
+import { AnyRelations } from 'drizzle-orm';
 import { drizzle as pgDrizzle } from 'drizzle-orm/node-postgres';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres/driver';
 import pg, { Pool } from 'pg';
@@ -15,7 +18,7 @@ import { omitObjKeys } from '@shared/utils/omit-obj-keys.util';
 export class PrismaService<
     DrizzleSchema extends Record<string, unknown> = Record<string, never>,
   >
-  extends PrismaClient
+  extends PrismaClient<PrismaClientOptions, LogOptions<PrismaClientOptions>>
   implements OnModuleInit, OnApplicationShutdown
 {
   private readonly logger = new Logger(PrismaService.name);
@@ -23,7 +26,7 @@ export class PrismaService<
   public readonly $drizzle: NodePgDatabase<DrizzleSchema>;
 
   constructor(@Inject(PRISMA_MODULE_OPTIONS) options?: TPrismaOptions) {
-    const definedOptions = options ?? {};
+    const definedOptions: Partial<TPrismaOptions> = options ?? {};
     const { applicationName } = definedOptions;
     const connectionString = `${process.env.DATABASE_URL}`;
 
@@ -36,6 +39,7 @@ export class PrismaService<
 
     super({
       ...omitObjKeys(definedOptions, 'applicationName'),
+      accelerateUrl: undefined,
       adapter,
       log: [
         {
@@ -68,12 +72,14 @@ export class PrismaService<
       );
   }
 
-  static getDrizzleWithSchema<Schema extends Record<string, unknown>>(
-    schema: Schema,
-  ): NodePgDatabase<Schema> {
-    return pgDrizzle({
+  static getDrizzleWithSchema<
+    TSchema extends Record<string, unknown>,
+    TRelations extends AnyRelations,
+  >(schema: TSchema, relations: TRelations): NodePgDatabase<TSchema, TRelations> {
+    return pgDrizzle<TSchema, TRelations>({
       client: PrismaService.pgPool,
       schema,
+      relations,
     });
   }
 

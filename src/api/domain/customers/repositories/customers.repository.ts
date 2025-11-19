@@ -1,4 +1,7 @@
-import { Customer as PrismaCustomer } from '@prisma/client';
+import { Customer as PrismaCustomer } from '@prisma-definitions/client/client';
+import { relations } from '@prisma-definitions/drizzle/relations';
+import { Customer } from '@prisma-definitions/drizzle/schema';
+import * as drizzleSchema from '@prisma-definitions/drizzle/schema';
 import { eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres/driver';
 
@@ -16,12 +19,9 @@ import { CustomerFromDb } from '@api/domain/customers/interfaces/customer-from-d
 import { CustomerUpdateInput } from '@api/domain/customers/interfaces/customer-update-input.interface';
 import { ICustomersRepository } from '@api/domain/customers/interfaces/customers.repository.interface';
 
-import { Customer } from '../../../../../prisma/drizzle/schema';
-import * as drizzleSchema from '../../../../../prisma/drizzle/schema';
-
 @Injectable()
 export class CustomersRepository implements ICustomersRepository {
-  private readonly drizzle: NodePgDatabase<typeof drizzleSchema>;
+  private readonly drizzle: NodePgDatabase<typeof drizzleSchema, typeof relations>;
   private readonly getOneByIdPreparedQuery = PrismaService.getDrizzle()
     .select()
     .from(Customer)
@@ -29,7 +29,7 @@ export class CustomersRepository implements ICustomersRepository {
     .prepare('getOneByIdPreparedQuery');
 
   constructor(private readonly prismaService: PrismaService) {
-    this.drizzle = PrismaService.getDrizzleWithSchema(drizzleSchema);
+    this.drizzle = PrismaService.getDrizzleWithSchema(drizzleSchema, relations);
   }
 
   @CatchErrors(handlePrismaError)
@@ -68,7 +68,7 @@ export class CustomersRepository implements ICustomersRepository {
   @CatchErrors(handlePrismaError)
   async findOneByUserId(userId: string): Promise<CustomerFromDb | null> {
     const foundCustomer = await this.drizzle.query.Customer.findFirst({
-      where: eq(Customer.userId, userId),
+      where: { userId },
       with: { expense: true },
     });
 

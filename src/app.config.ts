@@ -17,6 +17,7 @@ setUtcTimezone();
 // TODO Add config validation
 export const config = {
   app: {
+    name: packageJsonInfo.name,
     baseUrl: process.env.BASE_URL as string,
     port: process.env.PORT as string,
     version: process.env.APP_VERSION || packageJsonInfo.version,

@@ -36,9 +36,8 @@ export default [
         { argsIgnorePattern: '^_', destructuredArrayIgnorePattern: '^_' },
       ],
       'max-lines-per-function': ['error', 40],
-      // Removed enforced `I`-prefix for interfaces; interface names can be PascalCase
-      // with or without an `I` prefix depending on use. Implementable interfaces
-      // may keep the `I` prefix; type-only interfaces should not.
+      // Interface naming: allow PascalCase with or without leading I.
+      // Implementable interfaces may keep `I` prefix; type-only should not.
     },
   },
   {

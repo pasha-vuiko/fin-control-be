@@ -1,5 +1,4 @@
 // test/unit-tests-setup.ts
-import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 import undici from 'undici';
 import { vi } from 'vitest';
@@ -65,11 +64,7 @@ beforeEach(() => {
     new Error('Network call attempted in unit test. Spy/mocks required.'),
   );
 
-  // 2) Short-circuit Prisma connect/disconnect so services that call $connect() don’t hit DB
-  vi.spyOn(PrismaClient.prototype, '$connect').mockResolvedValue();
-  vi.spyOn(PrismaClient.prototype, '$disconnect').mockResolvedValue();
-
-  // 3) Block any use of the node-postgres pool directly (Drizzle/Prisma adapters use this under the hood)
+  // 2) Block any use of the node-postgres pool directly (Drizzle/Prisma adapters use this under the hood)
   vi.spyOn(Pool.prototype, 'connect').mockImplementation(async () => {
     throw new Error('DB connect attempted in unit test. Stub your data access.');
   });
@@ -88,5 +83,6 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.clearAllMocks();
   vi.restoreAllMocks();
 });

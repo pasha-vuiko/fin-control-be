@@ -1,4 +1,4 @@
-import { Sex } from '@prisma/client';
+import { Sex } from '@prisma-definitions/client/enums';
 
 export interface CustomerFromDb {
   id: string;

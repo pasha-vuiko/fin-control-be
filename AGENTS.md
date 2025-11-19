@@ -8,7 +8,7 @@
 - Aliases: `@api/* -> src/api/*`, `@shared/* -> src/shared/*`.
 
 ## Build, Test, and Development Commands
-- Install: `npm install` (Node `22.18.0`).
+- Install: `npm install` (Node `24.11.1`).
 - Dev server: `npm run start:dev` (watch mode, loads `.env`).
 - Build: `npm run build` (outputs to `dist/`).
 - Run built app: `npm start` or `npm run start:prod`.
@@ -22,10 +22,7 @@
 - Formatter: Prettier (2 spaces, `printWidth: 90`, single quotes, sorted imports).
 - Lint: ESLint (security + TypeScript rules; function return types encouraged).
 - Paths: use `@api`/`@shared` aliases; relative paths last.
-- Naming: classes/DTOs `PascalCase`; variables/functions `camelCase`; interfaces:
-  - Implementable interfaces (used with `implements`, define behavior) may keep `IPascalCase`.
-  - Type-only interfaces (data shapes) should be `PascalCase` without the `I` prefix.
-  - Env vars `UPPER_SNAKE_CASE`.
+- Naming: classes/DTOs `PascalCase`; variables/functions `camelCase`; interfaces `IPascalCase` (enforced); env vars `UPPER_SNAKE_CASE`.
 - Keep functions small (rule: max ~40 lines).
 
 ## Testing Guidelines

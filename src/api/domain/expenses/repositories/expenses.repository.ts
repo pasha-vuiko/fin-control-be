@@ -1,4 +1,5 @@
-import { Expense as PrismaExpense } from '@prisma/client';
+import { Expense as PrismaExpense } from '@prisma-definitions/client/client';
+import { Expense } from '@prisma-definitions/drizzle/schema';
 import { eq } from 'drizzle-orm';
 
 import { Injectable } from '@nestjs/common';
@@ -15,8 +16,6 @@ import { ExpenseCreateInput } from '@api/domain/expenses/interfaces/expense-crea
 import { ExpenseFromDb } from '@api/domain/expenses/interfaces/expense-from-db.interface';
 import { ExpenseUpdateInput } from '@api/domain/expenses/interfaces/expense-update-input.interface';
 import { IExpensesRepository } from '@api/domain/expenses/interfaces/expenses-repository.interface';
-
-import { Expense } from '../../../../../prisma/drizzle/schema';
 
 @Injectable()
 export class ExpensesRepository implements IExpensesRepository {
@@ -149,13 +148,11 @@ export class ExpensesRepository implements IExpensesRepository {
       );
   }
 
-  private mapExpensesFromPrismaToExpenses(
-    expenses: IExpenseFromPrisma[],
-  ): ExpenseFromDb[] {
+  private mapExpensesFromPrismaToExpenses(expenses: IExpenseFromDb[]): ExpenseFromDb[] {
     return expenses.map(expense => this.mapExpenseFromPrismaToExpense(expense));
   }
 
-  private mapExpenseFromPrismaToExpense(expense: IExpenseFromPrisma): ExpenseFromDb {
+  private mapExpenseFromPrismaToExpense(expense: IExpenseFromDb): ExpenseFromDb {
     return {
       id: expense.id,
       customerId: expense.customerId,
@@ -168,6 +165,6 @@ export class ExpensesRepository implements IExpensesRepository {
   }
 }
 
-interface IExpenseFromPrisma extends Omit<PrismaExpense, 'amount'> {
+interface IExpenseFromDb extends Omit<PrismaExpense, 'amount'> {
   amount: string;
 }

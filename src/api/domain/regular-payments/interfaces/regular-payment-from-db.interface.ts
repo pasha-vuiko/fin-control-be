@@ -1,6 +1,6 @@
-import { ExpenseCategory } from '@prisma/client';
+import { ExpenseCategory } from '@prisma-definitions/client/client';
 
-export interface RegularPaymentFromDb {
+export interface IRegularPayment {
   id: string;
   customerId: string;
   amount: number;

@@ -1,4 +1,4 @@
-import { ExpenseCategory } from '@prisma/client';
+import { ExpenseCategory } from '@prisma-definitions/client/client';
 import { vitest } from 'vitest';
 
 import { PagePaginationOutputEntity } from '@shared/entities/page-pagination-output.entity';
@@ -8,10 +8,11 @@ import { DKronService } from '@shared/modules/d-kron/services/d-kron/d-kron.serv
 
 import { CustomerEntity } from '@api/domain/customers/entities/customer.entity';
 import { CustomersService } from '@api/domain/customers/services/customers.service';
+import { ExpensesService } from '@api/domain/expenses/services/expenses.service';
 import { RegularPaymentCreateDto } from '@api/domain/regular-payments/dto/regular-payment-create.dto';
 import { RegularPaymentUpdateDto } from '@api/domain/regular-payments/dto/regular-payment-update.dto';
 import { RegularPaymentEntity } from '@api/domain/regular-payments/entities/regular-payment.entity';
-import { RegularPaymentFromDb } from '@api/domain/regular-payments/interfaces/regular-payment-from-db.interface';
+import { IRegularPayment } from '@api/domain/regular-payments/interfaces/regular-payment-from-db.interface';
 import { RegularPaymentsRepository } from '@api/domain/regular-payments/repositories/regular-payments.repository';
 
 import { getMockedInstance } from '../../../../../test/utils/get-mocked-instance.util';
@@ -29,7 +30,7 @@ const mockCustomer = CustomerEntity.fromCustomerObj({
   createdAt: new Date(),
   updatedAt: new Date(),
 });
-const mockRegularPayment: RegularPaymentFromDb = {
+const mockRegularPayment: IRegularPayment = {
   id: '1',
   customerId: '1',
   amount: 50,
@@ -44,16 +45,18 @@ describe('RegularPaymentsService', () => {
   let regularPaymentsService: RegularPaymentsService;
   let regularPaymentsRepository: RegularPaymentsRepository;
   let customersService: CustomersService;
+  let expensesService: ExpensesService;
   let dKronService: DKronService;
 
   beforeEach(async () => {
     regularPaymentsRepository = getMockedInstance(RegularPaymentsRepository);
     customersService = getMockedInstance(CustomersService);
+    expensesService = getMockedInstance(ExpensesService);
     dKronService = getMockedInstance(DKronService);
-
     regularPaymentsService = new RegularPaymentsService(
       regularPaymentsRepository,
       customersService,
+      expensesService,
       dKronService,
     );
   });
@@ -70,7 +73,7 @@ describe('RegularPaymentsService', () => {
     it('should return all regular payments for customer-admin with pagination', async () => {
       const pagination: IPagePaginationInput = { page: 1, numOfItems: 10 };
       const regularPayment = structuredClone(mockRegularPayment);
-      const dbResponse: IPagePaginationOutput<RegularPaymentFromDb> = {
+      const dbResponse: IPagePaginationOutput<IRegularPayment> = {
         total: 1,
         items: [regularPayment],
       };
@@ -97,7 +100,7 @@ describe('RegularPaymentsService', () => {
       const customer = structuredClone(mockCustomer);
       const pagination: IPagePaginationInput = { page: 1, numOfItems: 10 };
       const regularPayment = structuredClone(mockRegularPayment);
-      const dbResponse: IPagePaginationOutput<RegularPaymentFromDb> = {
+      const dbResponse: IPagePaginationOutput<IRegularPayment> = {
         total: 1,
         items: [regularPayment],
       };

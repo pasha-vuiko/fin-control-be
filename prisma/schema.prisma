@@ -1,7 +1,9 @@
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["relationJoins", "driverAdapters", "queryCompiler"]
-  output          = "../node_modules/.prisma/client"
+  provider        = "prisma-client"
+  previewFeatures = ["relationJoins"]
+  engineType      = "client"
+  output          = "./client"
+  moduleFormat    = "cjs"
 }
 
 generator drizzle {
@@ -11,7 +13,6 @@ generator drizzle {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model Customer {

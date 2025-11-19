@@ -145,7 +145,7 @@ describe('Auth0Guard', () => {
       });
       vi.spyOn(jwtVerifierService, 'verify').mockResolvedValue({
         [AUTH0_ROLES_KEY]: ['ADMIN'],
-      } as unknown as Auth0User);
+      } as unknown as IAuth0User);
       vi.spyOn(mockReflector, 'get').mockReturnValueOnce([Roles.ADMIN]);
 
       expect(await authGuard.canActivate(mockContext)).toBe(true);

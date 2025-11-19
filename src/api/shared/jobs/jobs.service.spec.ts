@@ -1,4 +1,4 @@
-import { ExpenseCategory } from '@prisma/client';
+import { ExpenseCategory } from '@prisma-definitions/client/client';
 import { vi } from 'vitest';
 
 import { ExpensesService } from '@api/domain/expenses/services/expenses.service';
