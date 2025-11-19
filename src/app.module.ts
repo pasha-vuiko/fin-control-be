@@ -6,6 +6,7 @@ import { LogFormat } from '@shared/modules/logger/interfaces/logger-options.inte
 import { LoggerModule } from '@shared/modules/logger/logger.module';
 import { LogLevel } from '@shared/modules/logger/types';
 import { PrismaModule } from '@shared/modules/prisma/prisma.module';
+import { TPrismaOptions } from '@shared/modules/prisma/types/prisma-options.type';
 import { RedisModule } from '@shared/modules/redis/redis.module';
 
 import { CustomersModule } from '@api/domain/customers/customers.module';
@@ -16,7 +17,6 @@ import { JobsModule } from '@api/shared/jobs/jobs.module';
 import { config } from './app.config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TPrismaOptions } from '@shared/modules/prisma/types/prisma-options.type';
 
 const loggerConfig = config.app.logger;
 
