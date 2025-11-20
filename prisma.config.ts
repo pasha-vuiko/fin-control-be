@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { defineConfig, env } from 'prisma/config';
+import { defineConfig } from 'prisma/config';
 
 const dotEnvFilePath = path.resolve(__dirname, '.env');
 
@@ -14,7 +14,7 @@ const migrationsPath = path.resolve(__dirname, 'prisma', 'schema.prisma');
 
 export default defineConfig({
   datasource: {
-    url: env('DATABASE_URL'),
+    url: process.env.DATABASE_URL!,
   },
   schema: schemaPath,
   migrations: {
