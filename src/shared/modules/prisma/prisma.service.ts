@@ -16,8 +16,8 @@ import { omitObjKeys } from '@shared/utils/omit-obj-keys.util';
 
 @Injectable()
 export class PrismaService<
-    DrizzleSchema extends Record<string, unknown> = Record<string, never>,
-  >
+  DrizzleSchema extends Record<string, unknown> = Record<string, never>,
+>
   extends PrismaClient<PrismaClientOptions, LogOptions<PrismaClientOptions>>
   implements OnModuleInit, OnApplicationShutdown
 {

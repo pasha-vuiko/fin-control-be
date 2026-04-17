@@ -13,9 +13,10 @@ import { NotRequired } from '@shared/decorators/validation/not-required.decorato
 
 import { CustomerCreateInput } from '@api/domain/customers/interfaces/customer-create-input.interface';
 
-export class CustomerCreateDto
-  implements Omit<CustomerCreateInput, 'id' | 'userId' | 'email'>
-{
+export class CustomerCreateDto implements Omit<
+  CustomerCreateInput,
+  'id' | 'userId' | 'email'
+> {
   @IsNotEmpty()
   @IsString()
   firstName: string;
