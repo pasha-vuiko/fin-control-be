@@ -1,4 +1,4 @@
-FROM node:24.11.1-alpine
+FROM node:24.15.0-alpine
 
 ARG VERSION
 
@@ -24,7 +24,8 @@ RUN apk add --update \
     && npx clean-modules -y \
     && npm uninstall -g clean-modules \
     && npm cache clean --force \
-    && rm -rf /root/.npm
+    && rm -rf /root/.npm \
+    && find node_modules/uWebSockets.js -name "*.node" -not -name "uws_$(node -p 'process.platform')_$(node -p 'process.arch')_$(node -p 'process.versions.modules').node" -delete || true
 
 ENV APP_PORT=3000 \
     APP_VERSION=${VERSION:-unknown} \
