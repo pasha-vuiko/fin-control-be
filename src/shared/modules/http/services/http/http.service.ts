@@ -1,10 +1,10 @@
 import { UrlObject } from 'node:url';
 
-import undici, { Dispatcher } from 'undici';
+import undici, { Agent, Dispatcher } from 'undici';
 
-import { HttpException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
-import { executeWithRetries } from '@shared/modules/http/util/execute-with-retries';
+import { HttpServiceException } from '@shared/modules/http/exceptions/exception-classes';
 import { Logger } from '@shared/modules/logger/loggers/logger';
 
 import { HttpReqOptions } from '../../interfaces/http-req-options.interface';
@@ -69,27 +69,20 @@ export class HttpService {
     options?: HttpReqOptions,
     body?: any,
   ): Promise<HttpResponse<T>> {
-    if (options?.retries) {
-      return await executeWithRetries(
-        () => this.executeSingleRequest(method, url, options, body),
-        options?.retries,
-        options?.retryIntervalMs,
-      );
-    }
+    const agent = new Agent({ allowH2: true }).compose(
+      undici.interceptors.retry({
+        maxRetries: options?.retries,
+        maxTimeout: options?.retryIntervalMs,
+      }),
+      undici.interceptors.deduplicate(),
+    );
 
-    return await this.executeSingleRequest(method, url, options, body);
-  }
-
-  private async executeSingleRequest<T>(
-    method: HttpMethod,
-    url: string | URL | UrlObject,
-    options?: HttpReqOptions,
-    body?: any,
-  ): Promise<HttpResponse<T>> {
     if (body) {
       return await undici
         .request(url, {
           method,
+          // @ts-expect-error incompatible type, but was compatible in the previous version
+          dispatcher: agent,
           body: typeof body === 'object' ? JSON.stringify(body) : body,
           ...this.mergeOptionsWithDefaultOnes(options),
         })
@@ -100,6 +93,8 @@ export class HttpService {
     return await undici
       .request(url, {
         method,
+        // @ts-expect-error incompatible type, but was compatible in the previous version
+        dispatcher: agent,
         ...this.mergeOptionsWithDefaultOnes(options),
       })
       .then(res => this.handleResponseError(res))
@@ -112,7 +107,7 @@ export class HttpService {
 
       this.logger.debug(msg);
 
-      throw new HttpException(msg, response.statusCode);
+      throw new HttpServiceException(msg, response.statusCode);
     }
 
     return response;

@@ -20,6 +20,16 @@ vi.mock('undici', () => {
       request: vi.fn(async () => {
         throw new Error('Network call attempted in unit test. Stub/mocks required.');
       }),
+      interceptors: {
+        retry: vi.fn(),
+        decompress: vi.fn(),
+        deduplicate: vi.fn(),
+      },
+    },
+    Agent: class {
+      compose(): {} {
+        return {};
+      }
     },
     Dispatcher: {},
   } as any;

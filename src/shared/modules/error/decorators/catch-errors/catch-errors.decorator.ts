@@ -3,6 +3,7 @@ import { isPromise } from 'node:util/types';
 import { isFunction } from '@nestjs/common/utils/shared.utils';
 
 import { TConstructor } from '@shared/types/constructor.type';
+import { copyMetadata } from '@shared/utils/copy-metadata.util';
 import { isAsyncFn } from '@shared/utils/is-async-fn';
 
 /**
@@ -16,7 +17,7 @@ import { isAsyncFn } from '@shared/utils/is-async-fn';
 export const CatchTheError = (
   ErrorClassConstructor: TConstructor,
   handler: TErrorHandler,
-): MethodDecorator => Factory(ErrorClassConstructor, handler);
+): MethodDecorator => Factory(handler, ErrorClassConstructor);
 
 /**
  *
@@ -27,15 +28,10 @@ export const CatchErrors = (handler: TErrorHandler): MethodDecorator => Factory(
 
 // eslint-disable-next-line max-lines-per-function
 function Factory(
+  handler: TErrorHandler,
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  ErrorClassConstructor: Function | TErrorHandler,
-  handler?: TErrorHandler,
+  ErrorClassConstructor?: Function | TErrorHandler,
 ): MethodDecorator {
-  if (!handler) {
-    handler = ErrorClassConstructor as TErrorHandler;
-    ErrorClassConstructor = undefined as unknown as any;
-  }
-
   // eslint-disable-next-line max-lines-per-function
   return (
     target: any,
@@ -61,24 +57,26 @@ function Factory(
         try {
           const result = originalFn.apply(this, args);
 
-          return isPromise(result) ? await result : result;
+          return await Promise.try(() => result);
         } catch (error) {
-          handleError(error, args);
+          return handleError(error, args);
         }
       };
+    } else {
+      descriptor.value = function (...args: any[]): any {
+        try {
+          const result = originalFn.apply(this, args);
 
-      return descriptor;
+          return isPromise(result) ? result.catch(err => handleError(err, args)) : result;
+        } catch (error) {
+          return handleError(error, args);
+        }
+      };
     }
 
-    descriptor.value = function (...args: any[]): any {
-      try {
-        const result = originalFn.apply(this, args);
-
-        return isPromise(result) ? result.catch(err => handleError(err, args)) : result;
-      } catch (error) {
-        handleError(error, args);
-      }
-    };
+    // --- Preserve metadata on the bound function (function target) ---
+    // Copy metadata that might have been set directly on the original method function
+    copyMetadata(originalFn, descriptor.value);
 
     return descriptor;
   };

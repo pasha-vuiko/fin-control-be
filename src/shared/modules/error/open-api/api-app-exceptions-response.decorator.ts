@@ -6,6 +6,11 @@ import { ErrorResponse } from '@shared/modules/error/exception-filters/all-excep
 import { AppException } from '@shared/modules/error/exceptions/exception-classes/app.exception';
 import { TConstructor } from '@shared/types/constructor.type';
 
+/**
+ *
+ * @param AppExceptionConstructorsOrInstances - array of exception classes which extend the AppException and registered via the @RegisterAppException() decorator in the appExceptionsRegistry
+ * @description Adds documentation to the Open API about which exceptions can be thrown by an endpoint
+ */
 export const ApiAppExceptionsRes = <E extends TConstructor<AppException>>(
   ...AppExceptionConstructorsOrInstances: (E | AppException)[]
 ): MethodDecorator => {
@@ -23,7 +28,7 @@ export const ApiAppExceptionsRes = <E extends TConstructor<AppException>>(
     appExceptionsGroupedByHttpCode,
   ).map(([httpCode, exception]) => {
     return ApiResponse({
-      status: parseInt(httpCode),
+      status: Number.parseInt(httpCode),
       content: getContent(exception ?? []),
     });
   });

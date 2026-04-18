@@ -11,10 +11,10 @@ export class AppException extends Error {
   readonly errorCode: TAppErrorCode;
   // override readonly message: string;
 
-  constructor(options: OptionsWithCause);
+  constructor(options: AppExceptionOptionsWithCause);
   constructor(message?: string, options?: AppExceptionsOptions);
   constructor(
-    messageOrCause: string | OptionsWithCause | undefined,
+    messageOrCause: string | AppExceptionOptionsWithCause | undefined,
     options?: AppExceptionsOptions,
   ) {
     if (typeof messageOrCause === 'string' || typeof messageOrCause === 'undefined') {
@@ -73,6 +73,6 @@ export interface AppExceptionsOptions {
   errorCode?: TAppErrorCode;
 }
 
-export interface OptionsWithCause {
+export interface AppExceptionOptionsWithCause {
   cause?: Error | any;
 }

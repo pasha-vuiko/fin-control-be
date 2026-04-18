@@ -17,14 +17,13 @@
     "pretty": true,
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
     "types": ["vitest/globals"],
     "paths": {
-      "@prisma-definitions/*": ["prisma/*"],
-      "@api/*": ["src/api/*"],
-      "@shared/*": ["src/shared/*"]
+      "@prisma-definitions/*": ["./prisma/*"],
+      "@api/*": ["./src/api/*"],
+      "@shared/*": ["./src/shared/*"]
     }
   }
 }

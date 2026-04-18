@@ -54,8 +54,8 @@ describe('AllExceptionsFilter', () => {
         message: 'MyAppException',
         reqId: getRequestId(),
       });
-      expect(response.status).toBeCalledWith(404);
-      expect(response.send).toBeCalledWith(expectedResponse);
+      expect(response.status).toHaveBeenCalledWith(404);
+      expect(response.send).toHaveBeenCalledWith(expectedResponse);
     });
 
     it('should send err response from AppException (5xx) and log error', () => {
@@ -78,8 +78,8 @@ describe('AllExceptionsFilter', () => {
         message: 'MyAppException',
         reqId: getRequestId(),
       });
-      expect(response.status).toBeCalledWith(500);
-      expect(response.send).toBeCalledWith(expectedResponse);
+      expect(response.status).toHaveBeenCalledWith(500);
+      expect(response.send).toHaveBeenCalledWith(expectedResponse);
     });
     it('should send err response from HttpException and track error', () => {
       const errMessage = 'The record is not found';
@@ -106,8 +106,8 @@ describe('AllExceptionsFilter', () => {
         reqId: getRequestId(),
       });
 
-      expect(response.status).toBeCalledWith(expectedStatus);
-      expect(response.send).toBeCalledWith(expectedResponse);
+      expect(response.status).toHaveBeenCalledWith(expectedStatus);
+      expect(response.send).toHaveBeenCalledWith(expectedResponse);
       expect(trackExceptionFn).toHaveBeenCalledOnce();
     });
 
@@ -131,8 +131,8 @@ describe('AllExceptionsFilter', () => {
         reqId: getRequestId(),
       });
 
-      expect(response.status).toBeCalledWith(expectedStatus);
-      expect(response.send).toBeCalledWith(expectedResponse);
+      expect(response.status).toHaveBeenCalledWith(expectedStatus);
+      expect(response.send).toHaveBeenCalledWith(expectedResponse);
     });
 
     it('should send err response from FastifyError', () => {
@@ -157,8 +157,8 @@ describe('AllExceptionsFilter', () => {
         reqId: getRequestId(),
       });
 
-      expect(response.status).toBeCalledWith(errStatusCode);
-      expect(response.send).toBeCalledWith(expectedResponse);
+      expect(response.status).toHaveBeenCalledWith(errStatusCode);
+      expect(response.send).toHaveBeenCalledWith(expectedResponse);
     });
 
     it('should send err response and log error for FastifyError with 5xx', () => {
@@ -183,8 +183,8 @@ describe('AllExceptionsFilter', () => {
         reqId: getRequestId(),
       });
 
-      expect(response.status).toBeCalledWith(errStatusCode);
-      expect(response.send).toBeCalledWith(expectedResponse);
+      expect(response.status).toHaveBeenCalledWith(errStatusCode);
+      expect(response.send).toHaveBeenCalledWith(expectedResponse);
     });
 
     it('should default to 500 and log error when FastifyError has no statusCode', () => {
@@ -207,8 +207,8 @@ describe('AllExceptionsFilter', () => {
         message: 'FST_ERR_UNKNOWN',
         reqId: getRequestId(),
       });
-      expect(response.status).toBeCalledWith(500);
-      expect(response.send).toBeCalledWith(expectedResponse);
+      expect(response.status).toHaveBeenCalledWith(500);
+      expect(response.send).toHaveBeenCalledWith(expectedResponse);
     });
 
     it('should log error for HttpException 5xx', () => {
@@ -229,8 +229,8 @@ describe('AllExceptionsFilter', () => {
         message: 'Internal Server Error',
         reqId: getRequestId(),
       });
-      expect(response.status).toBeCalledWith(500);
-      expect(response.send).toBeCalledWith(expectedResponse);
+      expect(response.status).toHaveBeenCalledWith(500);
+      expect(response.send).toHaveBeenCalledWith(expectedResponse);
     });
 
     it('should send err response from Error', () => {
@@ -250,13 +250,13 @@ describe('AllExceptionsFilter', () => {
       const expectedErrMessage = 'Internal Server Error';
       const expectedResponse = new ErrorResponse({
         code: mapHttpStatusCodeToCommonAppErrorCode(500),
-        description: errMessage,
+        description: expectedErrMessage,
         message: expectedErrMessage,
         reqId: getRequestId(),
       });
 
-      expect(response.status).toBeCalledWith(expectedStatusCode);
-      expect(response.send).toBeCalledWith(expectedResponse);
+      expect(response.status).toHaveBeenCalledWith(expectedStatusCode);
+      expect(response.send).toHaveBeenCalledWith(expectedResponse);
     });
   });
 });

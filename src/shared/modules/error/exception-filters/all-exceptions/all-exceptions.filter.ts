@@ -14,6 +14,7 @@ import { mapHttpStatusCodeToCommonAppErrorCode } from '@shared/modules/error/uti
 import { Logger } from '@shared/modules/logger/loggers/logger';
 
 @Catch()
+// @lat: [[errors#Response Envelope]]
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
 
@@ -98,7 +99,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
           reqId,
           mapHttpStatusCodeToCommonAppErrorCode(httpStatusCode),
           'Internal Server Error',
-          exception.message,
+          'Internal Server Error',
         ),
       ),
       httpCode: httpStatusCode,

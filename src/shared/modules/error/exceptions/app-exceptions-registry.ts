@@ -10,6 +10,7 @@ import { AppExceptionFlowRegistryOutput } from '@shared/modules/error/interfaces
 import { getAppExceptionDocHtml } from '@shared/modules/error/utils/get-app-exception-doc-html.util';
 import { getConstructorName } from '@shared/modules/logger/utils/get-constructor-name.util';
 import { TConstructor } from '@shared/types/constructor.type';
+import { screamingSnakeToPascalCase } from '@shared/utils/screaming-snake-case-to-pascal-case.util';
 
 /**
  * Central registry for application exceptions and exception flows.
@@ -47,35 +48,13 @@ import { TConstructor } from '@shared/types/constructor.type';
  * throw new UserNotFoundException();
  * ```
  */
+// @lat: [[errors#Exception Registration]]
 export class AppExceptionsRegistry {
   private readonly exceptionFlowsRegistry = new Map<number, string>();
   private readonly exceptionsRegistry = new Map<TAppErrorCode, AppException>();
 
-  /**
-   * Initializes the registry with a default flow and HTTP‑derived exceptions.
-   *
-   * - Registers flow `0` as "Common errors".
-   * - Iterates over {@link HttpStatus} entries and registers an {@link AppException}
-   *   for each status code \>= 400.
-   */
   constructor() {
-    // Register flow for common errors
-    this.registerFlow(0, 'Common errors');
-
-    for (const [name, code] of Object.entries(HttpStatus)) {
-      if (typeof code !== 'number') {
-        continue;
-      }
-      if (code < 400) {
-        continue;
-      }
-
-      const description = this.getHttpExceptionDescription(name);
-      const httpException = new HttpException(description, code);
-      httpException.name = this.getHttpExceptionName(name);
-
-      this.registerHttpException(httpException);
-    }
+    this.registerCommonExceptions();
   }
 
   /**
@@ -87,7 +66,7 @@ export class AppExceptionsRegistry {
    */
   registerFlow(flowCode: number, flowName: string): void {
     if (!Number.isSafeInteger(flowCode)) {
-      throw new Error('flowCode should be safe integer');
+      throw new TypeError('flowCode should be safe integer');
     }
 
     const foundRegisteredFlow = this.exceptionFlowsRegistry.get(flowCode);
@@ -130,7 +109,7 @@ export class AppExceptionsRegistry {
       : ExceptionConstructor;
 
     if (!(exception instanceof AppException)) {
-      throw new Error(
+      throw new TypeError(
         `Registered exception class should be constructor ` +
           `of AppException or its child, '${getConstructorName(exception)}' given insteadp`,
       );
@@ -251,6 +230,32 @@ export class AppExceptionsRegistry {
   }
 
   /**
+   * Initializes the registry with a default flow and HTTP‑derived exceptions.
+   *
+   * - Registers flow `0` as "Common errors".
+   * - Iterates over {@link HttpStatus} entries and registers an {@link AppException}
+   *   for each status code \>= 400.
+   */
+  private registerCommonExceptions(): void {
+    this.registerFlow(0, 'Common errors');
+
+    for (const [name, code] of Object.entries(HttpStatus)) {
+      if (typeof code !== 'number') {
+        continue;
+      }
+      if (code < 400) {
+        continue;
+      }
+
+      const description = screamingSnakeToPascalCase(name, true);
+      const httpException = new HttpException(description, code);
+      httpException.name = this.getHttpExceptionName(name);
+
+      this.registerHttpException(httpException);
+    }
+  }
+
+  /**
    * Builds a common prefix used in validation error messages for consistent wording.
    */
   private getValidationErrMsgPrefix(exception: AppException): string {
@@ -262,43 +267,9 @@ export class AppExceptionsRegistry {
    * (e.g., `NOT_FOUND` -> `NotFoundException`).
    */
   private getHttpExceptionName(httpCodeKey: string): string {
-    const pascalCaseName = this.screamingSnakeToPascalCase(httpCodeKey);
+    const pascalCaseName = screamingSnakeToPascalCase(httpCodeKey);
 
     return `${pascalCaseName}Exception`;
-  }
-
-  /**
-   * Converts an `HttpStatus` SCREAMING_SNAKE key to a human‑readable message
-   * with spaces (e.g., `NOT_FOUND` -> `Not Found`).
-   */
-  private getHttpExceptionDescription(httpCodeKey: string): string {
-    const pascalCaseName = this.screamingSnakeToPascalCase(httpCodeKey, true);
-
-    return `${pascalCaseName}`;
-  }
-
-  /**
-   * Transforms a SCREAMING_SNAKE_CASE string into PascalCase or spaced title case.
-   *
-   * @param str Input in SCREAMING_SNAKE_CASE.
-   * @param withSpaces If `true`, inserts spaces instead of removing underscores.
-   * @returns `PascalCase` when `withSpaces` is `false`, or `Title Case` when `true`.
-   */
-  private screamingSnakeToPascalCase(str: string, withSpaces = false): string {
-    let result = '';
-    let capitalizeNext = true;
-
-    for (const char of str) {
-      if (char === '_') {
-        capitalizeNext = true;
-      } else {
-        const space = withSpaces ? ' ' : '';
-        result += capitalizeNext ? `${space}${char.toUpperCase()}` : char.toLowerCase();
-        capitalizeNext = false;
-      }
-    }
-
-    return result.trimStart();
   }
 }
 

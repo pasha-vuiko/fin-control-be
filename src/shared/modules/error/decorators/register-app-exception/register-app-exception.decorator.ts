@@ -56,10 +56,10 @@ export const RegisterAppException = <T extends TConstructor<AppException>>(
 ): ClassDecorator => {
   const httpStatusFromCodeStr =
     code.split('.').at(ERR_CODE_HTTP_STATUS_INDEX) ?? 'undefined';
-  const httpStatusFromCode = parseInt(httpStatusFromCodeStr);
+  const httpStatusFromCode = Number.parseInt(httpStatusFromCodeStr);
 
-  if (isNaN(httpStatusFromCode)) {
-    throw new Error(
+  if (Number.isNaN(httpStatusFromCode)) {
+    throw new TypeError(
       `First part of error code should be a number, '${httpStatusFromCodeStr}' received instead`,
     );
   }
@@ -71,7 +71,7 @@ export const RegisterAppException = <T extends TConstructor<AppException>>(
   // eslint-disable-next-line max-lines-per-function
   return (Constructor: T): T | void => {
     if (!(Constructor.prototype instanceof AppException)) {
-      throw new Error('Decorated class should be child of AppException');
+      throw new TypeError('Decorated class should be child of AppException');
     }
 
     //@ts-expect-error mixing class constructor should have one argument which is any[]

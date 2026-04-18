@@ -1,8 +1,6 @@
 import undici from 'undici';
 
-import { HttpException } from '@nestjs/common';
-
-import * as retryUtil from '@shared/modules/http/util/execute-with-retries';
+import { HttpServiceException } from '@shared/modules/http/exceptions/exception-classes';
 
 import { HttpService } from './http.service';
 
@@ -91,14 +89,18 @@ describe('HttpService', () => {
     // not asserting exact type to avoid environment differences
   });
 
-  it('throws HttpException on non-2xx and logs response body text', async () => {
+  it('throws HttpServiceException on non-2xx and logs response body text', async () => {
     vi.spyOn(undici, 'request').mockResolvedValue(
       createResponse({ statusCode: 404, textData: 'Not Found' }),
     );
 
     await expect(service.get('https://example.com/missing')).rejects.toSatisfy(
-      (err: unknown) =>
-        err instanceof HttpException && (err as HttpException).getStatus() === 404,
+      (err: unknown) => {
+        return (
+          err instanceof HttpServiceException &&
+          (err as HttpServiceException).getHttpStatusCode() === 404
+        );
+      },
     );
   });
 
@@ -109,27 +111,6 @@ describe('HttpService', () => {
 
     const res = await service.get<string>('https://example.com/plain');
     expect(res.data).toBe('plain text');
-  });
-
-  it('uses executeWithRetries when retries option is provided', async () => {
-    const requestSpy = vi
-      .spyOn(undici, 'request')
-      .mockResolvedValue(createResponse({ jsonData: { ok: true } }));
-
-    const retrySpy = vi
-      .spyOn(retryUtil, 'executeWithRetries')
-      // call the provided function immediately to simulate success on first attempt
-      .mockImplementation(async (fn: any, _retries?: number, _interval?: number) => fn());
-
-    const res = await service.get('https://example.com/retry', {
-      retries: 3,
-      retryIntervalMs: 1000,
-    });
-
-    expect(retrySpy).toHaveBeenCalledTimes(1);
-    expect(retrySpy).toHaveBeenCalledWith(expect.any(Function), 3, 1000);
-    expect(requestSpy).toHaveBeenCalledTimes(1);
-    expect(res.data).toEqual({ ok: true });
   });
 });
 
